@@ -1,8 +1,15 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
-import type { Session } from "@/lib/types";
-import { StatusBadge } from "@/components/sessions/SessionCard";
+import type {
+  Character,
+  MediaLibraryItem,
+  Session,
+  SessionEvent,
+  SessionMediaState,
+  StoryTemplate,
+} from "@/lib/types";
+import { GmPanel } from "@/components/gm-panel/GmPanel";
+import type { GmPanelData, PlayerOption } from "@/components/gm-panel/types";
 
 export default async function PlayPage({
   params,
@@ -24,28 +31,83 @@ export default async function PlayPage({
     redirect(`/dashboard/sessions/${id}`);
   }
 
-  return (
-    <div className="flex flex-1 flex-col gap-6 px-4 py-6">
-      <header className="flex flex-col gap-2">
-        <Link
-          href={`/dashboard/sessions/${id}`}
-          className="text-xs text-zinc-500 hover:text-zinc-300"
-        >
-          ← Voltar ao lobby
-        </Link>
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="text-xl font-bold tracking-tight">{session.title}</h1>
-          <StatusBadge status={session.status} />
-        </div>
-      </header>
+  const [
+    { data: characters },
+    { data: events },
+    { data: mediaState },
+    { data: mediaLibrary },
+    { data: sessionPlayers },
+    template,
+  ] = await Promise.all([
+    supabase
+      .from("characters")
+      .select("*")
+      .eq("session_id", id)
+      .returns<Character[]>(),
+    supabase
+      .from("session_events")
+      .select("*")
+      .eq("session_id", id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .returns<SessionEvent[]>(),
+    supabase
+      .from("session_media_state")
+      .select("*")
+      .eq("session_id", id)
+      .maybeSingle<SessionMediaState>(),
+    supabase
+      .from("media_library")
+      .select("*")
+      .eq("owner_id", session.gm_id)
+      .order("created_at", { ascending: false })
+      .returns<MediaLibraryItem[]>(),
+    supabase
+      .from("session_players")
+      .select(
+        "player_id, status, profile:profiles!session_players_player_id_fkey(display_name)"
+      )
+      .eq("session_id", id)
+      .in("status", ["invited", "joined"])
+      .returns<
+        {
+          player_id: string;
+          status: string;
+          profile: { display_name: string } | null;
+        }[]
+      >(),
+    session.template_id
+      ? supabase
+          .from("story_templates")
+          .select("*")
+          .eq("id", session.template_id)
+          .maybeSingle<StoryTemplate>()
+          .then((r) => r.data)
+      : Promise.resolve(null),
+  ]);
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-        <span className="text-4xl">🛠️</span>
-        <p className="text-zinc-400">Painel do GM em construção.</p>
-        <p className="text-xs text-zinc-500">
-          Esta página será preenchida pelo SPEC_GM_PANEL.
-        </p>
-      </div>
-    </div>
-  );
+  const players: PlayerOption[] = (sessionPlayers ?? []).map((p) => ({
+    id: p.player_id,
+    name: p.profile?.display_name ?? "Jogador",
+  }));
+
+  const data: GmPanelData = {
+    session,
+    characters: characters ?? [],
+    events: events ?? [],
+    mediaState: mediaState ?? {
+      id: "",
+      session_id: id,
+      current_audio: null,
+      current_image: null,
+      ambient_active: false,
+      updated_at: new Date().toISOString(),
+    },
+    mediaLibrary: mediaLibrary ?? [],
+    players,
+    template: template ? { title: template.title, content: template.content } : null,
+    templateRow: template,
+  };
+
+  return <GmPanel data={data} />;
 }

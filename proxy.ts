@@ -4,16 +4,11 @@ import type { Role } from "@/lib/types";
 
 const ADMIN_RE = /^\/admin(\/|$)/;
 const GM_RE = /^\/dashboard(\/|$)/;
-const ANY_RE = /^\/play(\/|$)/;
+const PLAY_RE = /^\/play(\/|$)/;
+const HUB_RE = /^\/hub(\/|$)/;
 const AUTH_PAGE_RE = /^\/(login|register)(\/|$)/;
 
 const ROLE_RANK: Record<Role, number> = { player: 0, gm: 1, admin: 2 };
-
-function homeForRole(role: Role | undefined) {
-  if (role === "admin") return "/admin";
-  if (role === "gm") return "/dashboard";
-  return "/play";
-}
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -45,21 +40,20 @@ export async function proxy(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
 
-  if (AUTH_PAGE_RE.test(pathname)) {
-    if (!user) return response;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single<{ role: Role }>();
-    return NextResponse.redirect(
-      new URL(homeForRole(profile?.role), request.url)
-    );
+  if (pathname === "/" || AUTH_PAGE_RE.test(pathname)) {
+    if (user) {
+      return NextResponse.redirect(new URL("/hub", request.url));
+    }
+    return response;
   }
 
   const requiresAdmin = ADMIN_RE.test(pathname);
   const requiresGm = GM_RE.test(pathname);
-  const requiresAuth = ANY_RE.test(pathname) || requiresAdmin || requiresGm;
+  const requiresAuth =
+    HUB_RE.test(pathname) ||
+    PLAY_RE.test(pathname) ||
+    requiresAdmin ||
+    requiresGm;
 
   if (!requiresAuth) return response;
 
@@ -87,10 +81,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
+    "/login",
+    "/register/:path*",
+    "/hub/:path*",
     "/dashboard/:path*",
     "/play/:path*",
     "/admin/:path*",
-    "/login",
-    "/register",
   ],
 };

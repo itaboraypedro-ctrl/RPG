@@ -3,6 +3,31 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* RPG Sheet design tokens */
+  --color-rpg-bg: #0a0c10;
+  --color-rpg-surface: #0e1118;
+  --color-rpg-border: #1e2d3d;
+  --color-rpg-blue: #4fa8e8;
+  --color-rpg-gold: #c9a84c;
+  --color-rpg-green: #4ecb8a;
+  --color-rpg-red: #e05050;
+  --color-rpg-purple: #9b7fe8;
+  --color-rpg-text: #d4e8f4;
+  --color-rpg-text-dim: #5a7a8a;
+  --font-rpg-numbers: Georgia, "Times New Roman", serif;
+  --font-rpg-hud: var(--font-rajdhani), system-ui, sans-serif;
+
+  /* Arcana landing page tokens */
+  --color-arcana-bg: #0a0a0f;
+  --color-arcana-surface: #0e0e1a;
+  --color-arcana-border: #1a1a2e;
+  --color-arcana-gold: #c9a84c;
+  --color-arcana-gold-bright: #f0cc6a;
+  --color-arcana-blood: #3f1c18;
+  --color-arcana-mist: #252d34;
+  --color-arcana-text: #e0caab;
+  --color-arcana-text-dim: #7a6a55;
 }
 
 @theme inline {
@@ -10,6 +35,36 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-rpg-bg: var(--color-rpg-bg);
+  --color-rpg-surface: var(--color-rpg-surface);
+  --color-rpg-border: var(--color-rpg-border);
+  --color-rpg-blue: var(--color-rpg-blue);
+  --color-rpg-gold: var(--color-rpg-gold);
+  --color-rpg-green: var(--color-rpg-green);
+  --color-rpg-red: var(--color-rpg-red);
+  --color-rpg-purple: var(--color-rpg-purple);
+  --color-rpg-text: var(--color-rpg-text);
+  --color-rpg-text-dim: var(--color-rpg-text-dim);
+  --font-rpg-numbers: var(--font-rpg-numbers);
+  --font-rpg-hud: var(--font-rpg-hud);
+
+  --color-arcana-bg: var(--color-arcana-bg);
+  --color-arcana-surface: var(--color-arcana-surface);
+  --color-arcana-border: var(--color-arcana-border);
+  --color-arcana-gold: var(--color-arcana-gold);
+  --color-arcana-gold-bright: var(--color-arcana-gold-bright);
+  --color-arcana-blood: var(--color-arcana-blood);
+  --color-arcana-mist: var(--color-arcana-mist);
+  --color-arcana-text: var(--color-arcana-text);
+  --color-arcana-text-dim: var(--color-arcana-text-dim);
+
+  --font-cinzel: var(--font-cinzel);
+  --font-crimson: var(--font-crimson);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +78,340 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes rpgSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes rpgSheetFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Arcana landing animations ─── */
+
+@keyframes arcanaGlowPulse {
+  0%,
+  100% {
+    text-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+  }
+  50% {
+    text-shadow:
+      0 0 40px rgba(201, 168, 76, 0.6),
+      0 0 80px rgba(201, 168, 76, 0.2);
+  }
+}
+
+@keyframes arcanaFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(20px, -30px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes arcanaFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arcanaBounceDown {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+.arcana-glow {
+  animation: arcanaGlowPulse 4s ease-in-out infinite;
+}
+
+.arcana-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(240, 204, 106, 0.7);
+  box-shadow: 0 0 8px rgba(240, 204, 106, 0.6);
+  animation: arcanaFloat 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.arcana-bounce {
+  animation: arcanaBounceDown 2s ease-in-out infinite;
+}
+
+.arcana-reveal {
+  opacity: 0;
+}
+
+.arcana-reveal.is-visible {
+  animation: arcanaFadeUp 800ms ease-out forwards;
+}
+
+.arcana-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--color-arcana-gold);
+  font-family: var(--font-cinzel), serif;
+  letter-spacing: 0.3em;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.arcana-divider::before,
+.arcana-divider::after {
+  content: "";
+  flex: 1;
+  max-width: 8rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-arcana-gold) 50%,
+    transparent
+  );
+}
+
+/* ─── Hero cinemático ─── */
+
+@keyframes arcanaEmberRise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(60px, -110vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes arcanaIdle {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) scale(1.015);
+  }
+}
+
+@keyframes arcanaAuraPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes arcanaSwordPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes arcanaMistDrift {
+  0% {
+    transform: translateX(-3%) translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(3%) translateY(-2%);
+    opacity: 0.4;
+  }
+}
+
+@keyframes arcanaRiseIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 60px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes arcanaTitleReveal {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.6em;
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.3em;
+    filter: blur(0);
+  }
+}
+
+@keyframes arcanaFadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.arcana-ember {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 220, 140, 0.95) 0%,
+    rgba(240, 204, 106, 0.6) 40%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 6px rgba(240, 204, 106, 0.7),
+    0 0 12px rgba(201, 168, 76, 0.4);
+  animation: arcanaEmberRise linear infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.arcana-idle {
+  animation: arcanaIdle 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.arcana-aura {
+  position: absolute;
+  width: 70vw;
+  max-width: 900px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(240, 204, 106, 0.45) 0%,
+    rgba(201, 168, 76, 0.22) 28%,
+    rgba(120, 60, 30, 0.15) 50%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  animation: arcanaAuraPulse 5s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.arcana-sword-glow {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(240, 204, 106, 0.55) 0%,
+    rgba(201, 168, 76, 0.25) 40%,
+    transparent 70%
+  );
+  filter: blur(18px);
+  animation: arcanaSwordPulse 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.arcana-mist {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(
+      ellipse 60% 40% at 30% 60%,
+      rgba(120, 90, 180, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 35% at 70% 50%,
+      rgba(63, 28, 24, 0.18),
+      transparent 70%
+    );
+  filter: blur(40px);
+  animation: arcanaMistDrift 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.arcana-rise-in {
+  opacity: 0;
+  animation: arcanaRiseIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.arcana-title-reveal {
+  opacity: 0;
+  animation: arcanaTitleReveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.arcana-fade-in {
+  opacity: 0;
+  animation: arcanaFadeIn 1s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcana-glow,
+  .arcana-bounce,
+  .arcana-particle,
+  .arcana-ember,
+  .arcana-idle,
+  .arcana-sword-glow,
+  .arcana-aura,
+  .arcana-mist,
+  .arcana-rise-in,
+  .arcana-title-reveal,
+  .arcana-fade-in {
+    animation: none !important;
+  }
+  .arcana-rise-in,
+  .arcana-title-reveal,
+  .arcana-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    letter-spacing: 0.3em;
+  }
 }

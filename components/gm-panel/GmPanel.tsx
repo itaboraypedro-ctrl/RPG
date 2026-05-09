@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Group, Panel, useDefaultLayout } from "react-resizable-panels";
 import { createClient } from "@/lib/supabase";
 import type {
   Character,
@@ -14,6 +15,9 @@ import { GmPanelHeader } from "./GmPanelHeader";
 import { Column1Combat } from "./Column1Combat";
 import { Column2Scene } from "./Column2Scene";
 import { Column3Narrative } from "./Column3Narrative";
+import { ResizeHandle } from "./ResizeHandle";
+
+const PANEL_IDS = ["gm-col1", "gm-col2", "gm-col3"];
 
 type TemplateNpc = { name: string; role: string; motivation: string };
 
@@ -108,6 +112,58 @@ export function GmPanel({ data }: { data: GmPanelData }) {
   const templateNpcs = ((data.template?.content?.npcs ?? []) as unknown as TemplateNpc[]) || [];
   const disabled = session.status === "paused";
 
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const storage =
+    typeof window !== "undefined" ? window.localStorage : undefined;
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: "gm-panel-columns",
+    panelIds: PANEL_IDS,
+    storage,
+  });
+
+  const col1 = (
+    <Column1Combat
+      sessionId={session.id}
+      characters={characters}
+      enemies={enemies}
+      templateNpcs={templateNpcs}
+      players={data.players}
+      events={events}
+      activeCombatantId={ctx.active_combatant_id}
+      disabled={disabled}
+    />
+  );
+  const col2 = (
+    <Column2Scene
+      sessionId={session.id}
+      mediaState={mediaState}
+      mediaLibrary={data.mediaLibrary}
+      templateContent={data.template?.content ?? null}
+      players={data.players}
+      disabled={disabled}
+    />
+  );
+  const col3 = (
+    <Column3Narrative
+      sessionId={session.id}
+      sessionTitle={session.title}
+      currentScene={session.current_scene}
+      storySummary={ctx.story_summary ?? ""}
+      characters={characters}
+      events={events}
+      templateContent={data.template?.content ?? null}
+      disabled={disabled}
+    />
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-zinc-950 text-zinc-100">
       <GmPanelHeader session={session} events={events} />
@@ -121,42 +177,52 @@ export function GmPanel({ data }: { data: GmPanelData }) {
           </div>
         )}
 
-        <div className="grid h-full grid-cols-1 lg:grid-cols-3">
-          <div className="overflow-y-auto border-r border-zinc-800 p-3">
-            <Column1Combat
-              sessionId={session.id}
-              characters={characters}
-              enemies={enemies}
-              templateNpcs={templateNpcs}
-              players={data.players}
-              events={events}
-              activeCombatantId={ctx.active_combatant_id}
-              disabled={disabled}
-            />
+        {isDesktop ? (
+          <Group
+            orientation="horizontal"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+            className="flex h-full"
+          >
+            <Panel
+              id="gm-col1"
+              defaultSize={1}
+              minSize="20%"
+              maxSize="60%"
+              className="@container overflow-y-auto p-3"
+            >
+              {col1}
+            </Panel>
+            <ResizeHandle />
+            <Panel
+              id="gm-col2"
+              defaultSize={1}
+              minSize="20%"
+              maxSize="60%"
+              className="@container overflow-y-auto p-3"
+            >
+              {col2}
+            </Panel>
+            <ResizeHandle />
+            <Panel
+              id="gm-col3"
+              defaultSize={1}
+              minSize="20%"
+              maxSize="60%"
+              className="@container overflow-y-auto p-3"
+            >
+              {col3}
+            </Panel>
+          </Group>
+        ) : (
+          <div className="h-full overflow-y-auto">
+            <div className="flex flex-col gap-3 p-3">
+              {col1}
+              {col2}
+              {col3}
+            </div>
           </div>
-          <div className="overflow-y-auto border-r border-zinc-800 p-3">
-            <Column2Scene
-              sessionId={session.id}
-              mediaState={mediaState}
-              mediaLibrary={data.mediaLibrary}
-              templateContent={data.template?.content ?? null}
-              players={data.players}
-              disabled={disabled}
-            />
-          </div>
-          <div className="overflow-y-auto p-3">
-            <Column3Narrative
-              sessionId={session.id}
-              sessionTitle={session.title}
-              currentScene={session.current_scene}
-              storySummary={ctx.story_summary ?? ""}
-              characters={characters}
-              events={events}
-              templateContent={data.template?.content ?? null}
-              disabled={disabled}
-            />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

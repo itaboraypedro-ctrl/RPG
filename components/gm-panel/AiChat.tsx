@@ -92,7 +92,7 @@ export function AiChat({
         Chat com IA
       </h3>
 
-      <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded border border-zinc-800 bg-zinc-950 p-2 text-xs">
+      <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded border border-zinc-800 bg-zinc-950 p-2 text-xs @[420px]:text-sm">
         {messages.length === 0 && !loading && (
           <p className="text-zinc-500">
             Pergunte algo ao assistente sobre a sessão.
@@ -101,7 +101,7 @@ export function AiChat({
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`max-w-[85%] rounded p-2 ${
+            className={`max-w-[90%] rounded p-2 @[360px]:max-w-[80%] @[520px]:max-w-[70%] ${
               m.role === "user"
                 ? "self-end bg-emerald-900/30 text-emerald-100"
                 : "self-start bg-zinc-800 text-zinc-200"

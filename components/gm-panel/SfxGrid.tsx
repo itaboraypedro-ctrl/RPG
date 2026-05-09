@@ -59,7 +59,7 @@ export function SfxGrid({ sessionId, mediaLibrary, players, disabled }: Props) {
           Nenhum efeito sonoro na biblioteca.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5 @[320px]:grid-cols-3 @[480px]:grid-cols-4">
           {sounds.map((s) => (
             <DestinationPicker
               key={s.id}

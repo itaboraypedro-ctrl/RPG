@@ -4,12 +4,13 @@ import { useMemo, useState, useTransition } from "react";
 import type { Character, SessionEvent } from "@/lib/types";
 import { setActiveCombatant } from "@/app/dashboard/sessions/[id]/play/actions";
 import type { Enemy, PlayerOption } from "./types";
-import { CharacterCard } from "./CharacterCard";
 import { CharacterDetailModal } from "./CharacterDetailModal";
 import { MultiSelectBar } from "./MultiSelectBar";
 import { NpcCard } from "./NpcCard";
 import { AddNpcForm } from "./AddNpcForm";
 import { InitiativeTracker } from "./InitiativeTracker";
+import { PlayerSquareBlock } from "./PlayerSquareBlock";
+import { MOCK_PLAYERS } from "./mock-players";
 
 type TemplateNpc = { name: string; role: string; motivation: string };
 
@@ -39,7 +40,10 @@ export function Column1Combat({
   const [openCharId, setOpenCharId] = useState<string | null>(null);
 
   const openChar = useMemo(
-    () => characters.find((c) => c.id === openCharId) ?? null,
+    () =>
+      MOCK_PLAYERS.find((c) => c.id === openCharId) ??
+      characters.find((c) => c.id === openCharId) ??
+      null,
     [characters, openCharId]
   );
   const selectedCharacters = useMemo(
@@ -51,15 +55,6 @@ export function Column1Combat({
     if (disabled) return;
     startTransition(async () => {
       await setActiveCombatant(sessionId, id);
-    });
-  }
-
-  function toggleSelect(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
     });
   }
 
@@ -83,28 +78,18 @@ export function Column1Combat({
 
       <section className="flex flex-col gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-          Jogadores ({characters.length})
+          Jogadores ({MOCK_PLAYERS.length})
         </h3>
-        {characters.length === 0 ? (
-          <p className="rounded-md border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-500">
-            Nenhum personagem na sessão.
-          </p>
-        ) : (
-          characters.map((c) => (
-            <CharacterCard
+        <div className="grid grid-cols-1 gap-2 @[280px]:grid-cols-2 @[440px]:grid-cols-3">
+          {MOCK_PLAYERS.map((c) => (
+            <PlayerSquareBlock
               key={c.id}
-              sessionId={sessionId}
               character={c}
-              players={players}
-              disabled={disabled}
               active={activeCombatantId === c.id}
-              selected={selectedIds.has(c.id)}
-              onSelect={() => selectActive(c.id)}
-              onToggleSelect={() => toggleSelect(c.id)}
-              onOpenDetails={() => setOpenCharId(c.id)}
+              onClick={() => setOpenCharId(c.id)}
             />
-          ))
-        )}
+          ))}
+        </div>
       </section>
 
       <section className="flex flex-col gap-2">
@@ -147,6 +132,7 @@ export function Column1Combat({
         <CharacterDetailModal
           character={openChar}
           events={events}
+          editable={!openChar.id.startsWith("mock-")}
           onClose={() => setOpenCharId(null)}
         />
       )}

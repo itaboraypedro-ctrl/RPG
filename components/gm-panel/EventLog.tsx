@@ -146,7 +146,7 @@ export function EventLog({ events }: { events: SessionEvent[] }) {
             return (
               <li
                 key={e.id}
-                className="flex items-start gap-2 rounded border border-zinc-800 bg-zinc-950 p-2 text-xs"
+                className="flex items-start gap-2 rounded border border-zinc-800 bg-zinc-950 p-2 text-[11px] @[360px]:text-xs @[480px]:text-sm"
               >
                 <span className="text-base leading-none">{ICON[e.type]}</span>
                 <div className="flex-1">

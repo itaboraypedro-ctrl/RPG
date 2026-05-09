@@ -40,34 +40,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ images, placeholder: true });
   }
 
-  // OpenAI Images API integration — structure ready, enable when key is set.
-  // const fullPrompt = `Professional fantasy RPG character portrait, front-facing, upper body, ` +
-  //   `detailed armor and clothing visible, dramatic lighting, painterly style, ` +
-  //   `dark fantasy aesthetic, high detail, no background text, no UI elements. ` +
-  //   `Character description: ${prompt}`;
-  // const res = await fetch("https://api.openai.com/v1/images/generations", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Bearer ${apiKey}`,
-  //   },
-  //   body: JSON.stringify({
-  //     model: "gpt-image-1",
-  //     prompt: fullPrompt,
-  //     n: 4,
-  //     size: "1024x1024",
-  //     quality: "standard",
-  //   }),
-  // });
-  // if (!res.ok) {
-  //   return NextResponse.json({ error: "Falha na geração" }, { status: 502 });
-  // }
-  // const data = (await res.json()) as { data: { url?: string; b64_json?: string }[] };
-  // const images = data.data.map((d) => d.url ?? `data:image/png;base64,${d.b64_json}`);
-  // return NextResponse.json({ images, placeholder: false });
+  const fullPrompt =
+    `Professional fantasy RPG character portrait, front-facing, upper body, ` +
+    `detailed armor and clothing visible, dramatic lighting, painterly style, ` +
+    `dark fantasy aesthetic, high detail, no background text, no UI elements. ` +
+    `Character description: ${prompt}`;
 
-  return NextResponse.json(
-    { error: "Integração OpenAI ainda não habilitada" },
-    { status: 501 }
-  );
+  const res = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-image-1",
+      prompt: fullPrompt,
+      n: 4,
+      size: "1024x1024",
+      quality: "medium",
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text();
+    return NextResponse.json(
+      { error: `Falha na geração: ${res.status}`, detail },
+      { status: 502 }
+    );
+  }
+
+  const data = (await res.json()) as {
+    data: { b64_json?: string; url?: string }[];
+  };
+  const images = data.data
+    .map((d) =>
+      d.b64_json
+        ? `data:image/png;base64,${d.b64_json}`
+        : (d.url ?? null)
+    )
+    .filter((s): s is string => s !== null);
+
+  return NextResponse.json({ images, placeholder: false });
 }

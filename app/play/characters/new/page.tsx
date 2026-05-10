@@ -1,18 +1,28 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getProfile } from "@/lib/auth";
-import { CharacterWizard } from "@/components/characters/CharacterWizard";
+import { CharacterWizard } from "./CharacterWizard";
 
 export default async function NewCharacterPage() {
-  const profile = await getProfile();
-  if (!profile) redirect("/login?redirect=/play/characters/new");
+  const auth = await getProfile();
+  if (!auth) redirect("/login?redirect=/play/characters/new");
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[640px] flex-col gap-4 bg-zinc-950 px-4 py-6 text-zinc-100">
-      <Link href="/play" className="text-xs text-zinc-500 hover:text-zinc-300">
-        ← Voltar
-      </Link>
-      <h1 className="text-lg font-bold tracking-tight">Novo personagem</h1>
+    <div className="min-h-dvh bg-arcana-bg text-arcana-text">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
+        <Link
+          href="/hub"
+          className="inline-block font-cinzel text-[11px] uppercase tracking-[0.3em] text-arcana-text-dim transition-colors hover:text-arcana-gold"
+        >
+          ← Voltar para o Hub
+        </Link>
+        <h1 className="mt-4 font-cinzel text-2xl tracking-[0.18em] text-arcana-text sm:text-3xl">
+          Novo personagem
+        </h1>
+        <p className="mt-2 font-crimson text-base italic text-arcana-text-dim">
+          Forje sua lenda passo a passo.
+        </p>
+      </div>
       <CharacterWizard />
     </div>
   );

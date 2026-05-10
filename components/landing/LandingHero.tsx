@@ -17,6 +17,7 @@ export function LandingHero() {
   const auraRef = useRef<HTMLDivElement>(null);
   const characterRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLHeadingElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -25,7 +26,6 @@ export function LandingHero() {
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (reduced) return;
 
     const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
     let raf = 0;
@@ -34,6 +34,45 @@ export function LandingHero() {
       raf = 0;
       const sy = window.scrollY;
       const { x, y } = mouseRef.current;
+      const vh = window.innerHeight || 1;
+
+      // Logo "ARCANA" — animação de scroll (estilo Apple keynote).
+      if (logoRef.current) {
+        const progress = Math.min(1, Math.max(0, sy / (vh * 0.7)));
+        if (progress > 0) {
+          const opacity =
+            progress < 0.5 ? 1 : Math.max(0, 1 - (progress - 0.5) / 0.2);
+
+          if (reduced) {
+            logoRef.current.style.transform = "";
+            logoRef.current.style.filter = "";
+            logoRef.current.style.letterSpacing = "";
+            logoRef.current.style.opacity = String(opacity);
+          } else {
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const scale = 1 + eased * 1.8;
+            const tz = eased * 120;
+            const rx = -2 + eased * 2;
+            const blurProg =
+              progress < 0.4 ? progress / 0.4 : (1 - progress) / 0.6;
+            const blur = Math.max(0, blurProg * 6);
+            const ls = 0.35 + eased * 0.2;
+
+            logoRef.current.style.transform = `perspective(600px) translateZ(${tz}px) scale(${scale}) rotateX(${rx}deg)`;
+            logoRef.current.style.filter = `blur(${blur}px)`;
+            logoRef.current.style.letterSpacing = `${ls}em`;
+            logoRef.current.style.opacity = String(opacity);
+          }
+        } else {
+          // No topo: limpa os estilos inline pro keyframe arcana-title-reveal rodar.
+          logoRef.current.style.transform = "";
+          logoRef.current.style.filter = "";
+          logoRef.current.style.letterSpacing = "";
+          logoRef.current.style.opacity = "";
+        }
+      }
+
+      if (reduced) return;
 
       if (bgRef.current) {
         bgRef.current.style.transform = `translate3d(0, ${
@@ -45,9 +84,8 @@ export function LandingHero() {
         auraRef.current.style.setProperty("--my", `${sy * 0.5 + y * 8}px`);
       }
       if (characterRef.current) {
-        const vh = window.innerHeight || 1;
-        const progress = Math.min(Math.max(sy / vh, 0), 1);
-        const scale = 1 + progress * 0.05;
+        const charProgress = Math.min(Math.max(sy / vh, 0), 1);
+        const scale = 1 + charProgress * 0.05;
         characterRef.current.style.transform = `translate3d(0, 0, 0) scale(${scale})`;
       }
       if (titleRef.current) {
@@ -74,7 +112,9 @@ export function LandingHero() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("mousemove", onMove, { passive: true });
+    if (!reduced) {
+      window.addEventListener("mousemove", onMove, { passive: true });
+    }
     apply();
 
     return () => {
@@ -172,8 +212,15 @@ export function LandingHero() {
         className="pointer-events-none absolute inset-x-0 top-[20%] z-20 flex flex-col items-center px-6 text-center will-change-transform"
       >
         <h1
+          ref={logoRef}
           className="arcana-title-reveal font-cinzel text-5xl font-light tracking-[0.4em] text-arcana-text drop-shadow-[0_4px_24px_rgba(0,0,0,1)] sm:text-6xl sm:tracking-[0.5em] md:text-7xl lg:text-[7rem] lg:tracking-[0.55em]"
-          style={{ animationDelay: "0.6s" }}
+          style={{
+            animationDelay: "0.6s",
+            willChange: "transform, filter, opacity",
+            transformStyle: "preserve-3d",
+            backfaceVisibility: "hidden",
+            transition: "none",
+          }}
         >
           ARCANA
         </h1>

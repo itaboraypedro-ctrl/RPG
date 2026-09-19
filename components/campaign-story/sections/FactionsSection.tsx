@@ -20,9 +20,8 @@ import {
   hintClass,
 } from "../ui";
 
-// Fundo de plaqueta dos brasões — casa com o fundo escuro pintado nas artes.
-const EMBLEM_BG =
-  "radial-gradient(circle at 50% 44%, #191632 0%, #0d0d1a 58%, #0b0b14 100%)";
+// Fundo dos brasões — a cor chapada medida no canto dos PNGs (#090a11).
+const EMBLEM_BG = "#090a11";
 
 export function FactionsSection({ api }: { api: StoryHubApi }) {
   const elements = api.elementsOf("faction");
@@ -335,21 +334,12 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
 
   return (
     <ElementCard>
-      {/* Plaqueta do brasão — sangra até as bordas da carta */}
+      {/* Plaqueta do brasão — fundo chapado na cor do PNG (#090a11), sem camadas */}
       {data.emblema && (
         <div
           className="relative -mx-4 -mt-4 mb-3 h-48 overflow-hidden rounded-t-2xl border-b border-arcana-border-dim"
-          style={{ background: EMBLEM_BG }}
+          style={{ background: "#090a11" }}
         >
-          {/* O próprio brasão, ampliado e desfocado, forra a faixa inteira */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={data.emblema}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full scale-150 object-cover opacity-60 blur-2xl saturate-125"
-          />
-          {/* Medalhão nítido por cima, bordas laterais fundidas por máscara */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={data.emblema}
@@ -358,18 +348,18 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
             className="absolute left-1/2 top-1/2 h-full -translate-x-1/2 -translate-y-1/2"
             style={{
               maskImage:
-                "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+                "linear-gradient(90deg, transparent 0%, black 22%, black 78%, transparent 100%)",
               WebkitMaskImage:
-                "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+                "linear-gradient(90deg, transparent 0%, black 22%, black 78%, transparent 100%)",
             }}
           />
+          {/* Vinheta única e suave, escurecendo para as bordas */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(circle at 50% 45%, rgba(209,171,85,0.10), transparent 60%)",
-              boxShadow: "inset 0 -16px 26px rgba(11,11,20,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
+                "radial-gradient(85% 120% at 50% 45%, transparent 55%, rgba(3,3,6,0.55) 100%)",
             }}
           />
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignPlaceData } from "@/lib/rulesets/sacramento/types";
 import { SACRAMENTO_PLACES } from "@/lib/rulesets/sacramento/places";
@@ -31,6 +31,46 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
   const elements = api.elementsOf("place");
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [placingId, setPlacingId] = useState<string | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  const placingElement = placingId ? elements.find((el) => el.id === placingId) : null;
+
+  // Pinos: lugares da campanha já posicionados no mapa pelo Juiz.
+  const pins = elements
+    .map((el) => ({ el, data: el.data as CampaignPlaceData }))
+    .filter(({ data }) => data.mapa)
+    .map(({ el, data }) => ({
+      id: el.id,
+      nome: data.nome,
+      x: data.mapa!.x,
+      y: data.mapa!.y,
+      descricao: data.descricao,
+    }));
+
+  const startPlacing = (elementId: string) => {
+    setPlacingId(elementId);
+    mapRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+
+  async function placePin(x: number, y: number) {
+    const el = elements.find((e) => e.id === placingId);
+    setPlacingId(null);
+    if (!el) return;
+    const data = el.data as CampaignPlaceData;
+    await api.patchElement(el.id, {
+      data: { ...data, mapa: { x, y } } as unknown as Record<string, unknown>,
+    });
+  }
+
+  async function removePin(elementId: string) {
+    const el = elements.find((e) => e.id === elementId);
+    if (!el) return;
+    const data = el.data as CampaignPlaceData;
+    await api.patchElement(el.id, {
+      data: { ...data, mapa: undefined } as unknown as Record<string, unknown>,
+    });
+  }
 
   const canonIdsInCampaign = new Set(
     elements
@@ -87,11 +127,20 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
             lugar para ver e adicionar.
           </p>
         </div>
-        <WorldMap
-          addedIds={canonIdsInCampaign}
-          busyId={busy}
-          onAdd={(id) => void addCanon(id)}
-        />
+        <div ref={mapRef}>
+          <WorldMap
+            addedIds={canonIdsInCampaign}
+            busyId={busy}
+            onAdd={(id) => void addCanon(id)}
+            pins={pins}
+            placingLabel={
+              placingElement ? (placingElement.data as CampaignPlaceData).nome : null
+            }
+            onPlacePin={(x, y) => void placePin(x, y)}
+            onCancelPlacing={() => setPlacingId(null)}
+            onRemovePin={(id) => void removePin(id)}
+          />
+        </div>
         <p className={hintClass}>
           A Trincheira do Carvão não aparece no mapa oficial — encontre-a na galeria
           do cânone abaixo.
@@ -110,7 +159,12 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {elements.map((el) => (
-              <PlaceCard key={el.id} element={el} api={api} />
+              <PlaceCard
+                key={el.id}
+                element={el}
+                api={api}
+                onStartPlacing={() => startPlacing(el.id)}
+              />
             ))}
           </div>
         )}
@@ -304,7 +358,15 @@ function NewPlaceForm({ api, onDone }: { api: StoryHubApi; onDone: () => void })
   );
 }
 
-function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubApi }) {
+function PlaceCard({
+  element,
+  api,
+  onStartPlacing,
+}: {
+  element: CampaignElement;
+  api: StoryHubApi;
+  onStartPlacing: () => void;
+}) {
   const data = element.data as CampaignPlaceData;
   const [editing, setEditing] = useState(false);
   const [notas, setNotas] = useState(data.notasDoJuiz ?? "");
@@ -420,6 +482,9 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
             </>
           ) : (
             <>
+              <GhostButton onClick={onStartPlacing}>
+                {data.mapa ? "📍 Reposicionar" : "📍 No mapa"}
+              </GhostButton>
               <GhostButton onClick={() => setEditing(true)}>Editar</GhostButton>
               <GhostButton
                 danger

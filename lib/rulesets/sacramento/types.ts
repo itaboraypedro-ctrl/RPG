@@ -66,6 +66,8 @@ export type CampaignPlaceData = {
   paginas?: number[];
   /** URL pública no bucket `campaign-images` (migration 006). */
   imagem?: string;
+  /** Pino do Juiz no mapa do Oeste (coordenadas do viewBox 1000×736). */
+  mapa?: { x: number; y: number };
 };
 
 export type CampaignFactionData = {

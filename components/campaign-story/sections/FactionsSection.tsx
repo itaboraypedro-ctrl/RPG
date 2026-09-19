@@ -20,46 +20,18 @@ import {
   hintClass,
 } from "../ui";
 
-/**
- * Brasão pintado da facção. Some sozinho se a arte ainda não existir em
- * public/story/factions — o layout não depende dele.
- */
-function FactionEmblem({
-  src,
-  alt,
-  size = "md",
-}: {
-  src?: string;
-  alt: string;
-  size?: "md" | "lg";
-}) {
-  const [failed, setFailed] = useState(false);
-  if (!src || failed) return null;
-  return (
-    <span
-      className={[
-        "relative shrink-0 overflow-hidden rounded-sm border border-arcana-gold/35",
-        size === "lg" ? "h-14 w-14" : "h-10 w-10",
-      ].join(" ")}
-      style={{ boxShadow: "0 0 10px rgba(209,171,85,0.15), inset 0 1px 0 rgba(255,255,255,0.06)" }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        onError={() => setFailed(true)}
-        className="h-full w-full object-cover"
-      />
-    </span>
-  );
-}
+// Fundo de plaqueta dos brasões — casa com o fundo escuro pintado nas artes.
+const EMBLEM_BG =
+  "radial-gradient(circle at 50% 44%, #191632 0%, #0d0d1a 58%, #0b0b14 100%)";
 
 export function FactionsSection({ api }: { api: StoryHubApi }) {
   const elements = api.elementsOf("faction");
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string>(SACRAMENTO_FACTIONS[0].id);
+
+  const selectedFaction =
+    SACRAMENTO_FACTIONS.find((f) => f.id === selectedId) ?? SACRAMENTO_FACTIONS[0];
 
   const canonIds = new Set(
     elements.map((el) => (el.data as CampaignFactionData).canonId).filter(Boolean),
@@ -82,7 +54,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
   }
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-5xl space-y-8">
       <SectionHeader
         imageSrc="/story/headers/faccoes.webp"
         title="Facções & Ameaças"
@@ -111,89 +83,176 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
           Templates canônicos (pp. 258–266)
         </p>
-        <div className="space-y-2">
+
+        {/* Parede de brasões */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {SACRAMENTO_FACTIONS.map((faction) => {
             const added = canonIds.has(faction.id);
-            const isOpen = expanded === faction.id;
+            const isSelected = selectedId === faction.id;
             return (
-              <div
+              <button
                 key={faction.id}
+                type="button"
+                onClick={() => setSelectedId(faction.id)}
+                aria-pressed={isSelected}
                 className={[
-                  "rounded-sm border transition-all",
-                  added
-                    ? "border-arcana-gold/50 bg-arcana-gold/5"
-                    : "border-arcana-border bg-arcana-surface/50",
+                  "group relative overflow-hidden rounded-sm border text-left transition-all duration-200",
+                  isSelected
+                    ? "border-arcana-gold"
+                    : "border-arcana-border-dim hover:border-arcana-gold/50",
                 ].join(" ")}
+                style={
+                  isSelected
+                    ? { boxShadow: "0 0 22px rgba(209,171,85,0.25), inset 0 1px 0 rgba(255,255,255,0.05)" }
+                    : undefined
+                }
               >
-                <div className="flex items-center justify-between gap-3 px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setExpanded(isOpen ? null : faction.id)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                  >
-                    <FactionEmblem src={faction.emblema} alt={faction.nome} />
-                    <span className="font-cinzel text-sm uppercase tracking-[0.12em] text-arcana-text">
-                      {faction.nome}
-                    </span>
-                    <span className="border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim">
-                      {faction.categoria === "lei" ? "Lei" : "Gangue"}
-                    </span>
-                    <PageRef paginas={faction.paginas} />
-                  </button>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {added ? (
-                      <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
-                        ✓ Na campanha
-                      </span>
-                    ) : (
-                      <GhostButton onClick={() => addCanon(faction.id)} disabled={busy === faction.id}>
-                        {busy === faction.id ? "..." : "Adicionar"}
-                      </GhostButton>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setExpanded(isOpen ? null : faction.id)}
-                      className="font-cinzel text-xs text-arcana-text-dim"
+                <div className="relative aspect-square" style={{ background: EMBLEM_BG }}>
+                  {faction.emblema && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={faction.emblema}
+                      alt={faction.nome}
+                      loading="lazy"
+                      className={[
+                        "absolute inset-0 h-full w-full object-cover transition-transform duration-300",
+                        isSelected ? "scale-[1.04]" : "group-hover:scale-[1.05]",
+                      ].join(" ")}
+                    />
+                  )}
+                  {/* Brilho de tocha no hover */}
+                  <div
+                    aria-hidden
+                    className={[
+                      "pointer-events-none absolute inset-0 transition-opacity duration-300",
+                      isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-70",
+                    ].join(" ")}
+                    style={{
+                      background:
+                        "radial-gradient(circle at 50% 40%, rgba(209,171,85,0.16), transparent 62%)",
+                    }}
+                  />
+                  {added && (
+                    <span
+                      aria-hidden
+                      className="absolute -right-px -top-px h-7 w-7"
+                      style={{ background: "linear-gradient(225deg, #d1ab55 50%, transparent 50%)" }}
                     >
-                      {isOpen ? "−" : "+"}
-                    </button>
-                  </div>
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="absolute right-[2px] top-[2px] h-3 w-3"
+                        fill="none"
+                        stroke="#1c1206"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4 12.5l5 5L20 6.5" />
+                      </svg>
+                    </span>
+                  )}
                 </div>
-                {isOpen && (
-                  <div className="border-t border-arcana-border-dim px-4 py-3">
-                    <p className="font-crimson text-sm italic text-arcana-text-dim">
-                      {faction.resumo}
-                    </p>
-                    <table className="mt-2 w-full">
-                      <tbody>
-                        {faction.membros.map((m) => (
-                          <tr key={m.papel} className="align-top">
-                            <td className="whitespace-nowrap pr-3 py-1 font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text">
-                              {m.papel}
-                            </td>
-                            <td className="whitespace-nowrap pr-3 py-1 font-crimson text-xs text-arcana-text-dim">
-                              {m.tipo} · NdC {m.ndc}
-                            </td>
-                            <td className="py-1 font-crimson text-xs text-arcana-text-dim">
-                              {[
-                                ...m.habilidades,
-                                ...(m.habilidadesPendentes ?? []).map((h) => `${h} (sem verbete — decisão do Juiz)`),
-                              ].join(", ") || "—"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+                <div
+                  className={[
+                    "border-t px-2 py-2 text-center transition-colors",
+                    isSelected
+                      ? "border-arcana-gold/40 bg-arcana-gold/[0.08]"
+                      : "border-arcana-border-dim bg-arcana-surface/70",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "block truncate font-cinzel text-[10px] uppercase tracking-[0.14em]",
+                      isSelected ? "font-bold text-arcana-gold-bright" : "text-arcana-text",
+                    ].join(" ")}
+                  >
+                    {faction.nome}
+                  </span>
+                </div>
+              </button>
             );
           })}
         </div>
+
+        {/* Dossiê da facção selecionada */}
+        <div className="overflow-hidden rounded-sm border border-arcana-gold/30 bg-arcana-surface/60 sm:flex">
+          <div
+            className="relative mx-auto aspect-square w-full max-w-72 shrink-0 sm:mx-0 sm:w-72 sm:max-w-none"
+            style={{ background: EMBLEM_BG }}
+          >
+            {selectedFaction.emblema && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={selectedFaction.emblema}
+                alt={selectedFaction.nome}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+          </div>
+          <div className="min-w-0 flex-1 space-y-3 border-t border-arcana-border-dim p-5 sm:border-l sm:border-t-0">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="arcana-heading text-xl tracking-[0.14em]">
+                  {selectedFaction.nome}
+                </h3>
+                <div className="arcana-heading-bar w-32" />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim">
+                  {selectedFaction.categoria === "lei" ? "Lei" : "Gangue"}
+                </span>
+                <PageRef paginas={selectedFaction.paginas} />
+              </div>
+            </div>
+
+            <p className="font-crimson text-sm italic text-arcana-text-dim">
+              {selectedFaction.resumo}
+            </p>
+
+            <table className="w-full">
+              <tbody>
+                {selectedFaction.membros.map((m) => (
+                  <tr key={m.papel} className="align-top">
+                    <td className="whitespace-nowrap pr-3 py-1 font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text">
+                      {m.papel}
+                    </td>
+                    <td className="whitespace-nowrap pr-3 py-1 font-crimson text-xs text-arcana-text-dim">
+                      {m.tipo} · NdC {m.ndc}
+                    </td>
+                    <td className="py-1 font-crimson text-xs text-arcana-text-dim">
+                      {[
+                        ...m.habilidades,
+                        ...(m.habilidadesPendentes ?? []).map(
+                          (h) => `${h} (sem verbete — decisão do Juiz)`,
+                        ),
+                      ].join(", ") || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="pt-1">
+              {canonIds.has(selectedFaction.id) ? (
+                <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
+                  ✓ Na campanha
+                </span>
+              ) : (
+                <GoldButton
+                  onClick={() => addCanon(selectedFaction.id)}
+                  disabled={busy === selectedFaction.id}
+                >
+                  {busy === selectedFaction.id ? "Adicionando..." : "Adicionar à campanha"}
+                </GoldButton>
+              )}
+            </div>
+          </div>
+        </div>
+
         <p className={hintClass}>
           &ldquo;Dedo Furioso&rdquo; e &ldquo;Artes Marciais&rdquo; aparecem em fichas publicadas mas
           não têm verbete entre as 30 habilidades — ficam registradas como pendência
@@ -276,15 +335,37 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
 
   return (
     <ElementCard>
+      {/* Plaqueta do brasão — sangra até as bordas da carta */}
+      {data.emblema && (
+        <div
+          className="relative -mx-4 -mt-4 mb-3 h-44 overflow-hidden rounded-t-[3px] border-b border-arcana-border-dim"
+          style={{ background: EMBLEM_BG }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.emblema}
+            alt={data.nome}
+            loading="lazy"
+            className="absolute left-1/2 top-1/2 h-full -translate-x-1/2 -translate-y-1/2"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 45%, rgba(209,171,85,0.10), transparent 60%)",
+              boxShadow: "inset 0 -14px 24px rgba(11,11,20,0.55)",
+            }}
+          />
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <FactionEmblem src={data.emblema} alt={data.nome} size="lg" />
-          <div className="flex min-w-0 items-center gap-2">
-            <h3 className="truncate font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
-              {data.nome}
-            </h3>
-            <OriginBadge origem={data.origem} />
-          </div>
+        <div className="flex min-w-0 items-center gap-2">
+          <h3 className="truncate font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
+            {data.nome}
+          </h3>
+          <OriginBadge origem={data.origem} />
         </div>
         <PageRef paginas={data.paginas} />
       </div>

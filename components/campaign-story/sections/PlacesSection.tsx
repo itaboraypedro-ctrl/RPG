@@ -11,6 +11,7 @@ import {
 import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { ImageSlot } from "../ImageSlot";
+import { WorldMap } from "../WorldMap";
 import {
   ElementCard,
   EmptyHint,
@@ -34,7 +35,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
   const canonIdsInCampaign = new Set(
     elements
       .map((el) => (el.data as CampaignPlaceData).canonId)
-      .filter(Boolean),
+      .filter((id): id is string => Boolean(id)),
   );
 
   async function addCanon(placeId: string) {
@@ -74,6 +75,28 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
           onDone={() => setCreating(false)}
         />
       )}
+
+      {/* Mapa do Oeste — navegação estilo Google Maps sobre o mapa oficial */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+            Mapa do Oeste
+          </p>
+          <p className={hintClass}>
+            Arraste para navegar, use a roda ou a pinça para aproximar; clique num
+            lugar para ver e adicionar.
+          </p>
+        </div>
+        <WorldMap
+          addedIds={canonIdsInCampaign}
+          busyId={busy}
+          onAdd={(id) => void addCanon(id)}
+        />
+        <p className={hintClass}>
+          A Trincheira do Carvão não aparece no mapa oficial — encontre-a na galeria
+          do cânone abaixo.
+        </p>
+      </div>
 
       {/* Lugares na campanha */}
       <div className="space-y-3">

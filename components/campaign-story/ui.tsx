@@ -55,10 +55,11 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="max-w-2xl space-y-1">
-        <h2 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright">
-          {title}
-        </h2>
+      <div className="max-w-2xl space-y-1.5">
+        <div>
+          <h2 className="arcana-heading text-2xl tracking-[0.14em]">{title}</h2>
+          <div className="arcana-heading-bar w-40" />
+        </div>
         <p className="font-crimson text-sm italic text-arcana-text-dim">{description}</p>
       </div>
       {action}

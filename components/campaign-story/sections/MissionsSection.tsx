@@ -56,7 +56,7 @@ export function MissionsSection({ api }: { api: StoryHubApi }) {
       />
 
       {lastDraw && draft && (
-        <div className="rounded-sm border border-arcana-gold/30 bg-arcana-gold/5 px-4 py-3">
+        <div className="arcana-gilded rounded-sm px-4 py-3">
           <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Sorteio (p. 104) — naipes ignorados
           </p>

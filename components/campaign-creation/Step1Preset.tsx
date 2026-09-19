@@ -50,7 +50,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
             <p className="font-cinzel text-[10px] uppercase tracking-[0.4em] text-arcana-gold">
               {SACRAMENTO_META.subtitulo}
             </p>
-            <h3 className="mt-1 font-cinzel text-2xl uppercase tracking-[0.15em] text-arcana-gold-bright">
+            <h3 className="mt-1 font-cinzel font-black text-2xl uppercase tracking-[0.15em] text-arcana-gold-bright">
               {SACRAMENTO_META.nome}
             </h3>
           </div>

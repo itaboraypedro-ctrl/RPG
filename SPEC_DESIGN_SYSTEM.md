@@ -1,6 +1,6 @@
 # SPEC — Design System ARCANA v2 ("Ouro Vivo")
 
-> Versão 2.0, 19/09/2026. Substitui os pilares visuais implícitos do tema `arcana-*` em `app/globals.css`.
+> Versão 2.1, 19/09/2026. Substitui os pilares visuais implícitos do tema `arcana-*` em `app/globals.css`.
 > Escopo: tokens de cor, contraste, tipografia de UI, botões, inputs, selects/dropdowns, scrollbars, chips, painéis e vidro fosco. O namespace `rpg-*` (ficha in-game) está fora do escopo desta versão.
 
 ## 1. Análise do estado anterior (v1)
@@ -28,9 +28,15 @@ Referências de direção: menus de Baldur's Gate 3, Diablo IV e Elden Ring — 
 
 1. **Contraste é sagrado.** Texto de leitura ≥ 7:1; texto secundário ≥ 4,5:1; nunca aplicar opacidade `< /70` em texto. O escuro vem do *fundo*, não do texto.
 2. **Três camadas de profundidade, visíveis.** `bg → surface → surface-2/3` com passos perceptíveis + borda + luz interna no topo (`inset 0 1px 0 rgba(255,255,255,.05)`). Elevação = borda mais clara + sombra maior, não só cor.
+
+   **2.2 (v2.1) Zonas tonais — a UI não é uma penumbra só.** Três materiais com temperatura própria dão ritmo à tela:
+   - **Couro/vinho** (`--leather`, `--leather-2` + `.arcana-sidebar`/`-item`/`-item-active`): navegação lateral e tab bars — zona quente, distinta do conteúdo.
+   - **Pergaminho** (`--parchment`, `--parchment-2`, `--ink`, `--ink-dim` + `.arcana-parchment`): o **ponto de luz** da interface — cartaz da campanha, destaques de leitura. Fundo claro, tinta escura, sempre com textura de vinheta interna.
+   - **Faixa gilded** (`.arcana-gilded`): zona dourada translúcida para stats derivados, sorteios de cartas e destaques mecânicos.
+   Tokens: `leather #261318 / #331b22`, `parchment #ead9b8 / #d9c69e`, `ink #2b1e12` (12,5:1 sobre parchment), `ink-dim #5c4a33` (5,6:1).
 3. **Ouro vivo, não ouro sujo.** O dourado é o metal da UI: gradientes verticais (luz de cima), brilho no hover, glow contido (nunca >24px). Estados: repouso → hover (acende) → active (pressiona, `translateY(1px)`) → focus-visible (anel dourado 2px).
 4. **Vidro fosco como material de chrome.** Headers, footers, sidebars e overlays usam `.arcana-glass` (blur 16px + saturação + borda de 1px translúcida). Conteúdo de leitura nunca fica sobre blur.
-5. **Tipografia de UI legível.** Cinzel small-caps para chrome com **mínimo 10px**; tracking máximo `0.3em`; Crimson para prosa com mínimo 14px.
+5. **Tipografia de UI legível — e com peso onde é hierarquia.** Cinzel small-caps para chrome com **mínimo 10px**; tracking máximo `0.3em`; Crimson para prosa com mínimo 14px. **(v2.1)** Títulos de seção e de etapa usam **Cinzel Black (900)** via `.arcana-heading` + fio dourado `.arcana-heading-bar`; títulos de card ficam em 400–700 — o peso 900 é reservado a um título por tela.
 6. **Todo controle nativo é vestido.** Scrollbar, select, dropdown, checkbox/toggle têm estilo próprio — nenhum widget cinza de browser no meio do jogo.
 
 ## 3. Tokens v2

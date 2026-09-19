@@ -52,12 +52,15 @@ export function StepIndicator({
         <p className="font-cinzel text-[10px] uppercase tracking-[0.45em] text-arcana-text-dim">
           Etapa {currentStep} de {total}
         </p>
-        <h2
-          className="font-cinzel uppercase tracking-[0.22em] text-arcana-gold-bright leading-none"
-          style={{ fontSize: "clamp(1.4rem, 2.2vw, 1.85rem)" }}
-        >
-          {currentLabel}
-        </h2>
+        <div>
+          <h2
+            className="arcana-heading tracking-[0.18em] leading-none"
+            style={{ fontSize: "clamp(1.4rem, 2.2vw, 1.85rem)" }}
+          >
+            {currentLabel}
+          </h2>
+          <div className="arcana-heading-bar w-32" />
+        </div>
       </div>
 
       {/* Segmented progress bar */}

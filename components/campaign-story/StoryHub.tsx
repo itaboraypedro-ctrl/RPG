@@ -187,7 +187,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
               <p className="font-cinzel text-[10px] uppercase tracking-[0.4em] text-arcana-gold">
                 Hub de História · Sacramento
               </p>
-              <h1 className="truncate font-cinzel text-base uppercase tracking-[0.15em] text-arcana-gold-bright">
+              <h1 className="truncate font-cinzel text-base font-bold uppercase tracking-[0.15em] text-arcana-gold-bright">
                 {session.title}
               </h1>
             </div>
@@ -232,7 +232,10 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
       {/* Corpo: nav lateral + conteúdo */}
       <div className="flex min-h-0 flex-1">
         {/* Sidebar desktop */}
-        <nav className="hidden w-56 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-arcana-border-dim p-3 lg:flex">
+        <nav className="arcana-sidebar hidden w-60 shrink-0 flex-col gap-1 overflow-y-auto p-3 lg:flex">
+          <p className="px-3 pb-2 pt-1 font-cinzel text-[10px] font-bold uppercase tracking-[0.35em] text-arcana-gold">
+            Grimório
+          </p>
           {SECTIONS.map((section) => {
             const isActive = active === section.id;
             const count = countOf(section.kind);
@@ -242,15 +245,20 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
                 type="button"
                 onClick={() => setActive(section.id)}
                 className={[
-                  "flex items-center justify-between rounded-sm px-3 py-2.5 text-left font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
-                  isActive
-                    ? "bg-arcana-gold/10 text-arcana-gold border-l-2 border-arcana-gold"
-                    : "text-arcana-text-dim hover:bg-white/[0.03] hover:text-arcana-text border-l-2 border-transparent",
+                  "arcana-sidebar-item flex items-center justify-between rounded-sm px-3 py-2.5 text-left font-cinzel text-[11px] uppercase tracking-[0.18em]",
+                  isActive ? "arcana-sidebar-item-active font-bold" : "",
                 ].join(" ")}
               >
                 <span>{section.label}</span>
                 {count > 0 && (
-                  <span className="font-crimson text-[11px] text-arcana-text-dim">
+                  <span
+                    className={[
+                      "min-w-[1.4rem] rounded-full px-1.5 py-0.5 text-center font-crimson text-[11px]",
+                      isActive
+                        ? "bg-arcana-gold/25 text-arcana-gold-bright"
+                        : "bg-white/[0.06] text-arcana-text-dim",
+                    ].join(" ")}
+                  >
                     {count}
                   </span>
                 )}
@@ -261,7 +269,10 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
 
         {/* Tabs mobile */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="shrink-0 overflow-x-auto border-b border-arcana-border-dim lg:hidden">
+          <div
+            className="shrink-0 overflow-x-auto border-b border-arcana-border-dim lg:hidden"
+            style={{ background: "linear-gradient(165deg, var(--color-arcana-leather-2), var(--color-arcana-leather))" }}
+          >
             <div className="flex gap-1 px-3 py-2" style={{ scrollbarWidth: "none" }}>
               {SECTIONS.map((section) => (
                 <button
@@ -271,8 +282,8 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
                   className={[
                     "shrink-0 rounded-sm px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
                     active === section.id
-                      ? "bg-arcana-gold text-arcana-bg"
-                      : "text-arcana-text-dim",
+                      ? "bg-arcana-gold font-bold text-arcana-bg"
+                      : "text-arcana-text/75",
                   ].join(" ")}
                 >
                   {section.label}

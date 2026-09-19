@@ -61,7 +61,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
       />
 
       {lastDraw && draft && (
-        <div className="rounded-sm border border-arcana-gold/30 bg-arcana-gold/5 px-4 py-3">
+        <div className="arcana-gilded rounded-sm px-4 py-3">
           <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Gerador do livro (pp. 119–120) — uma carta por coluna, reação pelo naipe da última
           </p>
@@ -284,7 +284,7 @@ function NpcForm({
               </Field>
             </div>
 
-            <div className="flex flex-wrap gap-4 rounded-sm border border-arcana-border/40 bg-arcana-surface/80 px-4 py-3">
+            <div className="arcana-gilded flex flex-wrap gap-4 rounded-sm px-4 py-3">
               <DerivedStat label="Vida" value={derived.vida} />
               <DerivedStat label="Dor" value={derived.dor} />
               <DerivedStat label="Defesa" value={derived.defesa} />

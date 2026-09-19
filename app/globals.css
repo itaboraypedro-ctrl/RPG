@@ -36,6 +36,15 @@
   --color-arcana-text: #f2e6cf;
   --color-arcana-text-dim: #b5a68c;
   --color-arcana-text-muted: #807460;
+
+  /* Zonas tonais v2.1 — a UI não é uma penumbra só (SPEC §2.2):
+     couro/vinho para navegação, pergaminho claro como ponto de luz. */
+  --color-arcana-leather: #261318;
+  --color-arcana-leather-2: #331b22;
+  --color-arcana-parchment: #ead9b8;
+  --color-arcana-parchment-2: #d9c69e;
+  --color-arcana-ink: #2b1e12;
+  --color-arcana-ink-dim: #5c4a33;
 }
 
 @theme inline {
@@ -72,6 +81,12 @@
   --color-arcana-text: var(--color-arcana-text);
   --color-arcana-text-dim: var(--color-arcana-text-dim);
   --color-arcana-text-muted: var(--color-arcana-text-muted);
+  --color-arcana-leather: var(--color-arcana-leather);
+  --color-arcana-leather-2: var(--color-arcana-leather-2);
+  --color-arcana-parchment: var(--color-arcana-parchment);
+  --color-arcana-parchment-2: var(--color-arcana-parchment-2);
+  --color-arcana-ink: var(--color-arcana-ink);
+  --color-arcana-ink-dim: var(--color-arcana-ink-dim);
 
   --font-cinzel: var(--font-cinzel);
   --font-crimson: var(--font-crimson);
@@ -390,6 +405,65 @@ html {
   color: var(--color-arcana-gold-bright);
   box-shadow: 0 0 12px rgba(209, 171, 85, 0.22), inset 0 1px 0 rgba(255, 245, 215, 0.12);
   transition: all 130ms ease;
+}
+
+/* ─── Zonas tonais v2.1 — §2.2 ─── */
+
+/* Navegação lateral: couro/vinho quente, zona distinta do conteúdo */
+.arcana-sidebar {
+  background:
+    linear-gradient(165deg, var(--color-arcana-leather-2) 0%, var(--color-arcana-leather) 45%, #170d11 100%);
+  border-right: 1px solid rgba(209, 171, 85, 0.18);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.arcana-sidebar-item {
+  color: rgba(242, 230, 207, 0.72);
+  border-left: 2px solid transparent;
+  transition: all 130ms ease;
+}
+.arcana-sidebar-item:hover {
+  background: rgba(209, 171, 85, 0.08);
+  color: var(--color-arcana-text);
+}
+.arcana-sidebar-item-active {
+  background: linear-gradient(90deg, rgba(209, 171, 85, 0.22), rgba(209, 171, 85, 0.05));
+  border-left: 2px solid var(--color-arcana-gold);
+  color: var(--color-arcana-gold-bright);
+  box-shadow: inset 0 1px 0 rgba(255, 245, 215, 0.08);
+}
+
+/* Pergaminho: o ponto de LUZ da interface (cartaz, destaques) */
+.arcana-parchment {
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 0%, var(--color-arcana-parchment) 0%, var(--color-arcana-parchment-2) 70%, #c9b48a 100%);
+  color: var(--color-arcana-ink);
+  border: 1px solid #a68c5e;
+  box-shadow:
+    inset 0 0 40px rgba(120, 90, 40, 0.22),
+    inset 0 1px 0 rgba(255, 250, 235, 0.7),
+    0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Faixa dourada realçada — zona de cor marcante para stats/destaques */
+.arcana-gilded {
+  background: linear-gradient(180deg, rgba(209, 171, 85, 0.16), rgba(209, 171, 85, 0.05));
+  border: 1px solid rgba(209, 171, 85, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 245, 215, 0.12);
+}
+
+/* Título de seção: Cinzel pesado + fio dourado que sangra para a direita */
+.arcana-heading {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--color-arcana-gold-bright);
+  text-shadow: 0 2px 18px rgba(209, 171, 85, 0.35);
+}
+.arcana-heading-bar {
+  height: 2px;
+  margin-top: 0.4rem;
+  background: linear-gradient(90deg, var(--color-arcana-gold) 0%, rgba(209, 171, 85, 0.4) 45%, transparent 100%);
+  border-radius: 2px;
 }
 
 /* ─── Card com hover — §4.6 ─── */

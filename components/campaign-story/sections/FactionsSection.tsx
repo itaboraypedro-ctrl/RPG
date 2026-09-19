@@ -338,15 +338,30 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
       {/* Plaqueta do brasão — sangra até as bordas da carta */}
       {data.emblema && (
         <div
-          className="relative -mx-4 -mt-4 mb-3 h-44 overflow-hidden rounded-t-[3px] border-b border-arcana-border-dim"
+          className="relative -mx-4 -mt-4 mb-3 h-48 overflow-hidden rounded-t-[3px] border-b border-arcana-border-dim"
           style={{ background: EMBLEM_BG }}
         >
+          {/* O próprio brasão, ampliado e desfocado, forra a faixa inteira */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.emblema}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full scale-150 object-cover opacity-60 blur-2xl saturate-125"
+          />
+          {/* Medalhão nítido por cima, bordas laterais fundidas por máscara */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={data.emblema}
             alt={data.nome}
             loading="lazy"
             className="absolute left-1/2 top-1/2 h-full -translate-x-1/2 -translate-y-1/2"
+            style={{
+              maskImage:
+                "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%)",
+            }}
           />
           <div
             aria-hidden
@@ -354,7 +369,7 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
             style={{
               background:
                 "radial-gradient(circle at 50% 45%, rgba(209,171,85,0.10), transparent 60%)",
-              boxShadow: "inset 0 -14px 24px rgba(11,11,20,0.55)",
+              boxShadow: "inset 0 -16px 26px rgba(11,11,20,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
           />
         </div>

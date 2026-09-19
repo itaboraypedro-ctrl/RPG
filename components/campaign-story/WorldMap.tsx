@@ -16,7 +16,93 @@ const MIN_W = 220; // zoom máximo ~4,5×
 
 type Pt = readonly [number, number];
 
-/* ─── Geometria procedural ─── */
+/* ─── Geometria procedural ───
+   Nada aqui é "perfeito" de propósito: bordas, ruas e vegetação passam por
+   ruído fractal determinístico (PRNG mulberry32 + duas oitavas de
+   deslocamento) — a mesma seed gera sempre o mesmo Oeste. */
+
+/** PRNG determinístico e barato. */
+function mulberry32(seed: number) {
+  let a = seed >>> 0 || 1;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Reamostra a polilinha em passos ~step (mantém extremos). */
+function resample(pts: Pt[], step: number): Pt[] {
+  const out: Pt[] = [pts[0]];
+  let carry = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[i + 1];
+    const seg = Math.hypot(x2 - x1, y2 - y1);
+    if (seg === 0) continue;
+    let t = step - carry;
+    while (t < seg) {
+      out.push([x1 + ((x2 - x1) * t) / seg, y1 + ((y2 - y1) * t) / seg]);
+      t += step;
+    }
+    carry = (carry + seg) % step;
+  }
+  out.push(pts[pts.length - 1]);
+  return out;
+}
+
+/** Ruído fractal: oitavas de reamostragem + deslocamento normal aleatório. */
+function roughen(
+  pts: Pt[],
+  seed: number,
+  passes: { step: number; amp: number }[],
+): Pt[] {
+  const r = mulberry32(seed * 2654435761);
+  let cur = pts;
+  for (const pass of passes) {
+    cur = resample(cur, pass.step);
+    const ns = normalsOf(cur);
+    cur = cur.map((p, i) =>
+      i === 0 || i === cur.length - 1
+        ? p
+        : ([
+            p[0] + ns[i][0] * (r() - 0.5) * 2 * pass.amp,
+            p[1] + ns[i][1] * (r() - 0.5) * 2 * pass.amp,
+          ] as const),
+    );
+  }
+  return cur;
+}
+
+/** Mancha orgânica com raio função do ângulo (permite teste de contenção). */
+function makeBlob(cx: number, cy: number, rx: number, ry: number, seed: number, n = 26) {
+  const r = mulberry32(seed * 97 + 3);
+  const ph1 = r() * 6.283;
+  const ph2 = r() * 6.283;
+  const ph3 = r() * 6.283;
+  const jit = (a: number) =>
+    0.8 + 0.13 * Math.sin(a * 3 + ph1) + 0.08 * Math.sin(a * 5 + ph2) + 0.05 * Math.sin(a * 9 + ph3);
+  const pts: Pt[] = Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2;
+    const j = jit(a) + (r() - 0.5) * 0.07;
+    return [cx + Math.cos(a) * rx * j, cy + Math.sin(a) * ry * j] as const;
+  });
+  const mid = (i: number) =>
+    [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2] as const;
+  let d = `M${mid(n - 1)[0].toFixed(1)},${mid(n - 1)[1].toFixed(1)}`;
+  for (let i = 0; i < n; i++) {
+    d += ` Q${pts[i][0].toFixed(1)},${pts[i][1].toFixed(1)} ${mid(i)[0].toFixed(1)},${mid(i)[1].toFixed(1)}`;
+  }
+  d += " Z";
+  const inside = (x: number, y: number, margin = 0) => {
+    const dx = (x - cx) / rx;
+    const dy = (y - cy) / ry;
+    return Math.hypot(dx, dy) < jit(Math.atan2(dy, dx)) - margin;
+  };
+  return { path: d, inside };
+}
 
 /** Polilinha suavizada (quadráticas pelos pontos médios), aberta. */
 function smoothOpen(pts: Pt[]): string {
@@ -50,14 +136,19 @@ function offsetPolyline(pts: Pt[], dist: number, sign: 1 | -1): Pt[] {
   return pts.map((p, i) => [p[0] + ns[i][0] * dist * sign, p[1] + ns[i][1] * dist * sign] as const);
 }
 
-/** Hachuras de costa: traço curto por ponto, apontando para a água. */
-function hachures(pts: Pt[], sign: 1 | -1, len = 7): string {
+/** Hachuras de costa: traços curtos irregulares apontando para a água. */
+function hachures(pts: Pt[], sign: 1 | -1, seed: number): string {
   const ns = normalsOf(pts);
+  const r = mulberry32(seed * 811 + 13);
   return pts
     .map((p, i) => {
-      if (i % 1 !== 0) return "";
-      const n = ns[i];
-      return `M${p[0].toFixed(1)},${p[1].toFixed(1)} l${(n[0] * len * sign).toFixed(1)},${(n[1] * len * sign).toFixed(1)}`;
+      const len = 4.5 + r() * 4.5;
+      const rot = (r() - 0.5) * 0.5;
+      const cos = Math.cos(rot);
+      const sin = Math.sin(rot);
+      const nx = ns[i][0] * cos - ns[i][1] * sin;
+      const ny = ns[i][0] * sin + ns[i][1] * cos;
+      return `M${p[0].toFixed(1)},${p[1].toFixed(1)} l${(nx * len * sign).toFixed(1)},${(ny * len * sign).toFixed(1)}`;
     })
     .join(" ");
 }
@@ -85,45 +176,6 @@ function railTicks(pts: Pt[], gap = 13, half = 3.6): string {
   return d;
 }
 
-/** Ondulação orgânica: subdivide e desloca perpendicularmente por seno. */
-function wavy(pts: Pt[], amp: number, seed: number): Pt[] {
-  const out: Pt[] = [];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x1, y1] = pts[i];
-    const [x2, y2] = pts[i + 1];
-    const seg = Math.hypot(x2 - x1, y2 - y1);
-    const steps = Math.max(1, Math.round(seg / 26));
-    for (let s = 0; s < steps; s++) {
-      const t = s / steps;
-      const px = x1 + (x2 - x1) * t;
-      const py = y1 + (y2 - y1) * t;
-      const n = Math.sin((i * 3 + s) * 1.9 + seed) * amp;
-      const tx = (x2 - x1) / seg;
-      const ty = (y2 - y1) / seg;
-      out.push([px - ty * n, py + tx * n]);
-    }
-  }
-  out.push(pts[pts.length - 1]);
-  return out;
-}
-
-/** Mancha orgânica fechada (florestas, ilha, lago). */
-function blobPath(cx: number, cy: number, rx: number, ry: number, seed: number): string {
-  const n = 14;
-  const pts = Array.from({ length: n }, (_, i) => {
-    const a = (i / n) * Math.PI * 2;
-    const j = 0.78 + 0.22 * Math.sin(i * 2.7 + seed) + 0.08 * Math.sin(i * 5.1 + seed * 1.7);
-    return [cx + Math.cos(a) * rx * j, cy + Math.sin(a) * ry * j] as const;
-  });
-  const mid = (i: number) =>
-    [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2] as const;
-  let d = `M${mid(n - 1)[0].toFixed(1)},${mid(n - 1)[1].toFixed(1)}`;
-  for (let i = 0; i < n; i++) {
-    d += ` Q${pts[i][0].toFixed(1)},${pts[i][1].toFixed(1)} ${mid(i)[0].toFixed(1)},${mid(i)[1].toFixed(1)}`;
-  }
-  return d + " Z";
-}
-
 /* ─── Geografia (leitura do mapa impresso) ─── */
 
 const WEST_COAST: Pt[] = [
@@ -135,17 +187,46 @@ const EAST_COAST: Pt[] = [
   [1000, 252], [932, 272], [900, 322], [922, 362], [872, 382], [820, 432],
   [836, 478], [852, 518], [932, 548], [1000, 562],
 ];
-const WEST_WATER = `${smoothOpen(WEST_COAST)} L0,736 Z`;
-const EAST_WATER = `${smoothOpen(EAST_COAST)} L1000,562 L1000,252 Z`;
-const ISLAND = blobPath(45, 172, 30, 22, 4);
-const LAKE = blobPath(510, 232, 58, 26, 8);
+// Costas com ruído fractal — duas oitavas: recorte grande + serrilhado fino.
+const WEST_R = roughen(WEST_COAST, 71, [{ step: 34, amp: 6 }, { step: 12, amp: 2.2 }]);
+const EAST_R = roughen(EAST_COAST, 72, [{ step: 34, amp: 6 }, { step: 12, amp: 2.2 }]);
+const WEST_WATER = `${smoothOpen(WEST_R)} L0,736 Z`;
+const EAST_WATER = `${smoothOpen(EAST_R)} L1000,562 L1000,252 Z`;
+const WEST_MID = resample(WEST_R, 24).slice(1, -1);
+const EAST_MID = resample(EAST_R, 24).slice(1, -1);
+const ISLAND = makeBlob(45, 172, 30, 22, 4).path;
+const LAKE = makeBlob(510, 232, 58, 26, 8).path;
 
-const RIVERS: Pt[][] = [
-  [[520, 0], [512, 44], [530, 84], [510, 124], [492, 158], [472, 190], [466, 210]],
-  [[1000, 196], [962, 224], [948, 262], [938, 300], [928, 340], [930, 372]],
-  [[700, 0], [706, 42], [726, 72], [748, 98], [768, 124], [788, 152], [800, 180]],
+// Rios afunilados: nascem finos, engordam rumo à foz (ou somem no sertão).
+const RIVER_DEFS: { pts: Pt[]; seed: number; taper: [number, number, number] }[] = [
+  {
+    pts: [[520, 0], [512, 44], [530, 84], [510, 124], [492, 158], [472, 190], [466, 210]],
+    seed: 41,
+    taper: [1.1, 1.9, 2.8],
+  },
+  {
+    pts: [[1000, 196], [962, 224], [948, 262], [938, 300], [928, 340], [930, 372]],
+    seed: 43,
+    taper: [2.0, 2.6, 3.2],
+  },
+  {
+    pts: [[700, 0], [706, 42], [726, 72], [748, 98], [768, 124], [788, 152], [800, 180]],
+    seed: 47,
+    taper: [2.4, 1.5, 0.8],
+  },
 ];
+const RIVERS_RENDER = RIVER_DEFS.map((def) => {
+  const rp = roughen(def.pts, def.seed, [{ step: 26, amp: 4.5 }, { step: 10, amp: 1.6 }]);
+  const k = Math.floor(rp.length / 3);
+  return [
+    { d: smoothOpen(rp.slice(0, k + 1)), w: def.taper[0] },
+    { d: smoothOpen(rp.slice(k, 2 * k + 1)), w: def.taper[1] },
+    { d: smoothOpen(rp.slice(2 * k)), w: def.taper[2] },
+  ];
+});
 
+// Florestas: massa + árvores individuais (posição, tamanho e espécie
+// sorteados por seed; orla esparsa; pintadas de trás para a frente).
 const FOREST_BLOBS = [
   { cx: 200, cy: 68, rx: 92, ry: 46, seed: 3 },
   { cx: 258, cy: 194, rx: 74, ry: 44, seed: 7 },
@@ -154,7 +235,26 @@ const FOREST_BLOBS = [
   { cx: 408, cy: 364, rx: 58, ry: 30, seed: 9 },
   { cx: 666, cy: 138, rx: 62, ry: 28, seed: 13 },
 ];
-const FORESTS = FOREST_BLOBS.map((b) => blobPath(b.cx, b.cy, b.rx, b.ry, b.seed));
+type Tree = { x: number; y: number; s: number; k: 0 | 1 };
+const FOREST_DATA = FOREST_BLOBS.map((b) => {
+  const blob = makeBlob(b.cx, b.cy, b.rx, b.ry, b.seed);
+  const r = mulberry32(b.seed * 131 + 7);
+  const trees: Tree[] = [];
+  for (let gy = b.cy - b.ry - 8; gy <= b.cy + b.ry + 8; gy += 10.5) {
+    for (let gx = b.cx - b.rx - 8; gx <= b.cx + b.rx + 8; gx += 11.5) {
+      const x = gx + (r() - 0.5) * 9;
+      const y = gy + (r() - 0.5) * 8;
+      const core = blob.inside(x, y, 0.1);
+      const rim = blob.inside(x, y, -0.06);
+      if (!rim) continue;
+      if (!core && r() < 0.65) continue;
+      if (r() < 0.14) continue;
+      trees.push({ x, y, s: 2.4 + r() * 2.1, k: r() < 0.22 ? 1 : 0 });
+    }
+  }
+  trees.sort((a, bb) => a.y - bb.y);
+  return { tint: blob.path, trees };
+});
 
 const RIDGES = [
   { x1: 380, y1: 168, x2: 540, y2: 92, n: 7 },
@@ -163,6 +263,49 @@ const RIDGES = [
   { x1: 812, y1: 62, x2: 896, y2: 48, n: 4 },
   { x1: 748, y1: 160, x2: 852, y2: 132, n: 5 },
   { x1: 620, y1: 120, x2: 700, y2: 96, n: 4 },
+];
+
+// Picos individuais: tamanho variável (maiores no centro da cadeia), posição
+// com jitter, contrafortes menores e neve nas cadeias do norte.
+type Peak = { x: number; y: number; s: number; snow: boolean };
+const PEAKS: Peak[] = RIDGES.flatMap((rg, idx) => {
+  const r = mulberry32(idx * 17 + 5);
+  const snowRidge = idx === 2 || idx === 3;
+  const main: Peak[] = Array.from({ length: rg.n }, (_, i) => {
+    const t = rg.n === 1 ? 0.5 : i / (rg.n - 1);
+    const profile = 0.62 + 0.55 * Math.sin(Math.PI * t);
+    return {
+      x: rg.x1 + (rg.x2 - rg.x1) * t + (r() - 0.5) * 10,
+      y: rg.y1 + (rg.y2 - rg.y1) * t + (r() - 0.5) * 10 + (i % 2 ? 3 : -3),
+      s: (8 + r() * 4.5) * profile,
+      snow: snowRidge && r() > 0.3,
+    };
+  });
+  const foothills: Peak[] = Array.from({ length: Math.max(2, Math.round(rg.n / 2)) }, () => ({
+    x: rg.x1 + (rg.x2 - rg.x1) * r() + (r() - 0.5) * 30,
+    y: rg.y1 + (rg.y2 - rg.y1) * r() + 8 + r() * 12,
+    s: 3.5 + r() * 2.5,
+    snow: false,
+  }));
+  return [...main, ...foothills];
+}).sort((a, b) => a.y - b.y);
+
+// Manchas de envelhecimento do papel (terra e água).
+const STAINS = [
+  makeBlob(320, 120, 90, 60, 31).path,
+  makeBlob(700, 620, 110, 70, 33).path,
+  makeBlob(180, 540, 70, 50, 35).path,
+  makeBlob(560, 60, 60, 40, 37).path,
+];
+const WATER_STAINS = [makeBlob(50, 480, 38, 90, 39).path, makeBlob(930, 440, 55, 75, 43).path];
+
+// Curvas de nível decorativas.
+const CONTOURS = [
+  makeBlob(196, 222, 78, 42, 21).path,
+  makeBlob(636, 424, 84, 44, 23).path,
+  makeBlob(398, 552, 86, 40, 25).path,
+  makeBlob(748, 266, 62, 34, 27).path,
+  makeBlob(226, 492, 60, 32, 29).path,
 ];
 
 // Estradas: pontos-guia; o traçado final ganha ondulação orgânica.
@@ -186,6 +329,20 @@ const RAILS: Pt[][] = [
   [[794, 489], [758, 452], [706, 398], [658, 349]],
   [[807, 189], [748, 172], [690, 162], [638, 154], [596, 142], [562, 118], [540, 96]],
 ];
+
+// Traçado final das estradas: ruído fractal leve (nunca senoide regular).
+const ROAD_PATHS = ROADS.map((r) => ({
+  trail: r.trail,
+  d: smoothOpen(
+    roughen(
+      r.pts,
+      r.seed * 7 + 29,
+      r.trail
+        ? [{ step: 26, amp: 3 }, { step: 10, amp: 1.2 }]
+        : [{ step: 24, amp: 2.6 }, { step: 9, amp: 1.1 }],
+    ),
+  ),
+}));
 
 const CITIES: { id: string; nome: string; x: number; y: number; anchor: "left" | "right" }[] = [
   { id: "santo-ozorio", nome: "Santo Ozório", x: 39, y: 257, anchor: "right" },
@@ -486,19 +643,18 @@ export function WorldMap({
             <stop offset="0%" stopColor="#fff6df" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#fff6df" stopOpacity="0" />
           </radialGradient>
-          <pattern id="wm-trees" width="26" height="22" patternUnits="userSpaceOnUse">
-            <g fill="none" stroke="#5f6349" strokeWidth="1.1" strokeLinecap="round">
-              <path d="M6,16 C3,14 3,10 6,8 C4,6 6,3 8,4 C10,3 12,6 10,8 C13,10 13,14 10,16 M8,16v3" />
-              <path d="M19,11 C16,9 17,6 19,5 C21,6 22,9 19,11 M19,11v2.5" />
-            </g>
-          </pattern>
           <pattern id="wm-waterlines" width="34" height="12" patternUnits="userSpaceOnUse">
             <path d="M0,6 q4,-2.5 8,0 t8,0 t8,0 t8,0" fill="none" stroke="#7f97a2" strokeWidth="0.8" strokeOpacity="0.5" />
           </pattern>
         </defs>
 
-        {/* Pergaminho */}
+        {/* Pergaminho + manchas de envelhecimento */}
         <rect x="0" y="0" width={W} height={H} fill="url(#wm-parch)" />
+        <g fill="#7a6544">
+          {STAINS.map((d, i) => (
+            <path key={i} d={d} fillOpacity={i % 2 ? 0.05 : 0.07} />
+          ))}
+        </g>
 
         {/* Tintas climáticas: neve ao norte, ravina vermelha ao sul, verde nas matas */}
         {layers.terrain && (
@@ -514,44 +670,48 @@ export function WorldMap({
         <g>
           <path d={WEST_WATER} fill="#9fb2ba" />
           <path d={EAST_WATER} fill="#9fb2ba" />
-          <path d={ISLAND} fill="#9fb2ba" opacity="0" />
           <path d={WEST_WATER} fill="url(#wm-waterlines)" />
           <path d={EAST_WATER} fill="url(#wm-waterlines)" />
+          <g fill="#47606c">
+            {WATER_STAINS.map((d, i) => (
+              <path key={i} d={d} fillOpacity="0.1" />
+            ))}
+          </g>
           <path d={LAKE} fill="#9fb2ba" />
           <path d={LAKE} fill="url(#wm-waterlines)" />
         </g>
 
         {/* Ilha (terra sobre a água) */}
-        <path d={ISLAND} fill="url(#wm-parch)" stroke="#4a3a26" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+        <path d={ISLAND} fill="url(#wm-parch)" stroke="#4a3a26" strokeWidth="1.2" />
 
-        {/* Linhas de costa + hachuras + ondas de margem */}
-        <g fill="none" vectorEffect="non-scaling-stroke">
-          <path d={smoothOpen(WEST_COAST)} stroke="#4a3a26" strokeWidth="1.6" vectorEffect="non-scaling-stroke" />
-          <path d={smoothOpen(EAST_COAST)} stroke="#4a3a26" strokeWidth="1.6" vectorEffect="non-scaling-stroke" />
-          <path d={hachures(WEST_COAST.slice(1, -1), -1)} stroke="#4a3a26" strokeOpacity="0.4" strokeWidth="0.9" vectorEffect="non-scaling-stroke" />
-          <path d={hachures(EAST_COAST.slice(1, -1), -1)} stroke="#4a3a26" strokeOpacity="0.4" strokeWidth="0.9" vectorEffect="non-scaling-stroke" />
-          <path d={smoothOpen(offsetPolyline(WEST_COAST, 9, -1))} stroke="#7f97a2" strokeOpacity="0.55" strokeWidth="0.9" strokeDasharray="10 6" vectorEffect="non-scaling-stroke" />
-          <path d={smoothOpen(offsetPolyline(WEST_COAST, 18, -1))} stroke="#7f97a2" strokeOpacity="0.3" strokeWidth="0.9" strokeDasharray="8 8" vectorEffect="non-scaling-stroke" />
-          <path d={smoothOpen(offsetPolyline(EAST_COAST, 9, -1))} stroke="#7f97a2" strokeOpacity="0.55" strokeWidth="0.9" strokeDasharray="10 6" vectorEffect="non-scaling-stroke" />
-          <path d={smoothOpen(offsetPolyline(EAST_COAST, 18, -1))} stroke="#7f97a2" strokeOpacity="0.3" strokeWidth="0.9" strokeDasharray="8 8" vectorEffect="non-scaling-stroke" />
+        {/* Costa: banda rasa, linha, hachuras irregulares e ondas de margem */}
+        <g fill="none">
+          <path d={smoothOpen(offsetPolyline(WEST_MID, 4, -1))} stroke="#8ba3ae" strokeOpacity="0.5" strokeWidth="6" />
+          <path d={smoothOpen(offsetPolyline(EAST_MID, 4, -1))} stroke="#8ba3ae" strokeOpacity="0.5" strokeWidth="6" />
+          <path d={smoothOpen(WEST_R)} stroke="#4a3a26" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          <path d={smoothOpen(EAST_R)} stroke="#4a3a26" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          <path d={hachures(WEST_MID, -1, 51)} stroke="#4a3a26" strokeOpacity="0.38" strokeWidth="0.85" vectorEffect="non-scaling-stroke" />
+          <path d={hachures(EAST_MID, -1, 53)} stroke="#4a3a26" strokeOpacity="0.38" strokeWidth="0.85" vectorEffect="non-scaling-stroke" />
+          <path d={smoothOpen(offsetPolyline(WEST_MID, 12, -1))} stroke="#7f97a2" strokeOpacity="0.5" strokeWidth="0.9" strokeDasharray="9 7" vectorEffect="non-scaling-stroke" />
+          <path d={smoothOpen(offsetPolyline(WEST_MID, 22, -1))} stroke="#7f97a2" strokeOpacity="0.28" strokeWidth="0.9" strokeDasharray="6 9" vectorEffect="non-scaling-stroke" />
+          <path d={smoothOpen(offsetPolyline(EAST_MID, 12, -1))} stroke="#7f97a2" strokeOpacity="0.5" strokeWidth="0.9" strokeDasharray="9 7" vectorEffect="non-scaling-stroke" />
+          <path d={smoothOpen(offsetPolyline(EAST_MID, 22, -1))} stroke="#7f97a2" strokeOpacity="0.28" strokeWidth="0.9" strokeDasharray="6 9" vectorEffect="non-scaling-stroke" />
         </g>
 
-        {/* Rios */}
+        {/* Rios afunilados (escalam com o zoom, como terreno) */}
         <g fill="none" stroke="#8aa2ad" strokeLinecap="round">
-          {RIVERS.map((r, i) => (
-            <path key={i} d={smoothOpen(wavy(r, 3, i * 2 + 1))} strokeWidth={2.4} vectorEffect="non-scaling-stroke" />
-          ))}
+          {RIVERS_RENDER.map((segs, i) =>
+            segs.map((s, si) => <path key={`${i}-${si}`} d={s.d} strokeWidth={s.w} />),
+          )}
         </g>
 
         {layers.terrain && (
           <g>
             {/* Curvas de nível */}
             <g fill="none" stroke="#8a7350" strokeOpacity="0.2" strokeWidth="0.8">
-              <path d={blobPath(196, 222, 78, 42, 21)} />
-              <path d={blobPath(636, 424, 84, 44, 23)} />
-              <path d={blobPath(398, 552, 86, 40, 25)} />
-              <path d={blobPath(748, 266, 62, 34, 27)} />
-              <path d={blobPath(226, 492, 60, 32, 29)} />
+              {CONTOURS.map((d, i) => (
+                <path key={i} d={d} />
+              ))}
             </g>
 
             {/* Relevo sombreado: sombra a SE, luz a NO de cada serra */}
@@ -576,30 +736,68 @@ export function WorldMap({
               );
             })}
 
-            {/* Florestas */}
-            {FORESTS.map((d, i) => (
+            {/* Florestas: sombra da massa, tinta e árvores individuais */}
+            {FOREST_DATA.map((f, i) => (
               <g key={i}>
-                <path d={d} fill="#b3ab86" fillOpacity="0.35" />
-                <path d={d} fill="url(#wm-trees)" />
-                <path d={d} fill="none" stroke="#6d6a4e" strokeOpacity="0.22" strokeWidth="1" />
+                <path d={f.tint} transform="translate(3 4)" fill="#5c5f42" fillOpacity="0.2" />
+                <path d={f.tint} fill="#a9a781" fillOpacity="0.3" />
+                {f.trees.map((t, ti) =>
+                  t.k === 1 ? (
+                    <g key={ti} transform={`translate(${t.x.toFixed(1)} ${t.y.toFixed(1)})`}>
+                      <ellipse cx={t.s * 0.4} cy={t.s * 0.55} rx={t.s * 0.9} ry={t.s * 0.5} fill="#565d3b" opacity="0.26" />
+                      <path
+                        d={`M0,${(-t.s * 1.6).toFixed(1)} L${(t.s * 0.75).toFixed(1)},${(t.s * 0.35).toFixed(1)} L${(-t.s * 0.75).toFixed(1)},${(t.s * 0.35).toFixed(1)} Z`}
+                        fill="#7f8c5b"
+                        stroke="#465030"
+                        strokeWidth="0.6"
+                      />
+                      <path d={`M0,${(t.s * 0.35).toFixed(1)} v${(t.s * 0.5).toFixed(1)}`} stroke="#465030" strokeWidth="0.7" />
+                    </g>
+                  ) : (
+                    <g key={ti} transform={`translate(${t.x.toFixed(1)} ${t.y.toFixed(1)})`}>
+                      <ellipse cx={t.s * 0.4} cy={t.s * 0.5} rx={t.s * 1.05} ry={t.s * 0.6} fill="#565d3b" opacity="0.26" />
+                      <path d={`M0,${t.s.toFixed(1)} v${(t.s * 0.45).toFixed(1)}`} stroke="#465030" strokeWidth="0.7" />
+                      <circle r={t.s} fill="#99a36f" stroke="#4f5836" strokeWidth="0.6" />
+                      <circle cx={t.s * 0.5} cy={-t.s * 0.35} r={t.s * 0.55} fill="#a4ad7a" stroke="#4f5836" strokeWidth="0.5" />
+                    </g>
+                  ),
+                )}
               </g>
             ))}
 
-            {/* Cordilheiras */}
-            <g fill="none" stroke="#4a3a26" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              {RIDGES.map((r, ri) =>
-                Array.from({ length: r.n }, (_, i) => {
-                  const t = i / (r.n - 1);
-                  const cx = r.x1 + (r.x2 - r.x1) * t;
-                  const cy = r.y1 + (r.y2 - r.y1) * t + (i % 2 ? 4 : -4);
-                  return (
+            {/* Cordilheiras: picos com face iluminada e face hachurada */}
+            <g strokeLinejoin="round" strokeLinecap="round">
+              {PEAKS.map((p, i) => (
+                <g key={i} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}>
+                  <path
+                    d={`M${-p.s},${(p.s * 0.6).toFixed(1)} L0,${-p.s} L${p.s},${(p.s * 0.6).toFixed(1)}`}
+                    fill="#e9dab4"
+                    fillOpacity="0.6"
+                    stroke="#4a3a26"
+                    strokeWidth="1.3"
+                  />
+                  <path
+                    d={`M0,${-p.s} L${p.s},${(p.s * 0.6).toFixed(1)} L${(p.s * 0.3).toFixed(1)},${(p.s * 0.52).toFixed(1)} Z`}
+                    fill="#4a3a26"
+                    fillOpacity="0.22"
+                    stroke="none"
+                  />
+                  <path
+                    d={`M${(p.s * 0.16).toFixed(1)},${(-p.s * 0.2).toFixed(1)} L${(p.s * 0.5).toFixed(1)},${(p.s * 0.28).toFixed(1)} M${(p.s * 0.02).toFixed(1)},${(p.s * 0.12).toFixed(1)} L${(p.s * 0.26).toFixed(1)},${(p.s * 0.45).toFixed(1)}`}
+                    fill="none"
+                    stroke="#4a3a26"
+                    strokeOpacity="0.4"
+                    strokeWidth="0.7"
+                  />
+                  {p.snow && (
                     <path
-                      key={`${ri}-${i}`}
-                      d={`M${cx - 9},${cy + 6} L${cx},${cy - 7} L${cx + 9},${cy + 6} M${cx},${cy - 7} L${cx + 3},${cy - 1}`}
+                      d={`M${(-p.s * 0.26).toFixed(1)},${(-p.s * 0.42).toFixed(1)} L0,${-p.s} L${(p.s * 0.26).toFixed(1)},${(-p.s * 0.42).toFixed(1)} L${(p.s * 0.1).toFixed(1)},${(-p.s * 0.3).toFixed(1)} L${(-p.s * 0.1).toFixed(1)},${(-p.s * 0.33).toFixed(1)} Z`}
+                      fill="#f3f5f1"
+                      stroke="none"
                     />
-                  );
-                }),
-              )}
+                  )}
+                </g>
+              ))}
             </g>
           </g>
         )}
@@ -607,17 +805,16 @@ export function WorldMap({
         {/* Estradas e ferrovias — dupla linha gravada + travessas */}
         {layers.roads && (
           <g fill="none" strokeLinecap="round">
-            {ROADS.map((r, i) => {
-              const d = smoothOpen(wavy(r.pts, r.trail ? 3 : 4.5, r.seed));
-              return r.trail ? (
-                <path key={i} d={d} stroke="#3a2c1a" strokeOpacity="0.65" strokeWidth="1.3" strokeDasharray="1 6" vectorEffect="non-scaling-stroke" />
+            {ROAD_PATHS.map((r, i) =>
+              r.trail ? (
+                <path key={i} d={r.d} stroke="#3a2c1a" strokeOpacity="0.65" strokeWidth="1.3" strokeDasharray="1 6" vectorEffect="non-scaling-stroke" />
               ) : (
                 <g key={i}>
-                  <path d={d} stroke="#3a2c1a" strokeOpacity="0.75" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
-                  <path d={d} stroke="#d8c496" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
+                  <path d={r.d} stroke="#3a2c1a" strokeOpacity="0.75" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
+                  <path d={r.d} stroke="#d8c496" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
                 </g>
-              );
-            })}
+              ),
+            )}
             {RAILS.map((r, i) => (
               <g key={`rail-${i}`} stroke="#2b1e12">
                 <path d={smoothOpen(r)} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />

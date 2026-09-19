@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import type {
   CampaignConfig,
   CampaignElement,
@@ -87,6 +88,78 @@ export async function updateElement(
 
   revalidatePath(`/campaigns/${sessionId}/story`);
   return { ok: true, element: element as CampaignElement };
+}
+
+// ─── Imagens de elementos (bucket campaign-images, migration 006) ───
+// Upload via service role: a autorização é a checagem de Juiz acima,
+// então o bucket não precisa de policies de escrita.
+
+const IMAGE_BUCKET = "campaign-images";
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const IMAGE_EXT_BY_TYPE: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+
+export async function uploadCampaignImage(
+  sessionId: string,
+  formData: FormData,
+): Promise<Ok<{ url: string }>> {
+  const ctx = await requireGmOfSession(sessionId);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Nenhuma imagem recebida." };
+  }
+  const ext = IMAGE_EXT_BY_TYPE[file.type];
+  if (!ext) {
+    return { ok: false, error: "Formato não suportado — use JPG, PNG, WebP ou GIF." };
+  }
+  if (file.size > IMAGE_MAX_BYTES) {
+    return { ok: false, error: "Imagem acima de 5 MB. Reduza e tente de novo." };
+  }
+
+  const admin = createAdminClient();
+  const path = `${sessionId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await admin.storage
+    .from(IMAGE_BUCKET)
+    .upload(path, file, { contentType: file.type });
+  if (error) {
+    const missing = /bucket/i.test(error.message) && /not.*found/i.test(error.message);
+    return {
+      ok: false,
+      error: missing
+        ? "Bucket de imagens não existe — rode a migration 006_campaign_images.sql no SQL Editor."
+        : error.message,
+    };
+  }
+
+  const { data } = admin.storage.from(IMAGE_BUCKET).getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
+}
+
+export async function deleteCampaignImage(
+  sessionId: string,
+  imageUrl: string,
+): Promise<Ok> {
+  const ctx = await requireGmOfSession(sessionId);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  // Só remove objetos da pasta desta campanha dentro do bucket.
+  const marker = `/object/public/${IMAGE_BUCKET}/`;
+  const idx = imageUrl.indexOf(marker);
+  const path = idx >= 0 ? decodeURIComponent(imageUrl.slice(idx + marker.length)) : null;
+  if (!path || !path.startsWith(`${sessionId}/`)) {
+    return { ok: false, error: "URL de imagem inválida para esta campanha." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.storage.from(IMAGE_BUCKET).remove([path]);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 export async function deleteElement(

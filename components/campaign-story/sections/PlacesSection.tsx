@@ -4,7 +4,12 @@ import { useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignPlaceData } from "@/lib/rulesets/sacramento/types";
 import { SACRAMENTO_PLACES } from "@/lib/rulesets/sacramento/places";
+import {
+  deleteCampaignImage,
+  uploadCampaignImage,
+} from "@/app/campaigns/[id]/story/actions";
 import type { StoryHubApi } from "../StoryHub";
+import { ImageSlot } from "../ImageSlot";
 import {
   ElementCard,
   EmptyHint,
@@ -141,20 +146,52 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
   );
 }
 
+/** Sobe a imagem para o storage e devolve mensagem de erro ou null. */
+async function uploadImage(
+  api: StoryHubApi,
+  file: File,
+): Promise<{ url?: string; error?: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const result = await uploadCampaignImage(api.sessionId, fd);
+  if (!result.ok) return { error: result.error };
+  return { url: result.url };
+}
+
 function NewPlaceForm({ api, onDone }: { api: StoryHubApi; onDone: () => void }) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [conflitos, setConflitos] = useState("");
+  const [image, setImage] = useState<{ file: File; preview: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+
+  function pickFile(next: File | null) {
+    if (image) URL.revokeObjectURL(image.preview);
+    setImage(next ? { file: next, preview: URL.createObjectURL(next) } : null);
+  }
 
   async function submit() {
     if (nome.trim().length < 2 || saving) return;
     setSaving(true);
+    setImageError(null);
+
+    let imagem: string | undefined;
+    if (image) {
+      const uploaded = await uploadImage(api, image.file);
+      if (uploaded.error) {
+        // Não bloqueia a criação do lugar — a imagem pode ser adicionada depois.
+        setImageError(uploaded.error);
+      }
+      imagem = uploaded.url;
+    }
+
     const data: CampaignPlaceData = {
       nome: nome.trim(),
       origem: "campanha",
       descricao: descricao.trim() || undefined,
       conflitos: conflitos.trim() || undefined,
+      imagem,
     };
     const created = await api.addElement(
       "place",
@@ -172,6 +209,31 @@ function NewPlaceForm({ api, onDone }: { api: StoryHubApi; onDone: () => void })
       </p>
       <Field label="Nome">
         <TextField value={nome} onChange={(e) => setNome(e.target.value)} maxLength={120} autoFocus />
+      </Field>
+      <Field label="Imagem" hint="Opcional — um retrato do lugar (JPG, PNG, WebP ou GIF, até 5 MB).">
+        <div className="flex items-center gap-3">
+          {image && (
+            <div className="h-16 w-24 shrink-0 overflow-hidden rounded-sm border border-arcana-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image.preview} alt="Prévia da imagem" className="h-full w-full object-cover" />
+            </div>
+          )}
+          <label className="arcana-btn-ghost arcana-btn-sm cursor-pointer">
+            {image ? "Trocar imagem" : "Escolher imagem"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+          {image && (
+            <GhostButton onClick={() => pickFile(null)}>Remover</GhostButton>
+          )}
+        </div>
+        {imageError && (
+          <p className="font-crimson text-xs italic text-arcana-danger">{imageError}</p>
+        )}
       </Field>
       <Field label="Descrição">
         <TextArea value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={2000} />
@@ -211,8 +273,37 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
     setEditing(false);
   }
 
+  async function handleUpload(file: File): Promise<string | null> {
+    const uploaded = await uploadImage(api, file);
+    if (uploaded.error || !uploaded.url) return uploaded.error ?? "Falha no envio.";
+    const previous = data.imagem;
+    await api.patchElement(element.id, {
+      data: { ...data, imagem: uploaded.url } as unknown as Record<string, unknown>,
+    });
+    if (previous) void deleteCampaignImage(api.sessionId, previous);
+    return null;
+  }
+
+  async function handleRemoveImage() {
+    if (!data.imagem) return;
+    await api.patchElement(element.id, {
+      data: { ...data, imagem: undefined } as unknown as Record<string, unknown>,
+    });
+    void deleteCampaignImage(api.sessionId, data.imagem);
+  }
+
   return (
     <ElementCard>
+      {/* Retrato do lugar — sangra até as bordas da carta */}
+      <div className="-mx-4 -mt-4 mb-3 overflow-hidden rounded-t-[3px]">
+        <ImageSlot
+          imageUrl={data.imagem}
+          alt={data.nome}
+          onUpload={handleUpload}
+          onRemove={handleRemoveImage}
+        />
+      </div>
+
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <h3 className="truncate font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
@@ -273,7 +364,13 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
           ) : (
             <>
               <GhostButton onClick={() => setEditing(true)}>Editar</GhostButton>
-              <GhostButton danger onClick={() => api.removeElement(element.id)}>
+              <GhostButton
+                danger
+                onClick={() => {
+                  if (data.imagem) void deleteCampaignImage(api.sessionId, data.imagem);
+                  void api.removeElement(element.id);
+                }}
+              >
                 Remover
               </GhostButton>
             </>

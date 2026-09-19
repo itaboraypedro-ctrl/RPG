@@ -60,6 +60,8 @@ export type CampaignPlaceData = {
   conflitos?: string;
   notasDoJuiz?: string;
   paginas?: number[];
+  /** URL pública no bucket `campaign-images` (migration 006). */
+  imagem?: string;
 };
 
 export type CampaignFactionData = {

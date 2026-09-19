@@ -1,13 +1,11 @@
 "use client";
 
 import type { CampaignWizardData } from "@/app/campaigns/new/CampaignWizard";
-import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
-import {
-  SACRAMENTO_THEMES,
-  SACRAMENTO_TONES,
-  SESSION_ZERO_SUGGESTIONS,
-} from "@/lib/rulesets/sacramento/themes";
-import { Chip, TagListEditor } from "./TagInputs";
+import { SESSION_ZERO_SUGGESTIONS } from "@/lib/rulesets/sacramento/themes";
+import { TagListEditor } from "./TagInputs";
+import { ToneMeter } from "./ToneMeter";
+import { ThemeGrid } from "./ThemeGrid";
+import { EpochPanel } from "./EpochPanel";
 
 type Props = {
   data: CampaignWizardData;
@@ -98,21 +96,10 @@ export function Step3Table({ data, onUpdate }: Props) {
 
       {/* Tom */}
       <div className="space-y-3">
-        <SectionTitle>Tom da história</SectionTitle>
-        <div className="flex flex-wrap gap-2">
-          {SACRAMENTO_TONES.map((tone) => (
-            <Chip
-              key={tone.id}
-              active={data.tone === tone.id}
-              onClick={() =>
-                onUpdate({ tone: data.tone === tone.id ? null : tone.id })
-              }
-              title={tone.descricao}
-            >
-              {tone.nome}
-            </Chip>
-          ))}
-        </div>
+        <SectionTitle hint="A intensidade da campanha — arraste o cursor no espectro.">
+          Tom da história
+        </SectionTitle>
+        <ToneMeter value={data.tone} onChange={(tone) => onUpdate({ tone })} />
       </div>
 
       {/* Temas */}
@@ -120,46 +107,19 @@ export function Step3Table({ data, onUpdate }: Props) {
         <SectionTitle hint="Escolha os fios que a campanha vai puxar — sem bônus mecânico, só direção narrativa.">
           Temas
         </SectionTitle>
-        <div className="flex flex-wrap gap-2">
-          {SACRAMENTO_THEMES.map((theme) => (
-            <Chip
-              key={theme.id}
-              active={data.themes.includes(theme.id)}
-              onClick={() =>
-                onUpdate({
-                  themes: data.themes.includes(theme.id)
-                    ? data.themes.filter((t) => t !== theme.id)
-                    : [...data.themes, theme.id],
-                })
-              }
-              title={theme.descricao}
-            >
-              {theme.nome}
-            </Chip>
-          ))}
-        </div>
+        <ThemeGrid
+          selected={data.themes}
+          onChange={(themes) => onUpdate({ themes })}
+        />
       </div>
 
-      {/* Época */}
-      <div className="space-y-2">
+      {/* Época + cronologia do mundo */}
+      <div className="space-y-3">
         <SectionTitle>Época</SectionTitle>
-        <div className="flex items-center gap-3">
-          <input
-            type="number"
-            value={data.epoch}
-            onChange={(e) => onUpdate({ epoch: Number(e.target.value) })}
-            className="arcana-input w-28 font-crimson text-base"
-          />
-          {data.epoch !== SACRAMENTO_META.defaults.epoca && (
-            <span className="border border-arcana-gold/40 px-2 py-1 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
-              Versão da mesa
-            </span>
-          )}
-        </div>
-        <p className={hintClass}>
-          O presente editorial do cenário é {SACRAMENTO_META.defaults.epoca}. Outra
-          época é permitida, registrada como versão da sua mesa.
-        </p>
+        <EpochPanel
+          epoch={data.epoch}
+          onEpochChange={(epoch) => onUpdate({ epoch })}
+        />
       </div>
 
       {/* Sessão zero */}

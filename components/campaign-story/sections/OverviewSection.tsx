@@ -4,13 +4,11 @@ import { useState } from "react";
 import type { CampaignConfig } from "@/lib/types";
 import type { StoryHubApi } from "../StoryHub";
 import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
-import { SACRAMENTO_TIMELINE } from "@/lib/rulesets/sacramento/timeline";
-import {
-  SACRAMENTO_THEMES,
-  SACRAMENTO_TONES,
-  SESSION_ZERO_SUGGESTIONS,
-} from "@/lib/rulesets/sacramento/themes";
+import { SESSION_ZERO_SUGGESTIONS } from "@/lib/rulesets/sacramento/themes";
 import { Chip, TagListEditor } from "@/components/campaign-creation/TagInputs";
+import { ToneMeter } from "@/components/campaign-creation/ToneMeter";
+import { ThemeGrid } from "@/components/campaign-creation/ThemeGrid";
+import { EpochPanel } from "@/components/campaign-creation/EpochPanel";
 import { AiAssist } from "../AiAssist";
 import {
   Field,
@@ -18,14 +16,12 @@ import {
   SaveState,
   SectionHeader,
   TextArea,
-  TextField,
   hintClass,
 } from "../ui";
 
 export function OverviewSection({ api }: { api: StoryHubApi }) {
   const [draft, setDraft] = useState<CampaignConfig>(api.config);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [showTimeline, setShowTimeline] = useState(false);
 
   const update = (partial: Partial<CampaignConfig>) => {
     setDraft((prev) => ({ ...prev, ...partial }));
@@ -88,116 +84,32 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
         />
       </Field>
 
-      <div className="space-y-3">
-        <Field label="Tom">
-          <div className="flex flex-wrap gap-2">
-            {SACRAMENTO_TONES.map((tone) => (
-              <Chip
-                key={tone.id}
-                active={draft.tone === tone.id}
-                onClick={() =>
-                  update({ tone: draft.tone === tone.id ? undefined : tone.id })
-                }
-                title={tone.descricao}
-              >
-                {tone.nome}
-              </Chip>
-            ))}
-          </div>
+      <div className="space-y-6">
+        <Field label="Tom" hint="A intensidade da campanha — arraste o cursor no espectro.">
+          <ToneMeter
+            value={draft.tone ?? null}
+            onChange={(tone) => update({ tone: tone ?? undefined })}
+          />
         </Field>
 
-        <Field label="Temas">
-          <div className="flex flex-wrap gap-2">
-            {SACRAMENTO_THEMES.map((theme) => {
-              const active = (draft.themes ?? []).includes(theme.id);
-              return (
-                <Chip
-                  key={theme.id}
-                  active={active}
-                  onClick={() =>
-                    update({
-                      themes: active
-                        ? (draft.themes ?? []).filter((t) => t !== theme.id)
-                        : [...(draft.themes ?? []), theme.id],
-                    })
-                  }
-                  title={theme.descricao}
-                >
-                  {theme.nome}
-                </Chip>
-              );
-            })}
-          </div>
-        </Field>
-      </div>
-
-      {/* Época + data ficcional */}
-      <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Época"
-          hint={`Presente editorial: ${SACRAMENTO_META.defaults.epoca}. Outra época vale como versão da mesa.`}
+          label="Temas"
+          hint="Os fios que a campanha vai puxar — sem bônus mecânico, só direção narrativa."
         >
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={draft.epoch ?? SACRAMENTO_META.defaults.epoca}
-              onChange={(e) => update({ epoch: Number(e.target.value) })}
-              className="arcana-input w-28 font-crimson text-sm"
-            />
-            {(draft.epoch ?? SACRAMENTO_META.defaults.epoca) !==
-              SACRAMENTO_META.defaults.epoca && (
-              <span className="border border-arcana-gold/40 px-2 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold">
-                Versão da mesa
-              </span>
-            )}
-          </div>
-        </Field>
-        <Field
-          label="Data ficcional atual"
-          hint="Onde a campanha está no calendário do jogo — não confundir com a data real."
-        >
-          <TextField
-            value={draft.fictional_date ?? ""}
-            onChange={(e) => update({ fictional_date: e.target.value })}
-            maxLength={80}
-            placeholder={`Ex.: Março de ${draft.epoch ?? SACRAMENTO_META.defaults.epoca}`}
+          <ThemeGrid
+            selected={draft.themes ?? []}
+            onChange={(themes) => update({ themes })}
           />
         </Field>
       </div>
 
-      {/* Timeline canônica de referência */}
-      <div className="rounded-sm border border-arcana-border-dim bg-arcana-surface/50">
-        <button
-          type="button"
-          onClick={() => setShowTimeline((v) => !v)}
-          className="flex w-full items-center justify-between px-4 py-3 text-left"
-        >
-          <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
-            Cronologia do mundo (referência, pp. 131–132)
-          </span>
-          <span className="font-cinzel text-xs text-arcana-text-dim">
-            {showTimeline ? "−" : "+"}
-          </span>
-        </button>
-        {showTimeline && (
-          <div className="max-h-72 overflow-y-auto border-t border-arcana-border-dim px-4 py-3">
-            <table className="w-full">
-              <tbody>
-                {SACRAMENTO_TIMELINE.map((anchor) => (
-                  <tr key={`${anchor.ano}-${anchor.marco}`} className="align-top">
-                    <td className="whitespace-nowrap pr-4 py-1 font-cinzel text-[10px] tracking-[0.15em] text-arcana-gold">
-                      {anchor.ano}
-                    </td>
-                    <td className="py-1 font-crimson text-sm text-arcana-text-dim">
-                      {anchor.marco}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Época, data ficcional e cronologia — painel único */}
+      <EpochPanel
+        epoch={draft.epoch ?? SACRAMENTO_META.defaults.epoca}
+        onEpochChange={(epoch) => update({ epoch })}
+        fictionalDate={draft.fictional_date}
+        onFictionalDateChange={(fictional_date) => update({ fictional_date })}
+      />
 
       {/* Sessão zero */}
       <div className="space-y-5 rounded-sm border border-arcana-border-dim bg-arcana-surface/60 p-5">

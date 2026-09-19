@@ -179,41 +179,58 @@ function railTicks(pts: Pt[], gap = 13, half = 3.6): string {
 /* ─── Geografia (leitura do mapa impresso) ─── */
 
 const WEST_COAST: Pt[] = [
-  [0, 110], [42, 142], [28, 192], [52, 232], [74, 268], [38, 302], [58, 346],
-  [80, 392], [34, 432], [54, 482], [70, 522], [28, 562], [68, 622], [94, 668],
-  [58, 700], [78, 736],
+  [0, 95], [70, 130], [95, 175], [70, 225], [95, 275], [60, 318], [85, 360],
+  [60, 405], [88, 450], [65, 495], [92, 540], [68, 585], [95, 628], [78, 668],
+  [108, 695], [150, 688], [210, 700], [270, 686], [335, 696], [400, 682],
+  [465, 694], [530, 680], [595, 690], [655, 682], [710, 694], [755, 706],
 ];
 const EAST_COAST: Pt[] = [
-  [1000, 252], [932, 272], [900, 322], [922, 362], [872, 382], [820, 432],
-  [836, 478], [852, 518], [932, 548], [1000, 562],
+  [1000, 320], [945, 342], [908, 385], [932, 428], [884, 452], [838, 492],
+  [852, 538], [898, 578], [868, 618], [900, 660], [875, 700], [895, 736],
 ];
-// Costas com ruído fractal — duas oitavas: recorte grande + serrilhado fino.
+// Costas com ruído fractal — o mar ocupa o oeste, o SUL inteiro (como no
+// PDF oficial) e a Baía de BH a leste; a costa oeste+sul é uma cadeia só.
 const WEST_R = roughen(WEST_COAST, 71, [{ step: 34, amp: 6 }, { step: 12, amp: 2.2 }]);
 const EAST_R = roughen(EAST_COAST, 72, [{ step: 34, amp: 6 }, { step: 12, amp: 2.2 }]);
-const WEST_WATER = `${smoothOpen(WEST_R)} L0,736 Z`;
-const EAST_WATER = `${smoothOpen(EAST_R)} L1000,562 L1000,252 Z`;
+const WEST_WATER = `${smoothOpen(WEST_R)} L755,736 L0,736 Z`;
+const EAST_WATER = `${smoothOpen(EAST_R)} L1000,736 L1000,320 Z`;
 const WEST_MID = resample(WEST_R, 24).slice(1, -1);
 const EAST_MID = resample(EAST_R, 24).slice(1, -1);
-const ISLAND = makeBlob(45, 172, 30, 22, 4).path;
-const LAKE = makeBlob(510, 232, 58, 26, 8).path;
+const ISLAND = makeBlob(50, 222, 28, 42, 4).path;
+// Três corpos d'água interiores (PDF): Águas de Pólvora, lago de Maria da
+// Fé e o lago do Zói de Deus.
+const LAKES = [
+  makeBlob(520, 235, 62, 40, 8).path,
+  makeBlob(655, 115, 38, 26, 14).path,
+  makeBlob(285, 205, 30, 18, 16).path,
+];
 
-// Rios afunilados: nascem finos, engordam rumo à foz (ou somem no sertão).
+// Rede de rios e riachos (PDF): veias finas por toda a terra, afuniladas.
 const RIVER_DEFS: { pts: Pt[]; seed: number; taper: [number, number, number] }[] = [
+  // Montanha de Gelo → Águas de Pólvora
+  { pts: [[598, 88], [584, 128], [560, 168], [540, 205]], seed: 41, taper: [0.7, 1.1, 1.6] },
+  // Lago de Maria da Fé → Baía (passando a leste da Serra)
   {
-    pts: [[520, 0], [512, 44], [530, 84], [510, 124], [492, 158], [472, 190], [466, 210]],
-    seed: 41,
-    taper: [1.1, 1.9, 2.8],
-  },
-  {
-    pts: [[1000, 196], [962, 224], [948, 262], [938, 300], [928, 340], [930, 372]],
+    pts: [[662, 138], [656, 180], [672, 218], [702, 254], [734, 294], [766, 332], [800, 366], [850, 390]],
     seed: 43,
-    taper: [2.0, 2.6, 3.2],
+    taper: [0.9, 1.6, 2.4],
   },
-  {
-    pts: [[700, 0], [706, 42], [726, 72], [748, 98], [768, 124], [788, 152], [800, 180]],
-    seed: 47,
-    taper: [2.4, 1.5, 0.8],
-  },
+  // Rio Sucuri (largo, do leste para a baía)
+  { pts: [[1000, 180], [956, 214], [936, 256], [928, 298], [936, 330]], seed: 45, taper: [1.8, 2.5, 3.2] },
+  // Afluente NE do Sucuri
+  { pts: [[878, 0], [870, 42], [886, 84], [906, 124], [922, 162], [944, 196], [960, 214]], seed: 47, taper: [0.7, 1.1, 1.6] },
+  // Riacho de Araguari (desce do norte e segue à baía)
+  { pts: [[760, 0], [756, 40], [770, 80], [792, 116], [812, 152], [830, 190], [846, 232], [862, 276], [884, 314], [910, 336]], seed: 49, taper: [0.7, 1.2, 1.8] },
+  // Águas de Pólvora → sertão (some)
+  { pts: [[522, 272], [540, 312], [558, 352], [572, 392], [582, 424]], seed: 51, taper: [1.4, 1.0, 0.6] },
+  // Zói de Deus → mar do oeste
+  { pts: [[268, 212], [225, 235], [180, 258], [138, 282], [100, 300]], seed: 53, taper: [0.7, 1.1, 1.6] },
+  // Sertão de Fungos → mar do sul
+  { pts: [[600, 470], [610, 520], [600, 570], [586, 622], [576, 668]], seed: 55, taper: [0.6, 1.0, 1.5] },
+  // Vale do Sacramento → mar do sul
+  { pts: [[430, 478], [420, 528], [406, 578], [392, 630], [382, 672]], seed: 57, taper: [0.6, 1.0, 1.5] },
+  // Floresta do Cipó → mar do oeste
+  { pts: [[212, 420], [186, 462], [160, 502], [138, 545], [118, 588], [102, 618]], seed: 59, taper: [0.6, 1.0, 1.5] },
 ];
 const RIVERS_RENDER = RIVER_DEFS.map((def) => {
   const rp = roughen(def.pts, def.seed, [{ step: 26, amp: 4.5 }, { step: 10, amp: 1.6 }]);
@@ -227,21 +244,26 @@ const RIVERS_RENDER = RIVER_DEFS.map((def) => {
 
 // Florestas: massa + árvores individuais (posição, tamanho e espécie
 // sorteados por seed; orla esparsa; pintadas de trás para a frente).
+// Massas de floresta lidas do PDF (10 manchas, das grandes às capoeiras).
 const FOREST_BLOBS = [
-  { cx: 200, cy: 68, rx: 92, ry: 46, seed: 3 },
-  { cx: 258, cy: 194, rx: 74, ry: 44, seed: 7 },
-  { cx: 575, cy: 272, rx: 84, ry: 36, seed: 11 },
-  { cx: 134, cy: 332, rx: 78, ry: 46, seed: 5 },
-  { cx: 408, cy: 364, rx: 58, ry: 30, seed: 9 },
-  { cx: 666, cy: 138, rx: 62, ry: 28, seed: 13 },
+  { cx: 250, cy: 85, rx: 118, ry: 48, seed: 3 }, // Floresta do Céu
+  { cx: 415, cy: 192, rx: 50, ry: 34, seed: 7 }, // norte de Bom Fim
+  { cx: 545, cy: 150, rx: 55, ry: 27, seed: 17 }, // Serra da Saudade (oeste)
+  { cx: 628, cy: 190, rx: 48, ry: 25, seed: 19 }, // Serra da Saudade (leste)
+  { cx: 772, cy: 158, rx: 64, ry: 46, seed: 13 }, // mata de Araguari
+  { cx: 600, cy: 325, rx: 92, ry: 38, seed: 11 }, // Mata de Tupaciguara
+  { cx: 468, cy: 505, rx: 55, ry: 44, seed: 9 }, // sul de Desemboque
+  { cx: 185, cy: 398, rx: 88, ry: 54, seed: 5 }, // Floresta do Cipó
+  { cx: 332, cy: 398, rx: 34, ry: 22, seed: 23 }, // capoeira de Sacramento
+  { cx: 560, cy: 598, rx: 30, ry: 20, seed: 29 }, // capoeira do sul
 ];
 type Tree = { x: number; y: number; s: number; k: 0 | 1 };
 const FOREST_DATA = FOREST_BLOBS.map((b) => {
   const blob = makeBlob(b.cx, b.cy, b.rx, b.ry, b.seed);
   const r = mulberry32(b.seed * 131 + 7);
   const trees: Tree[] = [];
-  for (let gy = b.cy - b.ry - 8; gy <= b.cy + b.ry + 8; gy += 10.5) {
-    for (let gx = b.cx - b.rx - 8; gx <= b.cx + b.rx + 8; gx += 11.5) {
+  for (let gy = b.cy - b.ry - 8; gy <= b.cy + b.ry + 8; gy += 12) {
+    for (let gx = b.cx - b.rx - 8; gx <= b.cx + b.rx + 8; gx += 13) {
       const x = gx + (r() - 0.5) * 9;
       const y = gy + (r() - 0.5) * 8;
       const core = blob.inside(x, y, 0.1);
@@ -256,13 +278,14 @@ const FOREST_DATA = FOREST_BLOBS.map((b) => {
   return { tint: blob.path, trees };
 });
 
+// A Serra da Saudade DESCE para sudeste (conferido no PDF oficial).
 const RIDGES = [
-  { x1: 380, y1: 168, x2: 540, y2: 92, n: 7 },
-  { x1: 402, y1: 190, x2: 556, y2: 116, n: 7 },
-  { x1: 552, y1: 70, x2: 640, y2: 58, n: 4 },
-  { x1: 812, y1: 62, x2: 896, y2: 48, n: 4 },
-  { x1: 748, y1: 160, x2: 852, y2: 132, n: 5 },
-  { x1: 620, y1: 120, x2: 700, y2: 96, n: 4 },
+  { x1: 505, y1: 112, x2: 652, y2: 188, n: 7 },
+  { x1: 486, y1: 138, x2: 630, y2: 214, n: 6 },
+  { x1: 562, y1: 92, x2: 648, y2: 72, n: 4 },
+  { x1: 820, y1: 60, x2: 905, y2: 45, n: 4 },
+  { x1: 755, y1: 110, x2: 865, y2: 88, n: 5 },
+  { x1: 662, y1: 228, x2: 724, y2: 208, n: 3 },
 ];
 
 // Picos individuais: tamanho variável (maiores no centro da cadeia), posição
@@ -299,45 +322,76 @@ const STAINS = [
 ];
 const WATER_STAINS = [makeBlob(50, 480, 38, 90, 39).path, makeBlob(930, 440, 55, 75, 43).path];
 
-// Curvas de nível decorativas.
-const CONTOURS = [
-  makeBlob(196, 222, 78, 42, 21).path,
-  makeBlob(636, 424, 84, 44, 23).path,
-  makeBlob(398, 552, 86, 40, 25).path,
-  makeBlob(748, 266, 62, 34, 27).path,
-  makeBlob(226, 492, 60, 32, 29).path,
+// Colinas topográficas: anéis de curva de nível aninhados por todo o mapa
+// (o PDF é coberto deles). Cada colina gera 3 anéis concêntricos.
+const HILL_DEFS = [
+  { cx: 150, cy: 158, r: 52, seed: 61 },
+  { cx: 305, cy: 152, r: 44, seed: 63 },
+  { cx: 430, cy: 118, r: 34, seed: 65 },
+  { cx: 600, cy: 88, r: 58, seed: 67 }, // massivo da Montanha de Gelo
+  { cx: 862, cy: 118, r: 44, seed: 69 },
+  { cx: 240, cy: 300, r: 46, seed: 71 },
+  { cx: 360, cy: 305, r: 36, seed: 73 },
+  { cx: 745, cy: 292, r: 42, seed: 75 },
+  { cx: 880, cy: 244, r: 34, seed: 77 },
+  { cx: 480, cy: 432, r: 40, seed: 79 },
+  { cx: 300, cy: 522, r: 44, seed: 81 },
+  { cx: 420, cy: 602, r: 36, seed: 83 },
+  { cx: 640, cy: 556, r: 46, seed: 85 },
+  { cx: 700, cy: 432, r: 38, seed: 87 },
+  { cx: 178, cy: 598, r: 34, seed: 89 },
+  { cx: 590, cy: 652, r: 28, seed: 91 },
 ];
+const HILLS = HILL_DEFS.map((h) => [
+  makeBlob(h.cx, h.cy, h.r, h.r * 0.68, h.seed).path,
+  makeBlob(h.cx + 3, h.cy + 2, h.r * 0.64, h.r * 0.43, h.seed + 1).path,
+  makeBlob(h.cx + 5, h.cy + 3, h.r * 0.34, h.r * 0.23, h.seed + 2).path,
+]);
 
-// Estradas: pontos-guia; o traçado final ganha ondulação orgânica.
-const ROADS: { pts: Pt[]; seed: number; trail?: boolean }[] = [
-  { pts: [[39, 257], [120, 282], [210, 306], [303, 332]], seed: 1 },
-  { pts: [[303, 332], [380, 362], [455, 392], [527, 414]], seed: 2 },
-  { pts: [[527, 414], [575, 392], [620, 368], [658, 349]], seed: 3 },
-  { pts: [[658, 349], [706, 388], [755, 440], [794, 489]], seed: 4 },
-  { pts: [[658, 349], [700, 296], [758, 238], [807, 189]], seed: 5 },
-  { pts: [[391, 221], [356, 256], [328, 296], [303, 332]], seed: 6 },
-  { pts: [[391, 221], [372, 172], [360, 126], [354, 81]], seed: 7 },
-  { pts: [[391, 221], [452, 198], [548, 172], [638, 154]], seed: 8 },
-  { pts: [[638, 154], [648, 124], [652, 96], [657, 72]], seed: 9 },
-  { pts: [[638, 154], [696, 166], [754, 178], [807, 189]], seed: 10 },
-  { pts: [[115, 603], [150, 556], [220, 478], [268, 404], [303, 332]], seed: 11, trail: true },
-  { pts: [[794, 489], [846, 428], [868, 350], [836, 272], [807, 189]], seed: 12, trail: true },
+// Malha viária lida do PDF — três classes: estrada principal (dupla linha),
+// caminho secundário (linha simples) e trilha (pontilhada / traço-ponto).
+type RoadKind = "main" | "sec" | "trail" | "mix";
+const ROADS: { pts: Pt[]; seed: number; kind: RoadKind }[] = [
+  // Principais
+  { pts: [[40, 268], [110, 300], [195, 324], [290, 340]], seed: 1, kind: "main" },
+  { pts: [[290, 340], [332, 302], [382, 268], [431, 241]], seed: 2, kind: "main" },
+  { pts: [[431, 241], [400, 188], [372, 134], [346, 85]], seed: 3, kind: "main" },
+  { pts: [[431, 241], [498, 226], [572, 200], [642, 164]], seed: 4, kind: "main" },
+  { pts: [[642, 164], [652, 118], [671, 67]], seed: 5, kind: "main" },
+  { pts: [[642, 164], [706, 180], [770, 192], [827, 197]], seed: 6, kind: "main" },
+  { pts: [[827, 197], [790, 250], [730, 302], [663, 350]], seed: 7, kind: "main" },
+  { pts: [[663, 350], [585, 330], [505, 288], [431, 241]], seed: 8, kind: "main" },
+  { pts: [[663, 350], [612, 390], [526, 426]], seed: 9, kind: "main" },
+  { pts: [[290, 340], [368, 378], [450, 408], [526, 426]], seed: 10, kind: "main" },
+  // Secundárias
+  { pts: [[346, 85], [356, 44], [362, 0]], seed: 11, kind: "sec" },
+  { pts: [[671, 67], [678, 32], [682, 0]], seed: 12, kind: "sec" },
+  { pts: [[827, 197], [900, 186], [1000, 176]], seed: 13, kind: "sec" },
+  { pts: [[117, 600], [162, 640], [214, 664], [275, 678]], seed: 14, kind: "sec" },
+  { pts: [[526, 426], [518, 492], [498, 560], [468, 622], [432, 662]], seed: 15, kind: "sec" },
+  { pts: [[807, 488], [778, 540], [750, 592], [732, 644], [722, 688]], seed: 16, kind: "sec" },
+  { pts: [[290, 340], [282, 288], [285, 240], [282, 216]], seed: 17, kind: "sec" },
+  // Trilhas
+  { pts: [[117, 600], [160, 540], [212, 470], [256, 400], [290, 340]], seed: 18, kind: "trail" },
+  { pts: [[40, 268], [70, 322], [92, 382], [110, 452], [104, 522], [118, 578], [117, 600]], seed: 19, kind: "trail" },
+  { pts: [[663, 350], [722, 370], [772, 392], [822, 420], [850, 448]], seed: 20, kind: "trail" },
+  { pts: [[526, 426], [612, 456], [702, 470], [807, 488]], seed: 21, kind: "mix" },
 ];
 
 // Ferrovias: polilinhas (o traçado reto+curvas leves é próprio de trilho).
 const RAILS: Pt[][] = [
-  [[794, 489], [758, 452], [706, 398], [658, 349]],
-  [[807, 189], [748, 172], [690, 162], [638, 154], [596, 142], [562, 118], [540, 96]],
+  [[807, 488], [762, 452], [710, 398], [663, 350]],
+  [[827, 197], [770, 185], [702, 172], [642, 164], [598, 148], [566, 126], [542, 102]],
 ];
 
 // Traçado final das estradas: ruído fractal leve (nunca senoide regular).
 const ROAD_PATHS = ROADS.map((r) => ({
-  trail: r.trail,
+  kind: r.kind,
   d: smoothOpen(
     roughen(
       r.pts,
       r.seed * 7 + 29,
-      r.trail
+      r.kind === "trail" || r.kind === "mix"
         ? [{ step: 26, amp: 3 }, { step: 10, amp: 1.2 }]
         : [{ step: 24, amp: 2.6 }, { step: 9, amp: 1.1 }],
     ),
@@ -345,42 +399,45 @@ const ROAD_PATHS = ROADS.map((r) => ({
 }));
 
 const CITIES: { id: string; nome: string; x: number; y: number; anchor: "left" | "right" }[] = [
-  { id: "santo-ozorio", nome: "Santo Ozório", x: 39, y: 257, anchor: "right" },
-  { id: "celestes", nome: "Varginha", x: 354, y: 81, anchor: "right" },
-  { id: "maria-da-fe", nome: "Maria da Fé", x: 657, y: 72, anchor: "right" },
-  { id: "serra-da-saudade-povoado", nome: "Serra da Saudade", x: 638, y: 154, anchor: "right" },
-  { id: "araguari", nome: "Araguari", x: 807, y: 189, anchor: "right" },
-  { id: "bom-fim", nome: "Bom Fim", x: 391, y: 221, anchor: "left" },
-  { id: "sacramento-cidade", nome: "Sacramento", x: 303, y: 332, anchor: "left" },
-  { id: "tupaciguara", nome: "Tupaciguara", x: 658, y: 349, anchor: "right" },
-  { id: "vila-de-desemboque", nome: "Vila do Desemboque", x: 527, y: 414, anchor: "right" },
-  { id: "belo-horizonte", nome: "Belo Horizonte", x: 794, y: 489, anchor: "right" },
-  { id: "aracuai", nome: "Araçuaí", x: 115, y: 603, anchor: "right" },
+  { id: "santo-ozorio", nome: "Santo Ozório", x: 40, y: 268, anchor: "right" },
+  { id: "celestes", nome: "Varginha", x: 346, y: 85, anchor: "right" },
+  { id: "maria-da-fe", nome: "Maria da Fé", x: 671, y: 67, anchor: "right" },
+  { id: "serra-da-saudade-povoado", nome: "Serra da Saudade", x: 642, y: 164, anchor: "right" },
+  { id: "araguari", nome: "Araguari", x: 827, y: 197, anchor: "right" },
+  { id: "bom-fim", nome: "Bom Fim", x: 431, y: 241, anchor: "left" },
+  { id: "sacramento-cidade", nome: "Sacramento", x: 290, y: 340, anchor: "left" },
+  { id: "tupaciguara", nome: "Tupaciguara", x: 663, y: 350, anchor: "right" },
+  { id: "vila-de-desemboque", nome: "Vila do Desemboque", x: 526, y: 426, anchor: "right" },
+  { id: "belo-horizonte", nome: "Belo Horizonte", x: 807, y: 488, anchor: "right" },
+  { id: "aracuai", nome: "Araçuaí", x: 117, y: 600, anchor: "right" },
 ];
 
 const REGION_PLACES: { id: string; nome: string; x: number; y: number; rotate?: number }[] = [
-  { id: "floresta-do-cipo", nome: "Floresta\ndo Cipó", x: 141, y: 391 },
-  { id: "sertao-de-fungos", nome: "Sertão\nde Fungos", x: 557, y: 501 },
-  { id: "deserto-de-mucuri", nome: "Ravina\nVermelha", x: 141, y: 645 },
-  { id: "serra-da-saudade-cordilheira", nome: "Serra da Saudade", x: 466, y: 146, rotate: -27 },
+  { id: "floresta-do-cipo", nome: "Floresta\ndo Cipó", x: 172, y: 398 },
+  { id: "sertao-de-fungos", nome: "Sertão\nde Fungos", x: 560, y: 508 },
+  { id: "deserto-de-mucuri", nome: "Ravina\nVermelha", x: 172, y: 632 },
+  { id: "serra-da-saudade-cordilheira", nome: "Serra da Saudade", x: 566, y: 142, rotate: 27 },
+  // Não consta no mapa oficial — posição aproximada (campo da Guerra do
+  // Carvão, na região das minas de Araguari); a mesa pode reposicionar.
+  { id: "trincheira-do-carvao", nome: "Trincheira\ndo Carvão", x: 745, y: 252 },
 ];
 
 const DECOR_LABELS: { nome: string; x: number; y: number; rotate?: number }[] = [
-  { nome: "Costa do\nSepulcro", x: 72, y: 40 },
-  { nome: "Ilha do\nSepulcro", x: 44, y: 130 },
-  { nome: "Floresta\ndo Céu", x: 200, y: 62 },
-  { nome: "Chapada\ndo Morto", x: 262, y: 132 },
-  { nome: "Montanha\nde Gelo", x: 592, y: 40 },
-  { nome: "Alto da\nFriaca", x: 856, y: 48 },
-  { nome: "Zói de\nDeus", x: 202, y: 236 },
-  { nome: "Águas de\nPólvora", x: 512, y: 228 },
-  { nome: "Mata de\nTupaciguara", x: 580, y: 312 },
-  { nome: "Vale do\nSacramento", x: 284, y: 428 },
-  { nome: "Baixada de\nSão José", x: 723, y: 424 },
-  { nome: "Rio Sucuri", x: 924, y: 300, rotate: 65 },
-  { nome: "Baía\nde BH", x: 872, y: 540 },
-  { nome: "Reta dos\nVentos", x: 300, y: 668 },
-  { nome: "Para o\nLeste →", x: 940, y: 162 },
+  { nome: "Costa do\nSepulcro", x: 74, y: 44 },
+  { nome: "Ilha do\nSepulcro", x: 50, y: 214 },
+  { nome: "Floresta\ndo Céu", x: 248, y: 76 },
+  { nome: "Chapada\ndo Morto", x: 246, y: 152 },
+  { nome: "Montanha\nde Gelo", x: 600, y: 46 },
+  { nome: "Alto da\nFriaca", x: 862, y: 46 },
+  { nome: "Zói de\nDeus", x: 224, y: 262 },
+  { nome: "Águas de\nPólvora", x: 520, y: 230 },
+  { nome: "Mata de\nTupaciguara", x: 598, y: 316 },
+  { nome: "Vale do\nSacramento", x: 305, y: 458 },
+  { nome: "Baixada de\nSão José", x: 768, y: 405 },
+  { nome: "Rio Sucuri", x: 946, y: 262, rotate: 70 },
+  { nome: "Baía\nde BH", x: 916, y: 452 },
+  { nome: "Reta dos\nVentos", x: 305, y: 636 },
+  { nome: "Para o\nLeste ➤", x: 952, y: 152 },
 ];
 
 // Busca: tudo que é lugar canônico navegável no mapa.
@@ -659,10 +716,10 @@ export function WorldMap({
         {/* Tintas climáticas: neve ao norte, ravina vermelha ao sul, verde nas matas */}
         {layers.terrain && (
           <g>
-            <ellipse cx="620" cy="48" rx="300" ry="120" fill="url(#wm-snow)" />
-            <ellipse cx="150" cy="640" rx="240" ry="150" fill="url(#wm-red)" />
-            <ellipse cx="250" cy="220" rx="320" ry="220" fill="url(#wm-green)" />
-            <ellipse cx="560" cy="300" rx="260" ry="160" fill="url(#wm-green)" />
+            <ellipse cx="620" cy="60" rx="300" ry="120" fill="url(#wm-snow)" />
+            <ellipse cx="160" cy="620" rx="230" ry="140" fill="url(#wm-red)" />
+            <ellipse cx="240" cy="220" rx="300" ry="210" fill="url(#wm-green)" />
+            <ellipse cx="600" cy="330" rx="260" ry="160" fill="url(#wm-green)" />
           </g>
         )}
 
@@ -677,8 +734,13 @@ export function WorldMap({
               <path key={i} d={d} fillOpacity="0.1" />
             ))}
           </g>
-          <path d={LAKE} fill="#9fb2ba" />
-          <path d={LAKE} fill="url(#wm-waterlines)" />
+          {LAKES.map((d, i) => (
+            <g key={i}>
+              <path d={d} fill="#9fb2ba" />
+              <path d={d} fill="url(#wm-waterlines)" />
+              <path d={d} fill="none" stroke="#4a3a26" strokeOpacity="0.55" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+            </g>
+          ))}
         </g>
 
         {/* Ilha (terra sobre a água) */}
@@ -707,10 +769,14 @@ export function WorldMap({
 
         {layers.terrain && (
           <g>
-            {/* Curvas de nível */}
-            <g fill="none" stroke="#8a7350" strokeOpacity="0.2" strokeWidth="0.8">
-              {CONTOURS.map((d, i) => (
-                <path key={i} d={d} />
+            {/* Colinas: anéis de curva de nível aninhados */}
+            <g fill="none" stroke="#8a7350" strokeWidth="0.8">
+              {HILLS.map((rings, i) => (
+                <g key={i}>
+                  <path d={rings[0]} strokeOpacity="0.18" />
+                  <path d={rings[1]} strokeOpacity="0.22" />
+                  <path d={rings[2]} strokeOpacity="0.26" />
+                </g>
               ))}
             </g>
 
@@ -805,16 +871,26 @@ export function WorldMap({
         {/* Estradas e ferrovias — dupla linha gravada + travessas */}
         {layers.roads && (
           <g fill="none" strokeLinecap="round">
-            {ROAD_PATHS.map((r, i) =>
-              r.trail ? (
-                <path key={i} d={r.d} stroke="#3a2c1a" strokeOpacity="0.65" strokeWidth="1.3" strokeDasharray="1 6" vectorEffect="non-scaling-stroke" />
-              ) : (
+            {ROAD_PATHS.map((r, i) => {
+              if (r.kind === "trail")
+                return (
+                  <path key={i} d={r.d} stroke="#3a2c1a" strokeOpacity="0.6" strokeWidth="1.3" strokeDasharray="1 6" vectorEffect="non-scaling-stroke" />
+                );
+              if (r.kind === "mix")
+                return (
+                  <path key={i} d={r.d} stroke="#3a2c1a" strokeOpacity="0.65" strokeWidth="1.3" strokeDasharray="9 4 1.5 4" vectorEffect="non-scaling-stroke" />
+                );
+              if (r.kind === "sec")
+                return (
+                  <path key={i} d={r.d} stroke="#3a2c1a" strokeOpacity="0.6" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+                );
+              return (
                 <g key={i}>
                   <path d={r.d} stroke="#3a2c1a" strokeOpacity="0.75" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
                   <path d={r.d} stroke="#d8c496" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
                 </g>
-              ),
-            )}
+              );
+            })}
             {RAILS.map((r, i) => (
               <g key={`rail-${i}`} stroke="#2b1e12">
                 <path d={smoothOpen(r)} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
@@ -890,14 +966,45 @@ export function WorldMap({
             const added = addedIds.has(c.id);
             const r = 5.5 / Math.pow(z, 0.75);
             const lx = c.anchor === "right" ? c.x + r + 4 / z : c.x - r - 4 / z;
+            const isBH = c.id === "belo-horizonte";
             return (
               <g key={c.id} className="cursor-pointer" onClick={() => select(c.id)}>
                 {isSel && <circle cx={c.x} cy={c.y} r={r * 2.4} fill="#d1ab55" fillOpacity="0.35" />}
-                <circle
-                  cx={c.x} cy={c.y} r={r}
-                  fill={isSel ? "#c9a23f" : added ? "#8a5a12" : "#f2e6cf"}
-                  stroke="#2b1e12" strokeWidth={1.6} vectorEffect="non-scaling-stroke"
-                />
+                {isBH ? (
+                  /* Distintivo de xerife da capital, como no mapa oficial */
+                  <g transform={`translate(${c.x} ${c.y}) scale(${(r / 5.5) * 1.15})`}>
+                    <circle r={9} fill="#f2e6cf" stroke="#2b1e12" strokeWidth={1.4} />
+                    {Array.from({ length: 6 }, (_, k) => {
+                      const a = (k * Math.PI) / 3 - Math.PI / 2;
+                      return (
+                        <circle
+                          key={k}
+                          cx={Math.cos(a) * 9}
+                          cy={Math.sin(a) * 9}
+                          r={1.9}
+                          fill={isSel ? "#c9a23f" : "#2b1e12"}
+                        />
+                      );
+                    })}
+                    <circle r={6.4} fill="none" stroke="#2b1e12" strokeWidth={0.9} />
+                    <text
+                      y={2.6}
+                      textAnchor="middle"
+                      fontSize={6.4}
+                      fontWeight={900}
+                      fill={isSel ? "#8a5a12" : "#2b1e12"}
+                      stroke="none"
+                    >
+                      BH
+                    </text>
+                  </g>
+                ) : (
+                  <circle
+                    cx={c.x} cy={c.y} r={r}
+                    fill={isSel ? "#c9a23f" : added ? "#8a5a12" : "#f2e6cf"}
+                    stroke="#2b1e12" strokeWidth={1.6} vectorEffect="non-scaling-stroke"
+                  />
+                )}
                 <text
                   x={lx} y={c.y + citySize * 0.35}
                   fontSize={citySize} fontWeight={700}
@@ -956,21 +1063,37 @@ export function WorldMap({
           ))}
         </g>
 
-        {/* Rosa dos ventos */}
-        <g transform="translate(697 553)" aria-hidden>
-          <g fill="#2b1e12">
-            <path d="M0,-58 L9,-9 L0,-16 L-9,-9 Z" />
-            <path d="M0,58 L9,9 L0,16 L-9,9 Z" fillOpacity="0.85" />
-            <path d="M-58,0 L-9,-9 L-16,0 L-9,9 Z" fillOpacity="0.85" />
-            <path d="M58,0 L9,-9 L16,0 L9,9 Z" fillOpacity="0.85" />
-            <path d="M-30,-30 L-6,-10 L-11,-4 Z M30,-30 L11,-4 L6,-10 Z M30,30 L6,10 L11,4 Z M-30,30 L-11,4 L-6,10 Z" fillOpacity="0.6" />
-          </g>
-          <circle r="7" fill="#ead9b8" stroke="#2b1e12" strokeWidth="2" />
-          <text y="-64" textAnchor="middle" fontFamily="var(--font-cinzel), serif" fontWeight={900} fontSize="14" fill="#2b1e12">N</text>
+        {/* Rosa dos ventos de 16 pontas (como no mapa oficial) */}
+        <g transform="translate(716 585)" aria-hidden>
+          {Array.from({ length: 8 }, (_, k) => (
+            <path
+              key={`m-${k}`}
+              d="M0,-30 L5,-7 L0,-11 L-5,-7 Z"
+              transform={`rotate(${k * 45 + 22.5})`}
+              fill="#2b1e12"
+              fillOpacity="0.55"
+            />
+          ))}
+          <path d="M0,-72 L10,-10 L0,-18 L-10,-10 Z" fill="#2b1e12" />
+          <path d="M0,72 L10,10 L0,18 L-10,10 Z" fill="#2b1e12" fillOpacity="0.9" />
+          <path d="M-64,0 L-10,-10 L-18,0 L-10,10 Z" fill="#2b1e12" fillOpacity="0.9" />
+          <path d="M64,0 L10,-10 L18,0 L10,10 Z" fill="#2b1e12" fillOpacity="0.9" />
+          {Array.from({ length: 4 }, (_, k) => (
+            <path
+              key={`d-${k}`}
+              d="M0,-44 L7,-9 L0,-14 L-7,-9 Z"
+              transform={`rotate(${k * 90 + 45})`}
+              fill="#2b1e12"
+              fillOpacity="0.75"
+            />
+          ))}
+          <circle r="9" fill="#ead9b8" stroke="#2b1e12" strokeWidth="2.2" />
+          <circle r="4" fill="none" stroke="#2b1e12" strokeWidth="1.2" />
+          <text y="-78" textAnchor="middle" fontFamily="var(--font-cinzel), serif" fontWeight={900} fontSize="15" fill="#2b1e12">N</text>
         </g>
 
         {/* Cartucho do título */}
-        <g transform="translate(838 606) rotate(-2)" aria-hidden>
+        <g transform="translate(878 646) rotate(-2)" aria-hidden>
           <path
             d="M-118,-34 C-80,-44 -20,-40 30,-42 C80,-44 112,-36 118,-24 C124,-10 114,8 118,22 C110,36 60,40 10,42 C-46,44 -100,40 -114,30 C-124,18 -112,2 -120,-12 Z"
             fill="#f4ead2" stroke="#b39b6e" strokeWidth="1.5"

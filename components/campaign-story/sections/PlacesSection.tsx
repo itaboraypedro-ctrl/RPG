@@ -142,8 +142,8 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
           />
         </div>
         <p className={hintClass}>
-          A Trincheira do Carvão não aparece no mapa oficial — encontre-a na galeria
-          do cânone abaixo.
+          Os 16 lugares do cânone estão no mapa. A Trincheira do Carvão não consta no
+          mapa oficial — está em posição aproximada, perto das minas de Araguari.
         </p>
       </div>
 

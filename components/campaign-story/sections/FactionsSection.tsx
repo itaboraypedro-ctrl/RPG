@@ -48,6 +48,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        imageSrc="/story/headers/faccoes.webp"
         title="Facções & Ameaças"
         description="Gangues, cultos e forças da lei que movem a campanha. Templates canônicos trazem a composição publicada (tipos e NdC) — quantidades em cena, armas e objetivos são sempre do Juiz."
         action={

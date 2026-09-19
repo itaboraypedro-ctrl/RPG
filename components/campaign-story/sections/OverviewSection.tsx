@@ -46,6 +46,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-3xl space-y-8">
       <SectionHeader
+        imageSrc="/story/headers/visao-geral.webp"
         title="Visão geral"
         description="O macro da campanha: premissa, objetivo do bando, tom e acordos da mesa. Visível para os jogadores que entrarem — segredos ficam na seção Segredos do Juiz."
         action={

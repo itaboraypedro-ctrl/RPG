@@ -24,6 +24,8 @@ export type SacramentoPlace = {
   caracteristicas: string;
   conflitos: string;
   paginas: [number, number];
+  /** Arte do lugar em public/ (ex.: /story/places/tupaciguara.webp). */
+  imagem?: string;
 };
 
 /* ── Facções (Doc 2 §14) ── */

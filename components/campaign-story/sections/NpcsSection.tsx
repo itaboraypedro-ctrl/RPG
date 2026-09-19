@@ -48,6 +48,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        imageSrc="/story/headers/npcs.webp"
         title="NPCs"
         description="Figuras da campanha. Campos narrativos não concedem bônus; a ficha mecânica (NdC) é opcional e calculada pelas fórmulas do livro. Sem confronto previsto, um NPC pode viver sem ficha."
         action={

@@ -7,6 +7,7 @@ import type { SacramentoPlace } from "./types";
 export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   {
     id: "tupaciguara",
+    imagem: "/story/places/tupaciguara.webp",
     nome: "Tupaciguara",
     caracteristicas: "Café, pecuária, moinhos, vida comunitária, recuperação após violência",
     conflitos:
@@ -15,6 +16,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "bom-fim",
+    imagem: "/story/places/bom-fim.webp",
     nome: "Bom Fim",
     caracteristicas: "Chuva, lama, produção agrícola, turismo e festas",
     conflitos:
@@ -23,6 +25,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "belo-horizonte",
+    imagem: "/story/places/belo-horizonte.webp",
     nome: "Belo Horizonte",
     caracteristicas: "Fronteira industrial e litorânea, porto, bondes, desigualdade e corrupção",
     conflitos:
@@ -31,6 +34,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "sacramento-cidade",
+    imagem: "/story/places/sacramento-cidade.webp",
     nome: "Sacramento",
     caracteristicas: "Ruínas incendiadas, vegetação retomando edifícios",
     conflitos:
@@ -39,6 +43,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "celestes",
+    imagem: "/story/places/celestes.webp",
     nome: "Celestes (antiga Varginha)",
     caracteristicas: "Platôs, Floresta do Céu, povo de tradições próprias",
     conflitos:
@@ -47,6 +52,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "araguari",
+    imagem: "/story/places/araguari.webp",
     nome: "Araguari",
     caracteristicas: "Mineração de carvão, chuva, luto — a “cidade das viúvas”",
     conflitos: "Guerra, doença, Circo do Sol e exploração",
@@ -54,6 +60,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "serra-da-saudade-povoado",
+    imagem: "/story/places/serra-da-saudade-povoado.webp",
     nome: "Serra da Saudade (povoado)",
     caracteristicas: "Pequena vila fria de cerca de 40 pessoas",
     conflitos: "Ocupação por Fivela de Cobra e sobreviventes deslocados",
@@ -61,6 +68,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "vila-de-desemboque",
+    imagem: "/story/places/vila-de-desemboque.webp",
     nome: "Vila de Desemboque",
     caracteristicas: "Cidade arruinada pela peste, com bens abandonados",
     conflitos: "Coveiro, risco de contágio, origem de Hermes/Apolo; Ité nas redondezas",
@@ -68,6 +76,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "maria-da-fe",
+    imagem: "/story/places/maria-da-fe.webp",
     nome: "Maria da Fé",
     caracteristicas: "Vale frio, lago congelado, caça e pesca, cultura comunitária",
     conflitos:
@@ -76,6 +85,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "aracuai",
+    imagem: "/story/places/aracuai.webp",
     nome: "Araçuaí",
     caracteristicas: "Cidade de pedra no Deserto de Mucuri, calor, comércio e artesanato",
     conflitos: "Feira da Barganha a cada três meses, banco, ferrovias e produtos raros",
@@ -83,6 +93,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "santo-ozorio",
+    imagem: "/story/places/santo-ozorio.webp",
     nome: "Santo Ozório",
     caracteristicas: "Litoral turístico, hotéis, pesca e arquipélago",
     conflitos: "Hotel Rubro, Ilha de Sepulcro, farol desativado, histórias não resolvidas",
@@ -90,6 +101,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "floresta-do-cipo",
+    imagem: "/story/places/floresta-do-cipo.webp",
     nome: "Floresta do Cipó",
     caracteristicas: "Vegetação densa, baixa visibilidade, fauna e trilhas",
     conflitos: "Curupira; Kaapuã; histórias cuja verdade pode caber ao Juiz",
@@ -97,6 +109,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "sertao-de-fungos",
+    imagem: "/story/places/sertao-de-fungos.webp",
     nome: "Sertão de Fungos",
     caracteristicas: "Ambiente úmido, charcos, névoa e toxinas",
     conflitos: "Gangue do Cogumelo, chá e alucinações; Akor",
@@ -104,6 +117,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "serra-da-saudade-cordilheira",
+    imagem: "/story/places/serra-da-saudade-cordilheira.webp",
     nome: "Serra da Saudade (cordilheira)",
     caracteristicas: "Montanhas, lagos, frio, ferrovias e fauna",
     conflitos: "Distinguir da vila homônima; Yakecan",
@@ -111,6 +125,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "deserto-de-mucuri",
+    imagem: "/story/places/deserto-de-mucuri.webp",
     nome: "Deserto de Mucuri / Ravina Vermelha",
     caracteristicas: "Deserto, cânion e ecossistemas diferentes",
     conflitos: "Vestígios de exploração, templo e inscrição “UMBASA”; Katuan",
@@ -118,6 +133,7 @@ export const SACRAMENTO_PLACES: SacramentoPlace[] = [
   },
   {
     id: "trincheira-do-carvao",
+    imagem: "/story/places/trincheira-do-carvao.webp",
     nome: "Trincheira do Carvão",
     caracteristicas: "Restos da guerra e terra devastada",
     conflitos: "Valas, mortos, memória do conflito e convento isolado",

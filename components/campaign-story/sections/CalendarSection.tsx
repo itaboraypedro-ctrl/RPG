@@ -57,6 +57,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-3xl space-y-8">
       <SectionHeader
+        imageSrc="/story/headers/calendario.webp"
         title="Calendário ficcional"
         description="Onde a campanha está no tempo do jogo e o que se aproxima. Não confundir a data real da mesa com a data do mundo."
       />

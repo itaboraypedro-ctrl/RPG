@@ -47,6 +47,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
       descricao: place.caracteristicas,
       conflitos: place.conflitos,
       paginas: place.paginas,
+      imagem: place.imagem,
     };
     await api.addElement("place", "gm_only", data as unknown as Record<string, unknown>);
     setBusy(null);
@@ -55,6 +56,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        imageSrc="/story/headers/lugares.webp"
         title="Lugares"
         description="Onde a campanha acontece. Adicione lugares do cânone (com referência de página) ou crie os seus — criações da campanha nunca alegam página do livro."
         action={
@@ -105,37 +107,58 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
               <div
                 key={place.id}
                 className={[
-                  "rounded-sm border p-4 transition-all",
+                  "overflow-hidden rounded-sm border transition-all",
                   added
                     ? "border-arcana-gold/50 bg-arcana-gold/5"
                     : "border-arcana-border bg-arcana-surface/50",
                 ].join(" ")}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-text">
-                    {place.nome}
-                  </h3>
-                  <PageRef paginas={place.paginas} />
-                </div>
-                <p className="mt-1.5 font-crimson text-sm text-arcana-text-dim">
-                  {place.caracteristicas}
-                </p>
-                <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim">
-                  {place.conflitos}
-                </p>
-                <div className="mt-3">
-                  {added ? (
-                    <span className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
-                      ✓ Na campanha
-                    </span>
-                  ) : (
-                    <GhostButton
-                      onClick={() => addCanon(place.id)}
-                      disabled={busy === place.id}
-                    >
-                      {busy === place.id ? "Adicionando..." : "Adicionar"}
-                    </GhostButton>
-                  )}
+                {place.imagem && (
+                  <div className="relative h-32">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={place.imagem}
+                      alt={place.nome}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(11,11,20,0.1), transparent 40%, rgba(11,11,20,0.55))",
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-text">
+                      {place.nome}
+                    </h3>
+                    <PageRef paginas={place.paginas} />
+                  </div>
+                  <p className="mt-1.5 font-crimson text-sm text-arcana-text-dim">
+                    {place.caracteristicas}
+                  </p>
+                  <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim">
+                    {place.conflitos}
+                  </p>
+                  <div className="mt-3">
+                    {added ? (
+                      <span className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
+                        ✓ Na campanha
+                      </span>
+                    ) : (
+                      <GhostButton
+                        onClick={() => addCanon(place.id)}
+                        disabled={busy === place.id}
+                      >
+                        {busy === place.id ? "Adicionando..." : "Adicionar"}
+                      </GhostButton>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -144,6 +167,11 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
       </div>
     </div>
   );
+}
+
+/** Artes canônicas vivem em public/; só URLs do bucket devem ir ao storage. */
+function isStorageImage(url: string) {
+  return url.includes("/object/public/");
 }
 
 /** Sobe a imagem para o storage e devolve mensagem de erro ou null. */
@@ -280,7 +308,9 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
     await api.patchElement(element.id, {
       data: { ...data, imagem: uploaded.url } as unknown as Record<string, unknown>,
     });
-    if (previous) void deleteCampaignImage(api.sessionId, previous);
+    if (previous && isStorageImage(previous)) {
+      void deleteCampaignImage(api.sessionId, previous);
+    }
     return null;
   }
 
@@ -289,7 +319,9 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
     await api.patchElement(element.id, {
       data: { ...data, imagem: undefined } as unknown as Record<string, unknown>,
     });
-    void deleteCampaignImage(api.sessionId, data.imagem);
+    if (isStorageImage(data.imagem)) {
+      void deleteCampaignImage(api.sessionId, data.imagem);
+    }
   }
 
   return (
@@ -367,7 +399,9 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
               <GhostButton
                 danger
                 onClick={() => {
-                  if (data.imagem) void deleteCampaignImage(api.sessionId, data.imagem);
+                  if (data.imagem && isStorageImage(data.imagem)) {
+                    void deleteCampaignImage(api.sessionId, data.imagem);
+                  }
                   void api.removeElement(element.id);
                 }}
               >

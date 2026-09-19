@@ -48,21 +48,64 @@ export function SectionHeader({
   title,
   description,
   action,
+  imageSrc,
 }: {
   title: string;
   description: string;
   action?: React.ReactNode;
+  /** Banner pintado da seção (faixa 4:1, título sobreposto no scrim escuro). */
+  imageSrc?: string;
 }) {
+  if (!imageSrc) {
+    return (
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-2xl space-y-1.5">
+          <div>
+            <h2 className="arcana-heading text-2xl tracking-[0.14em]">{title}</h2>
+            <div className="arcana-heading-bar w-40" />
+          </div>
+          <p className="font-crimson text-sm italic text-arcana-text-dim">{description}</p>
+        </div>
+        {action}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="max-w-2xl space-y-1.5">
-        <div>
-          <h2 className="arcana-heading text-2xl tracking-[0.14em]">{title}</h2>
+    <div className="space-y-3">
+      <div className="relative h-28 overflow-hidden rounded-sm border border-arcana-border-dim sm:h-36">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageSrc}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        {/* Scrim: garante o contraste do título sobre a pintura */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(11,11,20,0.86), rgba(11,11,20,0.45) 45%, rgba(11,11,20,0.12)), linear-gradient(0deg, rgba(11,11,20,0.75), transparent 45%)",
+          }}
+        />
+        <div className="absolute bottom-3 left-4 sm:bottom-4 sm:left-5">
+          <h2
+            className="arcana-heading text-2xl tracking-[0.14em]"
+            style={{ textShadow: "0 2px 8px rgba(0,0,0,0.8)" }}
+          >
+            {title}
+          </h2>
           <div className="arcana-heading-bar w-40" />
         </div>
-        <p className="font-crimson text-sm italic text-arcana-text-dim">{description}</p>
       </div>
-      {action}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <p className="max-w-2xl font-crimson text-sm italic text-arcana-text-dim">
+          {description}
+        </p>
+        {action}
+      </div>
     </div>
   );
 }

@@ -7,9 +7,18 @@ type Props = {
   footer: React.ReactNode;
   children: React.ReactNode;
   previewContent: React.ReactNode;
+  formTabLabel?: string;
+  previewTabLabel?: string;
 };
 
-export function WizardLayout({ header, footer, children, previewContent }: Props) {
+export function WizardLayout({
+  header,
+  footer,
+  children,
+  previewContent,
+  formTabLabel = "Criação",
+  previewTabLabel = "Retrato",
+}: Props) {
   const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
 
   return (
@@ -35,7 +44,7 @@ export function WizardLayout({ header, footer, children, previewContent }: Props
                   : "text-arcana-text-dim hover:text-arcana-text",
               ].join(" ")}
             >
-              Criação
+              {formTabLabel}
             </button>
             <button
               type="button"
@@ -47,7 +56,7 @@ export function WizardLayout({ header, footer, children, previewContent }: Props
                   : "text-arcana-text-dim hover:text-arcana-text",
               ].join(" ")}
             >
-              Retrato
+              {previewTabLabel}
             </button>
           </div>
         </div>

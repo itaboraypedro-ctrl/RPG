@@ -268,7 +268,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                     Crie uma campanha para mestrar — ou um personagem para jogar em mesas de outros mestres.
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-4">
-                    <Link href="/dashboard/sessions/new"
+                    <Link href="/campaigns/new"
                       className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-sm transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
                       style={{ background: "linear-gradient(135deg, #c9a84c, #f0cc6a)" }}>
                       Criar campanha
@@ -320,10 +320,10 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                 <>
                   {/* Label campanhas */}
                   <span className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-gold/50">Campanhas</span>
-                  <Link href="/dashboard/sessions/new" className="shrink-0 font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-text-dim/35 transition-colors hover:text-arcana-gold">+</Link>
+                  <Link href="/campaigns/new" className="shrink-0 font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-text-dim/35 transition-colors hover:text-arcana-gold">+</Link>
 
                   {gmSessions.length === 0 ? (
-                    <Link href="/dashboard/sessions/new"
+                    <Link href="/campaigns/new"
                       className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-gold/70 transition-colors hover:text-arcana-gold">
                       Criar primeira campanha →
                     </Link>

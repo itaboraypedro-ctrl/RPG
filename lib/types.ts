@@ -129,6 +129,8 @@ export type StoryTemplate = {
 };
 
 // 2.3 sessions
+export type Ruleset = "custom" | "sacramento";
+
 export type Session = {
   id: string;
   gm_id: string;
@@ -141,6 +143,48 @@ export type Session = {
   current_scene: string;
   settings: SessionSettings;
   ai_context: AiContext;
+  ruleset: Ruleset;
+  campaign: CampaignConfig;
+  created_at: string;
+  updated_at: string;
+};
+
+// Config macro pública da campanha (sessions.campaign, jsonb).
+// Legível por jogadores joined via RLS — nunca guardar segredos do Juiz aqui.
+export type CampaignConfig = {
+  premise?: string;
+  band_goal?: string;
+  tone?: string;
+  themes?: string[];
+  epoch?: number;
+  epoch_is_table_version?: boolean;
+  fictional_date?: string;
+  session_zero?: {
+    lines?: string[];
+    veils?: string[];
+    x_card?: boolean;
+    notes?: string;
+  };
+};
+
+export type CampaignElementKind =
+  | "place"
+  | "faction"
+  | "npc"
+  | "scene"
+  | "mission"
+  | "calendar_event"
+  | "secret_note";
+
+export type CampaignElementVisibility = "gm_only" | "public";
+
+export type CampaignElement = {
+  id: string;
+  session_id: string;
+  kind: CampaignElementKind;
+  visibility: CampaignElementVisibility;
+  position: number;
+  data: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 };

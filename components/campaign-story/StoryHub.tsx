@@ -1,0 +1,302 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
+import type {
+  CampaignConfig,
+  CampaignElement,
+  CampaignElementKind,
+  CampaignElementVisibility,
+  Session,
+} from "@/lib/types";
+import {
+  createElement as createElementAction,
+  deleteElement as deleteElementAction,
+  updateCampaignConfig,
+  updateElement as updateElementAction,
+} from "@/app/campaigns/[id]/story/actions";
+import { OverviewSection } from "./sections/OverviewSection";
+import { PlacesSection } from "./sections/PlacesSection";
+import { FactionsSection } from "./sections/FactionsSection";
+import { NpcsSection } from "./sections/NpcsSection";
+import { ScenesSection } from "./sections/ScenesSection";
+import { MissionsSection } from "./sections/MissionsSection";
+import { CalendarSection } from "./sections/CalendarSection";
+import { SecretsSection } from "./sections/SecretsSection";
+import { InviteChip } from "./InviteChip";
+
+export type SectionId =
+  | "overview"
+  | "places"
+  | "factions"
+  | "npcs"
+  | "scenes"
+  | "missions"
+  | "calendar"
+  | "secrets";
+
+const SECTIONS: { id: SectionId; label: string; kind?: CampaignElementKind }[] = [
+  { id: "overview", label: "Visão geral" },
+  { id: "places", label: "Lugares", kind: "place" },
+  { id: "factions", label: "Facções", kind: "faction" },
+  { id: "npcs", label: "NPCs", kind: "npc" },
+  { id: "scenes", label: "Cenas", kind: "scene" },
+  { id: "missions", label: "Missões", kind: "mission" },
+  { id: "calendar", label: "Calendário", kind: "calendar_event" },
+  { id: "secrets", label: "Segredos do Juiz", kind: "secret_note" },
+];
+
+export type StoryHubApi = {
+  sessionId: string;
+  aiEnabled: boolean;
+  config: CampaignConfig;
+  saveConfig: (next: CampaignConfig) => Promise<boolean>;
+  elementsOf: (kind: CampaignElementKind) => CampaignElement[];
+  addElement: (
+    kind: CampaignElementKind,
+    visibility: CampaignElementVisibility,
+    data: Record<string, unknown>,
+  ) => Promise<CampaignElement | null>;
+  patchElement: (
+    elementId: string,
+    patch: { data?: Record<string, unknown>; visibility?: CampaignElementVisibility },
+  ) => Promise<CampaignElement | null>;
+  removeElement: (elementId: string) => Promise<boolean>;
+};
+
+type Props = {
+  session: Session;
+  initialElements: CampaignElement[];
+  justCreated: boolean;
+};
+
+export function StoryHub({ session, initialElements, justCreated }: Props) {
+  const [active, setActive] = useState<SectionId>("overview");
+  const [config, setConfig] = useState<CampaignConfig>(session.campaign ?? {});
+  const [elements, setElements] = useState<CampaignElement[]>(initialElements);
+  const [banner, setBanner] = useState(justCreated);
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  const saveConfig = useCallback(
+    async (next: CampaignConfig) => {
+      setConfig(next);
+      const result = await updateCampaignConfig(session.id, next);
+      if (!result.ok) {
+        setLastError(result.error);
+        return false;
+      }
+      setLastError(null);
+      return true;
+    },
+    [session.id],
+  );
+
+  const addElement = useCallback(
+    async (
+      kind: CampaignElementKind,
+      visibility: CampaignElementVisibility,
+      data: Record<string, unknown>,
+    ) => {
+      const result = await createElementAction(session.id, kind, visibility, data);
+      if (!result.ok) {
+        setLastError(result.error);
+        return null;
+      }
+      setLastError(null);
+      setElements((prev) => [...prev, result.element]);
+      return result.element;
+    },
+    [session.id],
+  );
+
+  const patchElement = useCallback(
+    async (
+      elementId: string,
+      patch: { data?: Record<string, unknown>; visibility?: CampaignElementVisibility },
+    ) => {
+      const result = await updateElementAction(session.id, elementId, patch);
+      if (!result.ok) {
+        setLastError(result.error);
+        return null;
+      }
+      setLastError(null);
+      setElements((prev) =>
+        prev.map((el) => (el.id === elementId ? result.element : el)),
+      );
+      return result.element;
+    },
+    [session.id],
+  );
+
+  const removeElement = useCallback(
+    async (elementId: string) => {
+      const result = await deleteElementAction(session.id, elementId);
+      if (!result.ok) {
+        setLastError(result.error);
+        return false;
+      }
+      setLastError(null);
+      setElements((prev) => prev.filter((el) => el.id !== elementId));
+      return true;
+    },
+    [session.id],
+  );
+
+  const api: StoryHubApi = useMemo(
+    () => ({
+      sessionId: session.id,
+      aiEnabled: session.settings?.ai_assistant !== false,
+      config,
+      saveConfig,
+      elementsOf: (kind) => elements.filter((el) => el.kind === kind),
+      addElement,
+      patchElement,
+      removeElement,
+    }),
+    [
+      session.id,
+      session.settings?.ai_assistant,
+      config,
+      saveConfig,
+      elements,
+      addElement,
+      patchElement,
+      removeElement,
+    ],
+  );
+
+  const countOf = (kind?: CampaignElementKind) =>
+    kind ? elements.filter((el) => el.kind === kind).length : 0;
+
+  return (
+    <div
+      className="flex h-dvh flex-col text-arcana-text"
+      style={{ background: "var(--color-arcana-bg)" }}
+    >
+      {/* Header fixo */}
+      <header
+        className="shrink-0 border-b border-arcana-border-dim"
+        style={{ background: "rgba(7,7,13,0.97)", backdropFilter: "blur(12px)" }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 lg:px-8">
+          <div className="flex min-w-0 items-center gap-4">
+            <Link
+              href="/hub"
+              className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim/60 transition-colors hover:text-arcana-gold"
+            >
+              ← Hub
+            </Link>
+            <div className="min-w-0">
+              <p className="font-cinzel text-[8px] uppercase tracking-[0.4em] text-arcana-gold/60">
+                Hub de História · Sacramento
+              </p>
+              <h1 className="truncate font-cinzel text-base uppercase tracking-[0.15em] text-arcana-gold-bright">
+                {session.title}
+              </h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <InviteChip inviteCode={session.invite_code} />
+            <Link
+              href={`/dashboard/sessions/${session.id}`}
+              className="rounded-sm border border-arcana-gold/50 px-4 py-2 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
+            >
+              Ir para o lobby
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Banner pós-criação */}
+      {banner && (
+        <div className="shrink-0 border-b border-arcana-gold/20 bg-arcana-gold/5 px-5 py-2.5 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
+            <p className="font-crimson text-sm italic text-arcana-text-dim">
+              Campanha fundada. Convide o bando pelo link acima e configure a história
+              no seu ritmo — tudo aqui é opcional e pode ser editado a qualquer momento.
+            </p>
+            <button
+              type="button"
+              onClick={() => setBanner(false)}
+              className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim/50 hover:text-arcana-gold"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {lastError && (
+        <div className="shrink-0 border-b border-red-900/40 bg-red-950/30 px-5 py-2 lg:px-8">
+          <p className="font-crimson text-sm italic text-red-300">{lastError}</p>
+        </div>
+      )}
+
+      {/* Corpo: nav lateral + conteúdo */}
+      <div className="flex min-h-0 flex-1">
+        {/* Sidebar desktop */}
+        <nav className="hidden w-56 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-arcana-border-dim p-3 lg:flex">
+          {SECTIONS.map((section) => {
+            const isActive = active === section.id;
+            const count = countOf(section.kind);
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setActive(section.id)}
+                className={[
+                  "flex items-center justify-between rounded-sm px-3 py-2.5 text-left font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
+                  isActive
+                    ? "bg-arcana-gold/10 text-arcana-gold border-l-2 border-arcana-gold"
+                    : "text-arcana-text-dim hover:bg-white/[0.03] hover:text-arcana-text border-l-2 border-transparent",
+                ].join(" ")}
+              >
+                <span>{section.label}</span>
+                {count > 0 && (
+                  <span className="font-crimson text-[11px] text-arcana-text-dim/60">
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Tabs mobile */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="shrink-0 overflow-x-auto border-b border-arcana-border-dim lg:hidden">
+            <div className="flex gap-1 px-3 py-2" style={{ scrollbarWidth: "none" }}>
+              {SECTIONS.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setActive(section.id)}
+                  className={[
+                    "shrink-0 rounded-sm px-3 py-1.5 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-all",
+                    active === section.id
+                      ? "bg-arcana-gold text-arcana-bg"
+                      : "text-arcana-text-dim",
+                  ].join(" ")}
+                >
+                  {section.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Conteúdo scrollável */}
+          <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 lg:px-10 lg:py-8">
+            {active === "overview" && <OverviewSection api={api} />}
+            {active === "places" && <PlacesSection api={api} />}
+            {active === "factions" && <FactionsSection api={api} />}
+            {active === "npcs" && <NpcsSection api={api} />}
+            {active === "scenes" && <ScenesSection api={api} />}
+            {active === "missions" && <MissionsSection api={api} />}
+            {active === "calendar" && <CalendarSection api={api} />}
+            {active === "secrets" && <SecretsSection api={api} />}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}

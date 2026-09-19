@@ -3,6 +3,10 @@ import Link from "next/link";
 type Props = {
   currentStep: number;
   totalSteps?: number;
+  stepLabels?: string[];
+  title?: string;
+  backHref?: string;
+  backLabel?: string;
 };
 
 const STEP_LABELS = [
@@ -16,29 +20,37 @@ const STEP_LABELS = [
   "Revisão",
 ];
 
-export function StepIndicator({ currentStep, totalSteps = 8 }: Props) {
-  const labels = STEP_LABELS.slice(0, totalSteps);
-  const currentLabel = STEP_LABELS[currentStep - 1] ?? "";
+export function StepIndicator({
+  currentStep,
+  totalSteps,
+  stepLabels = STEP_LABELS,
+  title = "Novo personagem",
+  backHref = "/hub",
+  backLabel = "← Hub",
+}: Props) {
+  const total = totalSteps ?? stepLabels.length;
+  const labels = stepLabels.slice(0, total);
+  const currentLabel = stepLabels[currentStep - 1] ?? "";
 
   return (
     <div className="select-none space-y-4">
       {/* Top row: back link + wizard title */}
       <div className="flex items-center justify-between">
         <Link
-          href="/hub"
+          href={backHref}
           className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim/60 hover:text-arcana-gold transition-colors"
         >
-          ← Hub
+          {backLabel}
         </Link>
         <span className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-text-dim/40">
-          Novo personagem
+          {title}
         </span>
       </div>
 
       {/* Current step name */}
       <div className="space-y-0.5">
         <p className="font-cinzel text-[9px] uppercase tracking-[0.45em] text-arcana-text-dim/50">
-          Etapa {currentStep} de {totalSteps}
+          Etapa {currentStep} de {total}
         </p>
         <h2
           className="font-cinzel uppercase tracking-[0.22em] text-arcana-gold-bright leading-none"

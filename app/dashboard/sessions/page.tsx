@@ -18,7 +18,7 @@ export default async function SessionsPage() {
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-bold tracking-tight">Sessões</h1>
         <Link
-          href="/dashboard/sessions/new"
+          href="/campaigns/new"
           className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
         >
           Nova sessão

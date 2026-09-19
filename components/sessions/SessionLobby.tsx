@@ -129,6 +129,12 @@ export function SessionLobby({ session, initialPlayers, template }: Props) {
         {session.description && (
           <p className="text-sm text-zinc-400">{session.description}</p>
         )}
+        <Link
+          href={`/campaigns/${session.id}/story`}
+          className="mt-1 inline-flex w-fit items-center gap-2 rounded-md border border-amber-500/40 px-3 py-1.5 text-xs font-medium text-amber-300 hover:border-amber-400 hover:text-amber-200"
+        >
+          ✦ Configurar história
+        </Link>
       </header>
 
       <StatusControls

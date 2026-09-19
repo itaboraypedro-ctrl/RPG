@@ -257,6 +257,28 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                     </Link>
                   </div>
                 </>
+              ) : isGm ? (
+                <>
+                  <h1 className="font-cinzel uppercase leading-[0.9] text-arcana-text"
+                    style={{ fontSize: "clamp(1.6rem, 3vw, 2.8rem)", letterSpacing: "0.12em" }}>
+                    Sua mesa<br />
+                    <span className="text-arcana-gold-bright" style={{ textShadow: "0 0 50px rgba(240,204,106,0.3)" }}>te aguarda.</span>
+                  </h1>
+                  <p className="mt-3 max-w-sm font-crimson text-sm italic text-arcana-text-dim/70">
+                    Crie uma campanha para mestrar — ou um personagem para jogar em mesas de outros mestres.
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <Link href="/dashboard/sessions/new"
+                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-sm transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
+                      style={{ background: "linear-gradient(135deg, #c9a84c, #f0cc6a)" }}>
+                      Criar campanha
+                    </Link>
+                    <Link href="/play/characters/new"
+                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold px-5 py-2.5 rounded-sm border border-arcana-gold/40 transition-all hover:border-arcana-gold hover:shadow-[0_0_18px_rgba(201,168,76,0.25)]">
+                      Criar personagem
+                    </Link>
+                  </div>
+                </>
               ) : (
                 <>
                   <h1 className="font-cinzel uppercase leading-[0.9] text-arcana-text"
@@ -301,7 +323,10 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                   <Link href="/dashboard/sessions/new" className="shrink-0 font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-text-dim/35 transition-colors hover:text-arcana-gold">+</Link>
 
                   {gmSessions.length === 0 ? (
-                    <span className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim/30">Nenhuma</span>
+                    <Link href="/dashboard/sessions/new"
+                      className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-gold/70 transition-colors hover:text-arcana-gold">
+                      Criar primeira campanha →
+                    </Link>
                   ) : (
                     gmSessions.map(s => (
                       <div key={s.id} className="shrink-0 w-[220px]">

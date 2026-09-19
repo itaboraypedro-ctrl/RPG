@@ -112,7 +112,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
       />
 
       {/* Sessão zero */}
-      <div className="space-y-5 rounded-sm border border-arcana-border-dim bg-arcana-surface/60 p-5">
+      <div className="space-y-5 rounded-xl border border-arcana-border-dim bg-arcana-surface/60 p-5">
         <div>
           <p className="font-cinzel text-xs uppercase tracking-[0.3em] text-arcana-gold">
             Sessão zero — jogo seguro

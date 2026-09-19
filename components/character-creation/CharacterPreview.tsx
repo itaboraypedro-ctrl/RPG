@@ -72,7 +72,7 @@ export function CharacterPreview({
 
         {/* Portrait card */}
         <div
-          className="relative aspect-[3/4] w-full overflow-hidden rounded-sm"
+          className="relative aspect-[3/4] w-full overflow-hidden rounded-xl"
           style={{
             background: "var(--color-arcana-surface)",
             border: "1px solid var(--color-arcana-border)",
@@ -131,7 +131,7 @@ export function CharacterPreview({
                 disabled={!canPrev}
                 aria-label="Retrato anterior"
                 className={[
-                  "absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-sm backdrop-blur-sm transition-all",
+                  "absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-xl backdrop-blur-sm transition-all",
                   canPrev
                     ? "border border-arcana-gold/30 bg-arcana-bg/70 text-arcana-gold hover:border-arcana-gold/60 hover:bg-arcana-bg/90"
                     : "border border-white/5 bg-arcana-bg/40 text-arcana-text-muted cursor-not-allowed",
@@ -147,7 +147,7 @@ export function CharacterPreview({
                 disabled={!canNext}
                 aria-label="Próximo retrato"
                 className={[
-                  "absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-sm backdrop-blur-sm transition-all",
+                  "absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-xl backdrop-blur-sm transition-all",
                   canNext
                     ? "border border-arcana-gold/30 bg-arcana-bg/70 text-arcana-gold hover:border-arcana-gold/60 hover:bg-arcana-bg/90"
                     : "border border-white/5 bg-arcana-bg/40 text-arcana-text-muted cursor-not-allowed",
@@ -190,7 +190,7 @@ export function CharacterPreview({
           <button
             type="button"
             onClick={onRegenerate}
-            className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim/40 hover:text-arcana-gold/60 transition-colors px-3 py-1.5 border border-transparent hover:border-arcana-gold/15 rounded-sm"
+            className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim/40 hover:text-arcana-gold/60 transition-colors px-3 py-1.5 border border-transparent hover:border-arcana-gold/15 rounded-xl"
           >
             Regerar retrato
           </button>

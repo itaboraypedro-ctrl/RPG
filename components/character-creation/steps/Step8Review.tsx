@@ -224,7 +224,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
         {/* Esquerda: ficha */}
         <div className="flex flex-col gap-5">
           {/* Identidade */}
-          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+          <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
             <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
               Identidade
             </h3>
@@ -245,7 +245,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
           </section>
 
           {/* Atributos */}
-          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+          <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
             <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
               Atributos
             </h3>
@@ -275,7 +275,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
           </section>
 
           {/* Combate */}
-          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+          <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
             <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
               Combate
             </h3>
@@ -292,7 +292,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
           </section>
 
           {/* Proficiências */}
-          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+          <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
             <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
               Proficiências
             </h3>
@@ -325,7 +325,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
           </section>
 
           {/* Inventário */}
-          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+          <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
             <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
               Inventário
             </h3>
@@ -347,7 +347,7 @@ export default function Step8Review({ data, triggerRef, onSavingChange }: Props)
 
           {/* Magias */}
           {classData.isSpellcaster ? (
-            <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <section className="rounded-xl border border-arcana-border/50 bg-arcana-surface/40 p-4">
               <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
                 Magias
               </h3>

@@ -169,10 +169,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
     kind ? elements.filter((el) => el.kind === kind).length : 0;
 
   return (
-    <div
-      className="flex h-dvh flex-col text-arcana-text"
-      style={{ background: "var(--color-arcana-bg)" }}
-    >
+    <div className="arcana-scene flex h-dvh flex-col text-arcana-text">
       {/* Header fixo */}
       <header className="arcana-glass-edge shrink-0 border-b border-arcana-border-dim">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 lg:px-8">
@@ -196,7 +193,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
             <InviteChip inviteCode={session.invite_code} />
             <Link
               href={`/dashboard/sessions/${session.id}`}
-              className="rounded-sm border border-arcana-gold/50 px-4 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
+              className="rounded-xl border border-arcana-gold/50 px-4 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
             >
               Ir para o lobby
             </Link>
@@ -245,7 +242,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
                 type="button"
                 onClick={() => setActive(section.id)}
                 className={[
-                  "arcana-sidebar-item flex items-center justify-between rounded-sm px-3 py-2.5 text-left font-cinzel text-[11px] uppercase tracking-[0.18em]",
+                  "arcana-sidebar-item flex items-center justify-between rounded-xl px-3 py-2.5 text-left font-cinzel text-[11px] uppercase tracking-[0.18em]",
                   isActive ? "arcana-sidebar-item-active font-bold" : "",
                 ].join(" ")}
               >
@@ -280,7 +277,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
                   type="button"
                   onClick={() => setActive(section.id)}
                   className={[
-                    "shrink-0 rounded-sm px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
+                    "shrink-0 rounded-xl px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
                     active === section.id
                       ? "bg-arcana-gold font-bold text-arcana-bg"
                       : "text-arcana-text/75",

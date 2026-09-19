@@ -59,7 +59,7 @@ export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
           <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
             Origem
           </p>
-          <div className="arcana-list rounded-sm">
+          <div className="arcana-list rounded-xl">
             {RACES.map((race) => (
               <RaceCard
                 key={race.id}
@@ -73,7 +73,7 @@ export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
 
         {/* Painel de detalhes */}
         {selectedRace ? (
-          <div className="arcana-panel rounded-sm p-5 space-y-5">
+          <div className="arcana-panel rounded-xl p-5 space-y-5">
             {/* Header */}
             <div>
               <div className="flex items-baseline gap-2 mb-2">
@@ -93,15 +93,15 @@ export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
                   {(Object.entries(combinedBonuses) as [AbilityKey, number][]).map(([key, value]) => (
                     <span
                       key={key}
-                      className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold"
+                      className="arcana-stat-chip rounded-xl px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold"
                     >
                       {value >= 0 ? `+${value}` : value} {ABILITY_LABEL[key]}
                     </span>
                   ))}
-                  <span className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
+                  <span className="arcana-stat-chip rounded-xl px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
                     {selectedRace.speed}m
                   </span>
-                  <span className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
+                  <span className="arcana-stat-chip rounded-xl px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
                     {selectedRace.size === "small" ? "Pequeno" : "Médio"}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
                         type="button"
                         onClick={() => handleSubraceSelect(sub.id)}
                         className={[
-                          "text-left px-4 py-3 rounded-sm border transition-all duration-150",
+                          "text-left px-4 py-3 rounded-xl border transition-all duration-150",
                           isActive
                             ? "arcana-stat-chip-active text-arcana-gold-bright"
                             : "border-arcana-border-dim bg-arcana-surface hover:border-arcana-border text-arcana-text-dim",
@@ -202,7 +202,7 @@ export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
             )}
           </div>
         ) : (
-          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+          <div className="arcana-panel rounded-xl flex items-center justify-center min-h-[200px]">
             <p className="font-crimson italic text-arcana-text-dim text-sm">
               Selecione uma origem
             </p>

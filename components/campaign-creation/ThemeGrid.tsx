@@ -125,7 +125,7 @@ function ThemeCard({
       aria-pressed={active}
       title={removable ? "Remover tema" : descricao}
       className={[
-        "group relative flex items-start gap-3 overflow-hidden rounded-sm border p-3 text-left transition-all duration-150",
+        "group relative flex items-start gap-3 overflow-hidden rounded-xl border p-3 text-left transition-all duration-150",
         active
           ? "border-arcana-gold/70 bg-arcana-gold/[0.08]"
           : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40 hover:bg-arcana-surface",
@@ -139,7 +139,7 @@ function ThemeCard({
       {/* Emblema */}
       <span
         className={[
-          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border transition-colors",
+          "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors",
           active
             ? "border-arcana-gold/60 text-arcana-gold-bright"
             : "border-arcana-border-dim text-arcana-text-dim group-hover:text-arcana-gold",

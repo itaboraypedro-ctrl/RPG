@@ -165,7 +165,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
             </Link>
             <div className="relative" ref={menuRef}>
               <button type="button" onClick={() => setMenuOpen(v => !v)} aria-haspopup="menu" aria-expanded={menuOpen}
-                className="flex items-center gap-3 rounded-sm px-2 py-1.5 transition-all hover:bg-white/5">
+                className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition-all hover:bg-white/5">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-cinzel text-sm text-arcana-gold ring-1 ring-arcana-gold/40"
                   style={profile.avatar_url
                     ? { backgroundImage: `url(${profile.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center", color: "transparent" }
@@ -181,7 +181,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                 </svg>
               </button>
               {menuOpen && (
-                <div role="menu" className="absolute right-0 mt-2 w-52 rounded-sm border border-arcana-border/60 py-1 shadow-[0_20px_60px_rgba(0,0,0,0.8)]"
+                <div role="menu" className="absolute right-0 mt-2 w-52 rounded-xl border border-arcana-border/60 py-1 shadow-[0_20px_60px_rgba(0,0,0,0.8)]"
                   style={{ background: "rgba(15,15,28,0.97)", backdropFilter: "blur(20px)" }}>
                   <button type="button" role="menuitem"
                     onClick={() => { setMenuOpen(false); auth?.signOut(); }}
@@ -247,7 +247,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                   </div>
                   <div className="mt-4 flex items-center gap-4">
                     <Link href={heroCtaHref}
-                      className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-sm transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
+                      className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-xl transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
                       style={{ background: `linear-gradient(135deg, ${heroColor}, #f0cc6a)` }}>
                       {heroCtaLabel}
                     </Link>
@@ -269,12 +269,12 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-4">
                     <Link href="/campaigns/new"
-                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-sm transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
+                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-xl transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
                       style={{ background: "linear-gradient(135deg, #c9a84c, #f0cc6a)" }}>
                       Criar campanha
                     </Link>
                     <Link href="/play/characters/new"
-                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold px-5 py-2.5 rounded-sm border border-arcana-gold/40 transition-all hover:border-arcana-gold hover:shadow-[0_0_18px_rgba(201,168,76,0.25)]">
+                      className="inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold px-5 py-2.5 rounded-xl border border-arcana-gold/40 transition-all hover:border-arcana-gold hover:shadow-[0_0_18px_rgba(201,168,76,0.25)]">
                       Criar personagem
                     </Link>
                   </div>
@@ -287,7 +287,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                     <span className="text-arcana-gold-bright" style={{ textShadow: "0 0 50px rgba(240,204,106,0.3)" }}>te aguarda.</span>
                   </h1>
                   <Link href="/play/characters/new"
-                    className="mt-4 inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-sm transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
+                    className="mt-4 inline-flex font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-bg px-5 py-2.5 rounded-xl transition-all hover:shadow-[0_0_24px_rgba(201,168,76,0.5)]"
                     style={{ background: "linear-gradient(135deg, #c9a84c, #f0cc6a)" }}>
                     Criar personagem
                   </Link>
@@ -424,7 +424,7 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
                   : `scale(${Math.max(0.8, 1 - dist * 0.09)}) translateY(0px)`,
                 transition: "opacity 350ms ease, filter 350ms ease, transform 350ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 350ms ease",
               }}
-              className="relative flex-shrink-0 w-[110px] rounded-sm overflow-hidden focus-visible:outline-none"
+              className="relative flex-shrink-0 w-[110px] rounded-xl overflow-hidden focus-visible:outline-none"
               aria-pressed={isActive}
               aria-label={`Selecionar ${c.name}`}
             >
@@ -459,7 +459,7 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
                 )}
 
                 {/* Border glow when active */}
-                <div className="absolute inset-0 rounded-sm transition-all duration-350 pointer-events-none"
+                <div className="absolute inset-0 rounded-xl transition-all duration-350 pointer-events-none"
                   style={{
                     boxShadow: isActive
                       ? `0 0 0 1.5px ${color}, 0 0 24px ${color}55, inset 0 0 20px rgba(0,0,0,0.3)`
@@ -490,7 +490,7 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
         <Link
           href="/play/characters/new"
           style={{ scrollSnapAlign: "center", flexShrink: 0, background: "rgba(15,15,28,0.5)" }}
-          className="flex w-[110px] aspect-[2/3] flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-arcana-border/40 transition-all duration-300 hover:border-arcana-gold/50"
+          className="flex w-[110px] aspect-[2/3] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-arcana-border/40 transition-all duration-300 hover:border-arcana-gold/50"
         >
           <span className="font-cinzel text-3xl text-arcana-text-dim/40 transition-colors group-hover:text-arcana-gold">+</span>
           <span className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim/40">Novo</span>
@@ -503,7 +503,7 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
 /* ── Empty state ── */
 function SectionEmpty({ text, subtext, cta }: { text: string; subtext?: string; cta?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-sm border border-dashed border-arcana-border/40 px-6 py-10 text-center"
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-arcana-border/40 px-6 py-10 text-center"
       style={{ background: "rgba(15,15,28,0.4)" }}>
       <p className="font-cinzel text-sm uppercase tracking-[0.25em] text-arcana-text-dim/60">{text}</p>
       {subtext && <p className="font-crimson text-sm text-arcana-text-dim/50 max-w-xs">{subtext}</p>}

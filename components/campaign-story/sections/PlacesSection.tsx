@@ -107,7 +107,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
               <div
                 key={place.id}
                 className={[
-                  "overflow-hidden rounded-sm border transition-all",
+                  "overflow-hidden rounded-xl border transition-all",
                   added
                     ? "border-arcana-gold/50 bg-arcana-gold/5"
                     : "border-arcana-border bg-arcana-surface/50",
@@ -231,7 +231,7 @@ function NewPlaceForm({ api, onDone }: { api: StoryHubApi; onDone: () => void })
   }
 
   return (
-    <div className="space-y-4 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-5">
+    <div className="space-y-4 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-5">
       <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
         Novo lugar da campanha
       </p>
@@ -241,7 +241,7 @@ function NewPlaceForm({ api, onDone }: { api: StoryHubApi; onDone: () => void })
       <Field label="Imagem" hint="Opcional — um retrato do lugar (JPG, PNG, WebP ou GIF, até 5 MB).">
         <div className="flex items-center gap-3">
           {image && (
-            <div className="h-16 w-24 shrink-0 overflow-hidden rounded-sm border border-arcana-border">
+            <div className="h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-arcana-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image.preview} alt="Prévia da imagem" className="h-full w-full object-cover" />
             </div>
@@ -327,7 +327,7 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
   return (
     <ElementCard>
       {/* Retrato do lugar — sangra até as bordas da carta */}
-      <div className="-mx-4 -mt-4 mb-3 overflow-hidden rounded-t-[3px]">
+      <div className="-mx-4 -mt-4 mb-3 overflow-hidden rounded-t-2xl">
         <ImageSlot
           imageUrl={data.imagem}
           alt={data.nome}

@@ -31,7 +31,7 @@ export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
           <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
             Vocação
           </p>
-          <div className="arcana-list rounded-sm">
+          <div className="arcana-list rounded-xl">
             {CLASSES.map((classData) => (
               <ClassCard
                 key={classData.id}
@@ -45,7 +45,7 @@ export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
 
         {/* Painel de detalhes */}
         {selectedClass ? (
-          <div className="arcana-panel rounded-sm p-5 space-y-5">
+          <div className="arcana-panel rounded-xl p-5 space-y-5">
             <div>
               <h3 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright mb-2">
                 {selectedClass.name}
@@ -86,7 +86,7 @@ export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
             </div>
 
             {selectedClass.isSpellcaster && (
-              <div className="rounded-sm border border-arcana-gold/20 bg-arcana-gold/6 px-4 py-3">
+              <div className="rounded-xl border border-arcana-gold/20 bg-arcana-gold/6 px-4 py-3">
                 <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-gold/70 mb-1">
                   Conjurador
                 </p>
@@ -101,7 +101,7 @@ export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
             )}
           </div>
         ) : (
-          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+          <div className="arcana-panel rounded-xl flex items-center justify-center min-h-[200px]">
             <p className="font-crimson italic text-arcana-text-dim text-sm">
               Selecione uma vocação
             </p>
@@ -114,7 +114,7 @@ export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="arcana-stat-chip rounded-sm px-3 py-2.5">
+    <div className="arcana-stat-chip rounded-xl px-3 py-2.5">
       <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim">
         {label}
       </p>

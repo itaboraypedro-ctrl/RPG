@@ -52,7 +52,7 @@ export function HubNav({ profile }: Props) {
             onClick={() => setOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={open}
-            className="flex items-center gap-3 rounded-sm border border-transparent px-2 py-1.5 transition-colors hover:border-arcana-gold/30 hover:bg-arcana-surface/60"
+            className="flex items-center gap-3 rounded-xl border border-transparent px-2 py-1.5 transition-colors hover:border-arcana-gold/30 hover:bg-arcana-surface/60"
           >
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-arcana-surface font-cinzel text-sm text-arcana-gold ring-1 ring-arcana-gold/40 sm:h-10 sm:w-10"

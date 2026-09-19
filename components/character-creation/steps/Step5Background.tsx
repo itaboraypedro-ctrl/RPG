@@ -58,7 +58,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
           <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
             Antecedente
           </p>
-          <div className="arcana-list rounded-sm">
+          <div className="arcana-list rounded-xl">
             {BACKGROUNDS.map((bg) => (
               <BackgroundCard
                 key={bg.id}
@@ -75,7 +75,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
 
         {/* Painel */}
         {selectedBg ? (
-          <div className="arcana-panel rounded-sm p-5 space-y-5">
+          <div className="arcana-panel rounded-xl p-5 space-y-5">
             <div>
               <h3 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright mb-2">
                 {selectedBg.name}
@@ -89,7 +89,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
 
             <div className="grid grid-cols-2 gap-2">
               {selectedBg.skills.length > 0 && (
-                <div className="col-span-2 arcana-stat-chip rounded-sm px-3 py-2.5">
+                <div className="col-span-2 arcana-stat-chip rounded-xl px-3 py-2.5">
                   <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim">
                     Perícias treinadas
                   </p>
@@ -144,7 +144,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
                         type="button"
                         onClick={() => setOpenPickerField(isOpen ? null : field)}
                         className={[
-                          "w-full text-left px-3 py-2.5 rounded-sm border transition-all duration-150",
+                          "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150",
                           isOpen
                             ? "border-arcana-gold bg-arcana-gold/8"
                             : chosen
@@ -163,7 +163,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
                       </button>
 
                       {isOpen && options.length > 0 && (
-                        <div className="absolute left-0 top-full z-20 mt-1 w-[280px] max-h-[240px] overflow-y-auto rounded-sm arcana-panel-elevated">
+                        <div className="absolute left-0 top-full z-20 mt-1 w-[280px] max-h-[240px] overflow-y-auto rounded-xl arcana-panel-elevated">
                           {chosen && (
                             <button
                               type="button"
@@ -207,7 +207,7 @@ export default function Step5Background({ data, onUpdate, onGenerateImage }: Pro
             </div>
           </div>
         ) : (
-          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+          <div className="arcana-panel rounded-xl flex items-center justify-center min-h-[200px]">
             <p className="font-crimson italic text-arcana-text-dim text-sm">
               Selecione um antecedente
             </p>

@@ -42,7 +42,7 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between gap-4 rounded-sm border border-arcana-border bg-arcana-surface px-4 py-3 text-left transition-colors hover:border-arcana-gold/40"
+      className="flex w-full items-center justify-between gap-4 rounded-xl border border-arcana-border bg-arcana-surface px-4 py-3 text-left transition-colors hover:border-arcana-gold/40"
     >
       <span>
         <span className="block font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text">
@@ -123,7 +123,7 @@ export function Step3Table({ data, onUpdate }: Props) {
       </div>
 
       {/* Sessão zero */}
-      <div className="space-y-5 rounded-sm border border-arcana-border-dim bg-arcana-surface/60 p-5">
+      <div className="space-y-5 rounded-xl border border-arcana-border-dim bg-arcana-surface/60 p-5">
         <div>
           <p className="font-cinzel text-xs uppercase tracking-[0.3em] text-arcana-gold">
             Sessão zero — jogo seguro

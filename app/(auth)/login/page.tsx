@@ -51,7 +51,7 @@ export default function LoginPage() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-sm border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-base text-arcana-text transition-colors focus:border-arcana-gold focus:outline-none"
+          className="rounded-xl border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-base text-arcana-text transition-colors focus:border-arcana-gold focus:outline-none"
         />
       </div>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-sm border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-base text-arcana-text transition-colors focus:border-arcana-gold focus:outline-none"
+          className="rounded-xl border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-base text-arcana-text transition-colors focus:border-arcana-gold focus:outline-none"
         />
       </div>
 
@@ -81,7 +81,7 @@ export default function LoginPage() {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-2 rounded-sm bg-gradient-to-br from-arcana-gold to-arcana-gold-bright px-6 py-3 font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-bg shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(201,168,76,0.55)] disabled:opacity-50 disabled:hover:shadow-[0_0_20px_rgba(201,168,76,0.2)]"
+        className="mt-2 rounded-xl bg-gradient-to-br from-arcana-gold to-arcana-gold-bright px-6 py-3 font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-bg shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all duration-300 hover:shadow-[0_0_36px_rgba(201,168,76,0.55)] disabled:opacity-50 disabled:hover:shadow-[0_0_20px_rgba(201,168,76,0.2)]"
       >
         {submitting ? "Entrando..." : "Entrar"}
       </button>

@@ -57,7 +57,7 @@ export function MissionsSection({ api }: { api: StoryHubApi }) {
       />
 
       {lastDraw && draft && (
-        <div className="arcana-gilded rounded-sm px-4 py-3">
+        <div className="arcana-gilded rounded-xl px-4 py-3">
           <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Sorteio (p. 104) — naipes ignorados
           </p>
@@ -131,7 +131,7 @@ function Seed({ label, card, value }: { label: string; card: string; value: stri
   return (
     <span className="flex items-center gap-1.5">
       <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">{label}</span>
-      <span className="rounded-sm border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">{card}</span>
+      <span className="rounded-xl border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">{card}</span>
       <span className="text-arcana-text">{value}</span>
     </span>
   );
@@ -160,7 +160,7 @@ function MissionForm({
   }
 
   return (
-    <div className="space-y-4 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-5">
+    <div className="space-y-4 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Título">
           <TextField value={data.titulo} onChange={(e) => update({ titulo: e.target.value })} maxLength={160} autoFocus />

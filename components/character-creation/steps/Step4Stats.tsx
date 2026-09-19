@@ -290,7 +290,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
               type="button"
               onClick={() => setMethod(m.key)}
               className={[
-                "flex flex-col gap-0.5 px-3 py-3 rounded-sm border text-left transition-all duration-150",
+                "flex flex-col gap-0.5 px-3 py-3 rounded-xl border text-left transition-all duration-150",
                 active
                   ? "arcana-stat-chip-active text-arcana-gold-bright"
                   : "border-arcana-border-dim bg-arcana-surface text-arcana-text-dim hover:border-arcana-border hover:text-arcana-text",
@@ -324,7 +324,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                     onClick={() => handleArrayChipClick(value)}
                     disabled={!pendingArrayKey || !available}
                     className={[
-                      "w-12 h-12 rounded-sm font-cinzel text-lg transition-all duration-150",
+                      "w-12 h-12 rounded-xl font-cinzel text-lg transition-all duration-150",
                       !available
                         ? "arcana-pool-chip-used line-through cursor-default"
                         : pendingArrayKey
@@ -353,7 +353,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                   type="button"
                   onClick={() => handleArrayAbilityClick(key)}
                   className={[
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-sm border transition-all duration-150",
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-150",
                     isPending
                       ? "border-arcana-gold bg-arcana-gold/10 ring-1 ring-arcana-gold/30 shadow-[0_0_16px_rgba(201,168,76,0.12)]"
                       : value !== undefined
@@ -454,7 +454,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
               return (
                 <div
                   key={key}
-                  className="flex items-center gap-3 px-4 py-3 rounded-sm arcana-stat-chip"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl arcana-stat-chip"
                 >
                   <div className="w-16 shrink-0">
                     <span className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold block">
@@ -484,7 +484,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                       onClick={() => decPointBuy(key)}
                       disabled={!canDec}
                       className={[
-                        "h-8 w-8 rounded-sm border font-cinzel text-base transition-colors",
+                        "h-8 w-8 rounded-xl border font-cinzel text-base transition-colors",
                         canDec
                           ? "border-arcana-border bg-arcana-surface-2 text-arcana-text hover:border-arcana-gold/60 hover:text-arcana-gold"
                           : "border-arcana-border-dim bg-arcana-surface text-arcana-text-muted cursor-not-allowed",
@@ -500,7 +500,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                       onClick={() => incPointBuy(key)}
                       disabled={!canInc}
                       className={[
-                        "h-8 w-8 rounded-sm border font-cinzel text-base transition-colors",
+                        "h-8 w-8 rounded-xl border font-cinzel text-base transition-colors",
                         canInc
                           ? "border-arcana-border bg-arcana-surface-2 text-arcana-text hover:border-arcana-gold/60 hover:text-arcana-gold"
                           : "border-arcana-border-dim bg-arcana-surface text-arcana-text-muted cursor-not-allowed",
@@ -536,7 +536,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
               onClick={rollAll}
               disabled={isRolling}
               className={[
-                "w-full py-4 rounded-sm border font-cinzel uppercase tracking-[0.3em] text-sm transition-all duration-200",
+                "w-full py-4 rounded-xl border font-cinzel uppercase tracking-[0.3em] text-sm transition-all duration-200",
                 isRolling
                   ? "border-arcana-gold/30 text-arcana-gold/50 cursor-not-allowed"
                   : rolledValues.length === 0
@@ -568,7 +568,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                         onClick={() => handleRollChipClick(value)}
                         disabled={!pendingRollKey || !available}
                         className={[
-                          "w-12 h-12 rounded-sm border font-cinzel text-lg transition-all duration-150",
+                          "w-12 h-12 rounded-xl border font-cinzel text-lg transition-all duration-150",
                           !available
                             ? "border-arcana-border/20 text-arcana-text-dim/30 line-through cursor-default"
                             : pendingRollKey
@@ -600,7 +600,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
                     type="button"
                     onClick={() => handleRollAbilityClick(key)}
                     className={[
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-sm border transition-all duration-150",
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-150",
                       isPending
                         ? "border-arcana-gold bg-arcana-gold/8 ring-1 ring-arcana-gold/40"
                         : value !== undefined
@@ -671,7 +671,7 @@ export default function Step4Stats({ data, onUpdate, onNext, triggerRef }: Props
       )}
 
       {/* HP summary */}
-      <div className="flex items-center justify-between rounded-sm arcana-stat-chip px-4 py-3">
+      <div className="flex items-center justify-between rounded-xl arcana-stat-chip px-4 py-3">
         <div>
           <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
             Pontos de vida no nível 1

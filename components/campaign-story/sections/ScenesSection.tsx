@@ -111,7 +111,7 @@ function SceneForm({
   }
 
   return (
-    <div className="space-y-4 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-5">
+    <div className="space-y-4 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-5">
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Título">
           <TextField value={data.titulo} onChange={(e) => update({ titulo: e.target.value })} maxLength={160} autoFocus />

@@ -39,7 +39,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
         onClick={() => onUpdate({ ruleset: "sacramento" })}
         aria-pressed={selected}
         className={[
-          "w-full text-left rounded-sm border p-6 transition-all duration-200",
+          "w-full text-left rounded-xl border p-6 transition-all duration-200",
           selected
             ? "border-arcana-gold bg-arcana-surface-2 shadow-[0_0_28px_rgba(201,168,76,0.18)]"
             : "border-arcana-border bg-arcana-surface hover:border-arcana-gold/50",
@@ -91,7 +91,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
           <div
             key={preset.id}
             aria-disabled
-            className="rounded-sm border border-arcana-border-dim bg-arcana-surface/40 p-5 opacity-50 select-none"
+            className="rounded-xl border border-arcana-border-dim bg-arcana-surface/40 p-5 opacity-50 select-none"
           >
             <div className="flex items-start justify-between gap-3">
               <div>

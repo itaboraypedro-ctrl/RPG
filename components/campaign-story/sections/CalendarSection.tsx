@@ -63,7 +63,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
       />
 
       {/* Data ficcional corrente */}
-      <div className="flex flex-wrap items-end gap-3 rounded-sm border border-arcana-border-dim bg-arcana-surface/60 p-4">
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-arcana-border-dim bg-arcana-surface/60 p-4">
         <div className="min-w-64 flex-1">
           <Field label="Data ficcional atual">
             <TextField
@@ -110,7 +110,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
       </div>
 
       {/* Calendário do Bom de Gole */}
-      <div className="rounded-sm border border-arcana-border-dim bg-arcana-surface/50">
+      <div className="rounded-xl border border-arcana-border-dim bg-arcana-surface/50">
         <button
           type="button"
           onClick={() => setShowBomDeGole((v) => !v)}
@@ -180,7 +180,7 @@ function NewEventForm({ api, onDone }: { api: StoryHubApi; onDone: () => void })
   }
 
   return (
-    <div className="space-y-3 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-4">
+    <div className="space-y-3 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Evento">
           <TextField value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={160} autoFocus />

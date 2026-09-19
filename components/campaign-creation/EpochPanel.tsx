@@ -133,7 +133,7 @@ function EpochWheel({
       <div
         ref={wheelRef}
         onScroll={handleScroll}
-        className="snap-y snap-mandatory overflow-y-auto rounded-sm border border-arcana-border-dim outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="snap-y snap-mandatory overflow-y-auto rounded-xl border border-arcana-border-dim outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{
           height: WHEEL_H,
           paddingTop: WHEEL_PAD,
@@ -242,7 +242,7 @@ export function EpochPanel({ epoch, onEpochChange, footnote }: Props) {
   const isTableVersion = epoch !== SACRAMENTO_META.defaults.epoca;
 
   return (
-    <div className="rounded-sm border border-arcana-border-dim bg-arcana-surface/50">
+    <div className="rounded-xl border border-arcana-border-dim bg-arcana-surface/50">
       {/* Cabeçalho */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-arcana-border-dim px-4 py-3">
         <div className="flex items-center gap-3">
@@ -250,7 +250,7 @@ export function EpochPanel({ epoch, onEpochChange, footnote }: Props) {
             Época &amp; cronologia
           </span>
           {isTableVersion && (
-            <span className="border border-arcana-gold/40 px-2 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold">
+            <span className="rounded-full border border-arcana-gold/40 px-2 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold">
               Versão da mesa
             </span>
           )}

@@ -22,17 +22,14 @@ export function WizardLayout({
   const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
 
   return (
-    <div
-      className="h-dvh text-arcana-text overflow-hidden"
-      style={{ background: "var(--color-arcana-bg)" }}
-    >
+    <div className="arcana-scene h-dvh text-arcana-text overflow-hidden">
       {/* Mobile layout */}
       <div className="lg:hidden h-full flex flex-col">
         {/* Mobile tab toggle */}
         <div
           className="arcana-glass-edge shrink-0 z-20 border-b border-arcana-border-dim px-4 py-3"
         >
-          <div className="flex rounded-sm overflow-hidden border border-arcana-border-dim">
+          <div className="flex rounded-xl overflow-hidden border border-arcana-border-dim">
             <button
               type="button"
               onClick={() => setMobileTab("form")}
@@ -63,10 +60,7 @@ export function WizardLayout({
         {mobileTab === "form" ? (
           <>
             {/* Mobile header */}
-            <div
-              className="shrink-0 px-4 pt-5 pb-4 border-b border-arcana-border-dim"
-              style={{ background: "var(--color-arcana-bg)" }}
-            >
+            <div className="shrink-0 px-4 pt-5 pb-4 border-b border-arcana-border-dim">
               {header}
             </div>
             {/* Mobile scrollable content */}
@@ -90,10 +84,7 @@ export function WizardLayout({
       {/* Desktop: 60/40 */}
       <div className="hidden lg:flex h-dvh">
         {/* Form side — fixed header + scrollable body + fixed footer */}
-        <div
-          className="flex-[60] flex flex-col border-r border-arcana-border-dim"
-          style={{ background: "var(--color-arcana-bg)" }}
-        >
+        <div className="flex-[60] flex flex-col border-r border-arcana-border-dim">
           {/* Fixed header */}
           <div className="shrink-0 px-12 pt-8 pb-6 border-b border-arcana-border-dim">
             {header}

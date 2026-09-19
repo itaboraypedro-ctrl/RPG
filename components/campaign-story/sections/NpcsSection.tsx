@@ -62,7 +62,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
       />
 
       {lastDraw && draft && (
-        <div className="arcana-gilded rounded-sm px-4 py-3">
+        <div className="arcana-gilded rounded-xl px-4 py-3">
           <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Gerador do livro (pp. 119–120) — uma carta por coluna, reação pelo naipe da última
           </p>
@@ -144,7 +144,7 @@ function CardSeed({ label, card, value }: { label: string; card: string; value: 
       <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">
         {label}
       </span>
-      <span className="rounded-sm border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">
+      <span className="rounded-xl border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">
         {card}
       </span>
       <span className="text-arcana-text">{value}</span>
@@ -184,7 +184,7 @@ function NpcForm({
   }
 
   return (
-    <div className="space-y-4 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-5">
+    <div className="space-y-4 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-5">
       <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
         {initial.nome ? "NPC" : "Novo NPC"}
       </p>
@@ -237,7 +237,7 @@ function NpcForm({
       </Field>
 
       {/* Ficha mecânica opcional */}
-      <div className="rounded-sm border border-arcana-border-dim bg-arcana-bg/60 p-4">
+      <div className="rounded-xl border border-arcana-border-dim bg-arcana-bg/60 p-4">
         <button
           type="button"
           onClick={() => setHasFicha((v) => !v)}
@@ -285,7 +285,7 @@ function NpcForm({
               </Field>
             </div>
 
-            <div className="arcana-gilded flex flex-wrap gap-4 rounded-sm px-4 py-3">
+            <div className="arcana-gilded flex flex-wrap gap-4 rounded-xl px-4 py-3">
               <DerivedStat label="Vida" value={derived.vida} />
               <DerivedStat label="Dor" value={derived.dor} />
               <DerivedStat label="Defesa" value={derived.defesa} />
@@ -381,7 +381,7 @@ function NpcCard({ element, api }: { element: CampaignElement; api: StoryHubApi 
           </p>
         </div>
         {derived && data.ficha && (
-          <span className="shrink-0 rounded-sm border border-arcana-border px-2 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
+          <span className="shrink-0 rounded-xl border border-arcana-border px-2 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
             {data.ficha.tipo} {data.ficha.ndc} · V{derived.vida} · A{derived.acoes}
           </span>
         )}

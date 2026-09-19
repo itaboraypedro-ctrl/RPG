@@ -62,7 +62,7 @@ export default function Step1Identity({ data, onUpdate }: Props) {
           value={data.name ?? ""}
           onChange={(e) => onUpdate({ name: e.target.value })}
           placeholder="Ex.: Aelar Caelnith"
-          className="w-full rounded-sm border border-arcana-border/60 bg-arcana-surface/40 px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/40 focus:border-arcana-gold focus:outline-none transition-colors"
+          className="w-full rounded-xl border border-arcana-border/60 bg-arcana-surface/40 px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/40 focus:border-arcana-gold focus:outline-none transition-colors"
         />
       </div>
 
@@ -79,7 +79,7 @@ export default function Step1Identity({ data, onUpdate }: Props) {
                 key={opt.key}
                 type="button"
                 onClick={() => onUpdate({ sex: opt.key })}
-                className={`flex-1 min-w-[7rem] rounded-sm border px-4 py-3 font-cinzel text-sm uppercase tracking-[0.18em] transition-all ${
+                className={`flex-1 min-w-[7rem] rounded-xl border px-4 py-3 font-cinzel text-sm uppercase tracking-[0.18em] transition-all ${
                   selected
                     ? "border-arcana-gold bg-arcana-gold/8 text-arcana-gold-bright"
                     : "border-arcana-border/40 text-arcana-text-dim hover:border-arcana-gold/30 hover:text-arcana-text"

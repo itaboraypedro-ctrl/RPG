@@ -66,7 +66,7 @@ function NewSecretForm({ api, onDone }: { api: StoryHubApi; onDone: () => void }
   }
 
   return (
-    <div className="space-y-3 rounded-sm border border-red-900/40 bg-arcana-surface p-4">
+    <div className="space-y-3 rounded-xl border border-red-900/40 bg-arcana-surface p-4">
       <Field label="Título">
         <TextField value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={160} autoFocus />
       </Field>

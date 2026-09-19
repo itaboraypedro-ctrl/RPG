@@ -78,7 +78,7 @@ export function AiAssist({ sessionId, section, title, onApply }: Props) {
   }
 
   return (
-    <div className="rounded-sm border border-arcana-border-dim bg-arcana-surface/40">
+    <div className="rounded-xl border border-arcana-border-dim bg-arcana-surface/40">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -121,7 +121,7 @@ export function AiAssist({ sessionId, section, title, onApply }: Props) {
           {proposals.map((proposal, i) => (
             <div
               key={`${proposal.titulo}-${i}`}
-              className="rounded-sm border border-arcana-gold/25 bg-arcana-surface/80 p-4"
+              className="rounded-xl border border-arcana-gold/25 bg-arcana-surface/80 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">

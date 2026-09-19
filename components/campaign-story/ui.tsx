@@ -73,7 +73,7 @@ export function SectionHeader({
 
   return (
     <div className="space-y-3">
-      <div className="relative h-28 overflow-hidden rounded-sm border border-arcana-border-dim sm:h-36">
+      <div className="relative h-28 overflow-hidden rounded-xl border border-arcana-border-dim sm:h-36">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageSrc}
@@ -160,7 +160,7 @@ export function OriginBadge({ origem }: { origem: "canon" | "campanha" }) {
   return (
     <span
       className={[
-        "border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em]",
+        "rounded-full border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em]",
         origem === "canon"
           ? "border-arcana-gold/40 text-arcana-gold"
           : "border-arcana-border text-arcana-text-dim",
@@ -195,7 +195,7 @@ export function VisibilityBadge({
           : "Visível para jogadores da campanha. Clique para ocultar."
       }
       className={[
-        "border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-colors",
+        "rounded-full border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-colors",
         isSecret
           ? "border-red-900/60 text-red-300"
           : "border-emerald-900/60 text-emerald-300",
@@ -224,7 +224,7 @@ export function ElementCard({ children }: { children: React.ReactNode }) {
 
 export function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-sm border border-dashed border-arcana-border/50 px-4 py-6 text-center font-crimson text-sm italic text-arcana-text-dim">
+    <p className="rounded-xl border border-dashed border-arcana-border/50 px-4 py-6 text-center font-crimson text-sm italic text-arcana-text-dim">
       {children}
     </p>
   );

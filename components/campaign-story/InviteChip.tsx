@@ -30,7 +30,7 @@ export function InviteChip({ inviteCode }: { inviteCode: string }) {
       onClick={copy}
       disabled={!url}
       title={url || "Link de convite"}
-      className="flex items-center gap-2 rounded-sm border border-arcana-border bg-arcana-surface px-3 py-2 transition-all hover:border-arcana-gold/50 disabled:opacity-50"
+      className="flex items-center gap-2 rounded-xl border border-arcana-border bg-arcana-surface px-3 py-2 transition-all hover:border-arcana-gold/50 disabled:opacity-50"
     >
       <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim">
         Convite

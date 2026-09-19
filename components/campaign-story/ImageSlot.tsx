@@ -72,7 +72,7 @@ export function ImageSlot({ imageUrl, alt, onUpload, onRemove }: Props) {
               onClick={() => inputRef.current?.click()}
               disabled={busy}
               title="Trocar imagem"
-              className="arcana-glass rounded-sm px-2 py-1 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text transition-colors hover:text-arcana-gold"
+              className="arcana-glass rounded-xl px-2 py-1 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text transition-colors hover:text-arcana-gold"
             >
               Trocar
             </button>
@@ -81,7 +81,7 @@ export function ImageSlot({ imageUrl, alt, onUpload, onRemove }: Props) {
               onClick={() => void handleRemove()}
               disabled={busy}
               title="Remover imagem"
-              className="arcana-glass rounded-sm px-2 py-1 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-danger transition-colors hover:text-red-300"
+              className="arcana-glass rounded-xl px-2 py-1 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-danger transition-colors hover:text-red-300"
             >
               ✕
             </button>

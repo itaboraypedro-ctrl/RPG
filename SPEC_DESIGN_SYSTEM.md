@@ -1,5 +1,6 @@
-# SPEC — Design System ARCANA v2 ("Ouro Vivo")
+# SPEC — Design System ARCANA v3 ("Ouro Vivo · Vidro Líquido")
 
+> Versão 3.0, 19/09/2026. Evolução da v2.1: mesma paleta, contraste e zonas tonais; muda a **forma** — cantos generosos estilo Apple OS, vidro com blur real no chrome e cena ambiente. Ver §7.
 > Versão 2.1, 19/09/2026. Substitui os pilares visuais implícitos do tema `arcana-*` em `app/globals.css`.
 > Escopo: tokens de cor, contraste, tipografia de UI, botões, inputs, selects/dropdowns, scrollbars, chips, painéis e vidro fosco. O namespace `rpg-*` (ficha in-game) está fora do escopo desta versão.
 
@@ -102,3 +103,31 @@ Thumb em gradiente `gold-dim → rgba(209,171,85,.55)` com `border-radius`, 10px
 - `app/globals.css`: tokens v2 + componentes novos (§4) + scrollbar global + focus-visible.
 - Varredura nas superfícies novas (`app/campaigns/`, `components/campaign-creation/`, `components/campaign-story/`) e no chrome compartilhado do wizard (`components/character-creation/WizardLayout.tsx`, `StepIndicator.tsx`): opacidades de texto elevadas, fontes de 7–9px promovidas a 10px+, botões migrados para as classes novas, fundos `rgba(7,7,13,…)` atualizados para o bg v2.
 - Landing (`arcana-ember/aura/mist` etc.) intocada: é cena cinematográfica sobre imagem, não chrome de UI.
+
+## 7. v3 "Vidro Líquido" (19/09/2026)
+
+Referências: iOS/macOS (liquid glass), dashboards dark premium. A identidade (ouro, Cinzel, pergaminho, couro) permanece; o que muda é a forma e o material.
+
+### 7.1 Raios do sistema
+| Elemento | Raio |
+|---|---|
+| Botões (`.arcana-btn-*`) e chips (`.arcana-chip*`) | **pílula** (999px) |
+| Inputs, selects, stat/pool chips, gilded, sidebar-items | 12px |
+| Cards (`.arcana-card`), panels, banners, superfícies inline (`rounded-xl`) | 12–16px |
+| Painéis flutuantes (`.arcana-panel-elevated`), plaquetas de topo (`rounded-t-2xl`) | 16–20px |
+| **Exceção**: `.arcana-parchment` (cartaz/papel de cena) | canto vivo — é adereço, não chrome |
+
+### 7.2 Vidro
+- `.arcana-glass`/`-edge`: blur 24px + saturate 1.5, fundo mais translúcido, borda `rgba(255,255,255,.10)`.
+- `.arcana-panel-elevated` agora é vidro de verdade (blur 24px) — modais e pickers.
+- `.arcana-btn-ghost` ganha blur leve (12px) — botão de vidro.
+- `.arcana-card`: translúcido (`rgba(27,27,42,.72)`) com borda `rgba(255,255,255,.08)` e luz interna; sem backdrop-filter (perf em grids grandes).
+
+### 7.3 Cena ambiente
+`.arcana-scene` nos shells (StoryHub, WizardLayout): auras fixas de ouro (topo-esquerda), azul-profundo (topo-direita) e vinho (rodapé) sobre o bg — dá material ao vidro sem animação e sem tocar no contraste do texto. O Hub usa sua própria cena cinematográfica (HubScene), intocada.
+
+### 7.4 Detalhes
+- Sidebar-item ativo: pílula preenchida com anel dourado interno (sem barra de 2px à esquerda).
+- Badges (Cânone, visibilidade, Lei/Gangue, Versão da mesa): `rounded-full`.
+- `:focus-visible` não força mais `border-radius` (respeita a forma do elemento).
+- Regra de migração: `rounded-sm`→`rounded-xl` em todo o namespace arcana; `rpg-*` (ficha in-game) e landing seguem fora do escopo.

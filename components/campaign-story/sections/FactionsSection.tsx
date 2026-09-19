@@ -100,7 +100,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
                 onClick={() => setSelectedId(faction.id)}
                 aria-pressed={isSelected}
                 className={[
-                  "group relative overflow-hidden rounded-sm border text-left transition-all duration-200",
+                  "group relative overflow-hidden rounded-xl border text-left transition-all duration-200",
                   isSelected
                     ? "border-arcana-gold"
                     : "border-arcana-border-dim hover:border-arcana-gold/50",
@@ -179,7 +179,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
         </div>
 
         {/* Dossiê da facção selecionada */}
-        <div className="overflow-hidden rounded-sm border border-arcana-gold/30 bg-arcana-surface/60 sm:flex">
+        <div className="overflow-hidden rounded-xl border border-arcana-gold/30 bg-arcana-surface/60 sm:flex">
           <div
             className="relative mx-auto aspect-square w-full max-w-72 shrink-0 sm:mx-0 sm:w-72 sm:max-w-none"
             style={{ background: EMBLEM_BG }}
@@ -202,7 +202,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
                 <div className="arcana-heading-bar w-32" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim">
+                <span className="rounded-full border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim">
                   {selectedFaction.categoria === "lei" ? "Lei" : "Gangue"}
                 </span>
                 <PageRef paginas={selectedFaction.paginas} />
@@ -288,7 +288,7 @@ function NewFactionForm({ api, onDone }: { api: StoryHubApi; onDone: () => void 
   }
 
   return (
-    <div className="space-y-4 rounded-sm border border-arcana-gold/30 bg-arcana-surface p-5">
+    <div className="space-y-4 rounded-xl border border-arcana-gold/30 bg-arcana-surface p-5">
       <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
         Nova facção da campanha
       </p>
@@ -338,7 +338,7 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
       {/* Plaqueta do brasão — sangra até as bordas da carta */}
       {data.emblema && (
         <div
-          className="relative -mx-4 -mt-4 mb-3 h-48 overflow-hidden rounded-t-[3px] border-b border-arcana-border-dim"
+          className="relative -mx-4 -mt-4 mb-3 h-48 overflow-hidden rounded-t-2xl border-b border-arcana-border-dim"
           style={{ background: EMBLEM_BG }}
         >
           {/* O próprio brasão, ampliado e desfocado, forra a faixa inteira */}

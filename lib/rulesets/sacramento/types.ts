@@ -46,6 +46,8 @@ export type SacramentoFaction = {
   resumo: string;
   membros: SacramentoFactionMember[];
   paginas: number[];
+  /** Brasão pintado em public/ (ex.: /story/factions/curupira.webp). */
+  emblema?: string;
 };
 
 /* ── Timeline (Doc 2 §5.2) ── */
@@ -75,6 +77,8 @@ export type CampaignFactionData = {
   ameaca?: string;
   notasDoJuiz?: string;
   paginas?: number[];
+  /** Brasão da facção (arte canônica em public/ ou upload no storage). */
+  emblema?: string;
 };
 
 /** Campos narrativos de NPC (Doc 2 §12.1) + ficha mecânica opcional (§12). */

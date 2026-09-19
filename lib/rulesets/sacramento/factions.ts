@@ -8,6 +8,7 @@ import type { SacramentoFaction } from "./types";
 export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   {
     id: "curupira",
+    emblema: "/story/factions/curupira.webp",
     nome: "Gangue do Curupira",
     categoria: "gangue",
     resumo: "Atua na Floresta do Cipó; emboscadas silenciosas.",
@@ -25,6 +26,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "bandoleira-escarlate",
+    emblema: "/story/factions/bandoleira-escarlate.webp",
     nome: "Bandoleira Escarlate",
     categoria: "gangue",
     resumo: "Hierarquia por cores, liderada pelo Escarlate.",
@@ -50,6 +52,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "seis-balas",
+    emblema: "/story/factions/seis-balas.webp",
     nome: "Comando das Seis Balas",
     categoria: "gangue",
     resumo: "Crime organizado de Belo Horizonte, do batedor ao chefão.",
@@ -82,6 +85,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "cabeca-de-abobora",
+    emblema: "/story/factions/cabeca-de-abobora.webp",
     nome: "Cabeça de Abóbora",
     categoria: "gangue",
     resumo: "Bando errático de perigo imprevisível.",
@@ -92,6 +96,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "irmas-gonzaga",
+    emblema: "/story/factions/irmas-gonzaga.webp",
     nome: "Irmãs Gonzaga",
     categoria: "gangue",
     resumo: "Quatro irmãs, todas especiais NdC 5.",
@@ -130,6 +135,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "gangue-do-cogumelo",
+    emblema: "/story/factions/gangue-do-cogumelo.webp",
     nome: "Gangue do Cogumelo",
     categoria: "gangue",
     resumo: "Culto do Sertão de Fungos, chá e alucinações.",
@@ -157,6 +163,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "novos-sagrados",
+    emblema: "/story/factions/novos-sagrados.webp",
     nome: "Novos Sagrados",
     categoria: "gangue",
     resumo: "Culto reorganizado em Sacramento pelos novos Bispos (uma habilidade extra expressa, p. 264).",
@@ -207,6 +214,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "policia-bh",
+    emblema: "/story/factions/policia-bh.webp",
     nome: "Polícia de Belo Horizonte",
     categoria: "lei",
     resumo: "Força policial da capital; política e corrupção na ambientação não impedem NPC honesto.",
@@ -221,6 +229,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "boinas-brancas",
+    emblema: "/story/factions/boinas-brancas.webp",
     nome: "Boinas Brancas",
     categoria: "lei",
     resumo: "Segurança ligada às empresas ferroviárias — não é classe de PJ.",
@@ -244,6 +253,7 @@ export const SACRAMENTO_FACTIONS: SacramentoFaction[] = [
   },
   {
     id: "defesa-nacional",
+    emblema: "/story/factions/defesa-nacional.webp",
     nome: "Defesa Nacional",
     categoria: "lei",
     resumo: "Representantes, xerifes e delegados pelo interior. Xerifes nomeados podem ser especiais (ex.: Tonho do Arame, NdC 4 especial, p. 142).",

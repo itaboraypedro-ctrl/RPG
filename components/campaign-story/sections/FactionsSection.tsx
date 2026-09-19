@@ -20,6 +20,41 @@ import {
   hintClass,
 } from "../ui";
 
+/**
+ * Brasão pintado da facção. Some sozinho se a arte ainda não existir em
+ * public/story/factions — o layout não depende dele.
+ */
+function FactionEmblem({
+  src,
+  alt,
+  size = "md",
+}: {
+  src?: string;
+  alt: string;
+  size?: "md" | "lg";
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return null;
+  return (
+    <span
+      className={[
+        "relative shrink-0 overflow-hidden rounded-sm border border-arcana-gold/35",
+        size === "lg" ? "h-14 w-14" : "h-10 w-10",
+      ].join(" ")}
+      style={{ boxShadow: "0 0 10px rgba(209,171,85,0.15), inset 0 1px 0 rgba(255,255,255,0.06)" }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="h-full w-full object-cover"
+      />
+    </span>
+  );
+}
+
 export function FactionsSection({ api }: { api: StoryHubApi }) {
   const elements = api.elementsOf("faction");
   const [creating, setCreating] = useState(false);
@@ -40,6 +75,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
       canonId: faction.id,
       resumo: faction.resumo,
       paginas: faction.paginas,
+      emblema: faction.emblema,
     };
     await api.addElement("faction", "gm_only", data as unknown as Record<string, unknown>);
     setBusy(null);
@@ -99,6 +135,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
                     onClick={() => setExpanded(isOpen ? null : faction.id)}
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
+                    <FactionEmblem src={faction.emblema} alt={faction.nome} />
                     <span className="font-cinzel text-sm uppercase tracking-[0.12em] text-arcana-text">
                       {faction.nome}
                     </span>
@@ -240,11 +277,14 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
   return (
     <ElementCard>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
-            {data.nome}
-          </h3>
-          <OriginBadge origem={data.origem} />
+        <div className="flex min-w-0 items-center gap-3">
+          <FactionEmblem src={data.emblema} alt={data.nome} size="lg" />
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
+              {data.nome}
+            </h3>
+            <OriginBadge origem={data.origem} />
+          </div>
         </div>
         <PageRef paginas={data.paginas} />
       </div>

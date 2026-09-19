@@ -2,6 +2,8 @@
 
 import type { CampaignWizardData } from "@/app/campaigns/new/CampaignWizard";
 import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
+import { WIZARD_GUIDES } from "@/lib/rulesets/sacramento/guidance";
+import { HowItWorks } from "./Explainer";
 
 type Props = {
   data: CampaignWizardData;
@@ -28,6 +30,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      <HowItWorks guide={WIZARD_GUIDES.modelo} />
       <p className="font-crimson text-base italic text-arcana-text-dim">
         O modelo define as regras, o cenário e as ferramentas que a plataforma
         oferece ao Juiz e aos jogadores durante a campanha.

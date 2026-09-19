@@ -8,6 +8,7 @@ import {
   deleteCampaignImage,
   uploadCampaignImage,
 } from "@/app/campaigns/[id]/story/actions";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { ImageSlot } from "../ImageSlot";
 import {
@@ -56,6 +57,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.places}
         imageSrc="/story/headers/lugares.webp"
         title="Lugares"
         description="Onde a campanha acontece. Adicione lugares do cânone (com referência de página) ou crie os seus — criações da campanha nunca alegam página do livro."

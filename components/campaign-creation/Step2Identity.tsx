@@ -1,6 +1,8 @@
 "use client";
 
 import type { CampaignWizardData } from "@/app/campaigns/new/CampaignWizard";
+import { WIZARD_GUIDES } from "@/lib/rulesets/sacramento/guidance";
+import { HowItWorks } from "./Explainer";
 
 type Props = {
   data: CampaignWizardData;
@@ -13,6 +15,7 @@ const labelClass =
 export function Step2Identity({ data, onUpdate }: Props) {
   return (
     <div className="space-y-8 max-w-2xl">
+      <HowItWorks guide={WIZARD_GUIDES.identidade} />
       <div className="space-y-2">
         <label htmlFor="campaign-title" className={labelClass}>
           Nome da campanha

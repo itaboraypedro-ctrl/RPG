@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CampaignConfig } from "@/lib/types";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
 import { SESSION_ZERO_SUGGESTIONS } from "@/lib/rulesets/sacramento/themes";
@@ -46,6 +47,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-3xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.overview}
         imageSrc="/story/headers/visao-geral.webp"
         title="Visão geral"
         description="O macro da campanha: premissa, objetivo do bando, tom e acordos da mesa. Visível para os jogadores que entrarem — segredos ficam na seção Segredos do Juiz."

@@ -6,6 +6,8 @@ import { TagListEditor } from "./TagInputs";
 import { ToneMeter } from "./ToneMeter";
 import { ThemeGrid } from "./ThemeGrid";
 import { EpochPanel } from "./EpochPanel";
+import { WIZARD_GUIDES } from "@/lib/rulesets/sacramento/guidance";
+import { HowItWorks } from "./Explainer";
 
 type Props = {
   data: CampaignWizardData;
@@ -70,6 +72,7 @@ function Toggle({
 export function Step3Table({ data, onUpdate }: Props) {
   return (
     <div className="space-y-9 max-w-2xl">
+      <HowItWorks guide={WIZARD_GUIDES.mesa} />
       {/* Jogadores */}
       <div className="space-y-3">
         <SectionTitle hint="O link de convite é gerado junto com a campanha e aparece na próxima fase.">

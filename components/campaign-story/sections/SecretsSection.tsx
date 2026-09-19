@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignSecretNoteData } from "@/lib/rulesets/sacramento/types";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import {
   ElementCard,
@@ -22,6 +23,7 @@ export function SecretsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-3xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.secrets}
         imageSrc="/story/headers/segredos.webp"
         title="Segredos do Juiz"
         description="Bastidores da campanha: verdades por trás de cultos, identidades encenadas, planos de facções. Estas notas nunca são enviadas aos jogadores — nem aparecem em recapitulações sem sua autorização."

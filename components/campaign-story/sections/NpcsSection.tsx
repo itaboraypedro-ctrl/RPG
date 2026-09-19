@@ -9,6 +9,7 @@ import {
   type GeneratedNpc,
 } from "@/lib/rulesets/sacramento/generators";
 import { deriveNpcStats, type Ndc, type NpcTipo } from "@/lib/rulesets/sacramento/npc-stats";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { AiAssist } from "../AiAssist";
 import {
@@ -48,6 +49,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.npcs}
         imageSrc="/story/headers/npcs.webp"
         title="NPCs"
         description="Figuras da campanha. Campos narrativos não concedem bônus; a ficha mecânica (NdC) é opcional e calculada pelas fórmulas do livro. Sem confronto previsto, um NPC pode viver sem ficha."

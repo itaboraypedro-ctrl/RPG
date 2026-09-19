@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignSceneData } from "@/lib/rulesets/sacramento/types";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { AiAssist } from "../AiAssist";
 import {
@@ -25,6 +26,7 @@ export function ScenesSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.scenes}
         imageSrc="/story/headers/cenas.webp"
         title="Cenas"
         description="Situações preparadas: lugar, participantes, fatos, rumores e segredos. Nenhum campo é obrigatório para começar uma cena — e a descrição nunca decide os pensamentos ou as ações dos personagens."

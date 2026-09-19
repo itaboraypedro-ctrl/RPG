@@ -2,6 +2,9 @@
 
 // Primitivos de UI compartilhados pelas seções do Hub de História.
 
+import { HowItWorks } from "@/components/campaign-creation/Explainer";
+import type { SectionGuide } from "@/lib/rulesets/sacramento/guidance";
+
 export const labelClass =
   "font-cinzel text-[10px] uppercase tracking-[0.28em] text-arcana-gold/90";
 export const hintClass = "font-crimson text-[13px] italic text-arcana-text-dim";
@@ -49,24 +52,30 @@ export function SectionHeader({
   description,
   action,
   imageSrc,
+  guide,
 }: {
   title: string;
   description: string;
   action?: React.ReactNode;
   /** Banner pintado da seção (faixa 4:1, título sobreposto no scrim escuro). */
   imageSrc?: string;
+  /** Guia "Como funciona" da seção — para mesas leigas. */
+  guide?: SectionGuide;
 }) {
   if (!imageSrc) {
     return (
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-2xl space-y-1.5">
-          <div>
-            <h2 className="arcana-heading text-2xl tracking-[0.14em]">{title}</h2>
-            <div className="arcana-heading-bar w-40" />
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl space-y-1.5">
+            <div>
+              <h2 className="arcana-heading text-2xl tracking-[0.14em]">{title}</h2>
+              <div className="arcana-heading-bar w-40" />
+            </div>
+            <p className="font-crimson text-sm italic text-arcana-text-dim">{description}</p>
           </div>
-          <p className="font-crimson text-sm italic text-arcana-text-dim">{description}</p>
+          {action}
         </div>
-        {action}
+        {guide && <HowItWorks guide={guide} />}
       </div>
     );
   }
@@ -106,6 +115,7 @@ export function SectionHeader({
         </p>
         {action}
       </div>
+      {guide && <HowItWorks guide={guide} />}
     </div>
   );
 }

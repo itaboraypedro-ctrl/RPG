@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignCalendarEventData } from "@/lib/rulesets/sacramento/types";
 import { BOM_DE_GOLE_CALENDAR } from "@/lib/rulesets/sacramento/timeline";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import {
   ElementCard,
@@ -57,6 +58,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-3xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.calendar}
         imageSrc="/story/headers/calendario.webp"
         title="Calendário ficcional"
         description="Onde a campanha está no tempo do jogo e o que se aproxima. Não confundir a data real da mesa com a data do mundo."

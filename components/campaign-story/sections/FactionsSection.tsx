@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { CampaignElement } from "@/lib/types";
 import type { CampaignFactionData } from "@/lib/rulesets/sacramento/types";
 import { SACRAMENTO_FACTIONS } from "@/lib/rulesets/sacramento/factions";
+import { FACTION_GUIDES, SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
+import { InfoTip } from "@/components/campaign-creation/Explainer";
 import type { StoryHubApi } from "../StoryHub";
 import {
   ElementCard,
@@ -55,6 +57,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-5xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.factions}
         imageSrc="/story/headers/faccoes.webp"
         title="Facções & Ameaças"
         description="Gangues, cultos e forças da lei que movem a campanha. Templates canônicos trazem a composição publicada (tipos e NdC) — quantidades em cena, armas e objetivos são sempre do Juiz."
@@ -208,32 +211,71 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
               </div>
             </div>
 
-            <p className="font-crimson text-sm italic text-arcana-text-dim">
-              {selectedFaction.resumo}
+            {/* Quem são — a frase que qualquer leigo entende */}
+            <p className="font-crimson text-[15px] leading-relaxed text-arcana-text">
+              {FACTION_GUIDES[selectedFaction.id]?.identidade ?? selectedFaction.resumo}
             </p>
 
-            <table className="w-full">
-              <tbody>
-                {selectedFaction.membros.map((m) => (
-                  <tr key={m.papel} className="align-top">
-                    <td className="whitespace-nowrap pr-3 py-1 font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text">
-                      {m.papel}
-                    </td>
-                    <td className="whitespace-nowrap pr-3 py-1 font-crimson text-xs text-arcana-text-dim">
-                      {m.tipo} · NdC {m.ndc}
-                    </td>
-                    <td className="py-1 font-crimson text-xs text-arcana-text-dim">
-                      {[
-                        ...m.habilidades,
-                        ...(m.habilidadesPendentes ?? []).map(
-                          (h) => `${h} (sem verbete — decisão do Juiz)`,
-                        ),
-                      ].join(", ") || "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Composição com glossário no hover */}
+            <div className="space-y-1.5">
+              <p className="flex items-center gap-2 font-cinzel text-[10px] font-bold uppercase tracking-[0.25em] text-arcana-gold">
+                Composição
+                <InfoTip term="ndc" />
+                <InfoTip term="comum-especial" />
+              </p>
+              <table className="w-full">
+                <tbody>
+                  {selectedFaction.membros.map((m) => (
+                    <tr key={m.papel} className="align-top">
+                      <td className="whitespace-nowrap pr-3 py-1 font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text">
+                        {m.papel}
+                      </td>
+                      <td className="whitespace-nowrap pr-3 py-1 font-crimson text-xs text-arcana-text-dim">
+                        {m.tipo} · NdC {m.ndc}
+                      </td>
+                      <td className="py-1 font-crimson text-xs text-arcana-text-dim">
+                        {[
+                          ...m.habilidades,
+                          ...(m.habilidadesPendentes ?? []).map(
+                            (h) => `${h} (sem verbete — decisão do Juiz)`,
+                          ),
+                        ].join(", ") || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Como usar na mesa — orientação prática para Juiz leigo */}
+            {FACTION_GUIDES[selectedFaction.id] && (
+              <div className="space-y-3 rounded-xl border border-arcana-border-dim bg-arcana-bg/40 p-4">
+                <div className="space-y-1">
+                  <p className="font-cinzel text-[10px] font-bold uppercase tracking-[0.25em] text-arcana-gold">
+                    Como usar na mesa
+                  </p>
+                  <p className="font-crimson text-sm leading-relaxed text-arcana-text">
+                    {FACTION_GUIDES[selectedFaction.id].comoUsar}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-cinzel text-[10px] font-bold uppercase tracking-[0.25em] text-arcana-gold">
+                    Ganchos prontos
+                  </p>
+                  <ul className="space-y-1">
+                    {FACTION_GUIDES[selectedFaction.id].ganchos.map((g) => (
+                      <li
+                        key={g}
+                        className="flex gap-2 font-crimson text-sm leading-snug text-arcana-text-dim"
+                      >
+                        <span aria-hidden className="text-arcana-gold">◆</span>
+                        {g}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             <div className="pt-1">
               {canonIds.has(selectedFaction.id) ? (
@@ -397,6 +439,9 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
               🔒 {data.notasDoJuiz}
             </p>
           )}
+          {data.canonId && FACTION_GUIDES[data.canonId] && (
+            <FactionMiniGuide guide={FACTION_GUIDES[data.canonId]} />
+          )}
         </>
       ) : (
         <div className="mt-3 space-y-3">
@@ -440,5 +485,50 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
         </div>
       </div>
     </ElementCard>
+  );
+}
+
+/** Guia prático recolhido dentro da carta — abre só quando o Juiz precisa. */
+function FactionMiniGuide({
+  guide,
+}: {
+  guide: (typeof FACTION_GUIDES)[string];
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={[
+          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-colors",
+          open
+            ? "border-arcana-gold/60 bg-arcana-gold/10 text-arcana-gold-bright"
+            : "border-arcana-border text-arcana-text-dim hover:border-arcana-gold/50 hover:text-arcana-gold",
+        ].join(" ")}
+      >
+        <span aria-hidden>✦</span>
+        {open ? "Fechar guia" : "Guia do Juiz"}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2.5 rounded-xl border border-arcana-border-dim bg-arcana-bg/40 p-3">
+          <p className="font-crimson text-[13px] leading-relaxed text-arcana-text">
+            {guide.comoUsar}
+          </p>
+          <ul className="space-y-1">
+            {guide.ganchos.map((g) => (
+              <li
+                key={g}
+                className="flex gap-2 font-crimson text-[13px] leading-snug text-arcana-text-dim"
+              >
+                <span aria-hidden className="text-arcana-gold">◆</span>
+                {g}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

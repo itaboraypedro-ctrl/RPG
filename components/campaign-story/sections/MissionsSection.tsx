@@ -8,6 +8,7 @@ import {
   generateMission,
   type GeneratedMission,
 } from "@/lib/rulesets/sacramento/generators";
+import { SECTION_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import type { StoryHubApi } from "../StoryHub";
 import { AiAssist } from "../AiAssist";
 import {
@@ -43,6 +44,7 @@ export function MissionsSection({ api }: { api: StoryHubApi }) {
   return (
     <div className="max-w-4xl space-y-8">
       <SectionHeader
+        guide={SECTION_GUIDES.missions}
         imageSrc="/story/headers/missoes.webp"
         title="Missões"
         description="Trabalhos, pedidos e encrencas. O gerador de três cartas do livro (p. 104) sorteia pedido, vínculo e reviravolta — o Juiz costura a combinação numa missão coerente."

@@ -11,7 +11,7 @@ type StatBlock = Record<AbilityKey, number>;
 export type CreateCharacterPayload = {
   name: string;
   sex: string;
-  ageCategory: string;
+  age: number;
   raceId: string;
   subraceId?: string;
   raceName: string;
@@ -84,7 +84,7 @@ export async function createCharacter(payload: CreateCharacterPayload): Promise<
     background: payload.backgroundName,
     subrace: payload.subraceId ?? null,
     sex: payload.sex,
-    age_category: payload.ageCategory,
+    age: payload.age,
     alignment: payload.alignment ?? null,
     personality: payload.personality ?? {},
     race_traits: { traits: payload.raceTraits ?? [] },

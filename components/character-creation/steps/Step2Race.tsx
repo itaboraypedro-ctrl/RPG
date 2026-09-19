@@ -2,166 +2,212 @@
 
 import { RaceCard } from "@/components/character-creation/cards/RaceCard";
 import { RACES } from "@/lib/character-creation/race-data";
-import type {
-  AbilityKey,
-  CharacterCreationData,
-} from "@/lib/character-creation/types";
+import type { AbilityKey, CharacterCreationData } from "@/lib/character-creation/types";
+
+function getAgeLabel(age: number, maturity: number, max: number): string {
+  const span = max - maturity;
+  if (age < maturity + span * 0.2) return "Jovem";
+  if (age < maturity + span * 0.5) return "Adulto";
+  if (age < maturity + span * 0.75) return "Maduro";
+  return "Ancião";
+}
 
 type Props = {
   data: Partial<CharacterCreationData>;
   onUpdate: (partial: Partial<CharacterCreationData>) => void;
-  onNext: () => void;
-  onBack: () => void;
   onGenerateImage: (step: 2) => void;
 };
 
 const ABILITY_LABEL: Record<AbilityKey, string> = {
-  str: "FOR",
-  dex: "DES",
-  con: "CON",
-  int: "INT",
-  wis: "SAB",
-  cha: "CAR",
+  str: "FOR", dex: "DES", con: "CON", int: "INT", wis: "SAB", cha: "CAR",
 };
 
-export default function Step2Race({
-  data,
-  onUpdate,
-  onNext,
-  onBack,
-  onGenerateImage,
-}: Props) {
+export default function Step2Race({ data, onUpdate, onGenerateImage }: Props) {
   const selectedRace = RACES.find((r) => r.id === data.raceId);
-  const selectedSubrace = selectedRace?.subraces.find(
-    (s) => s.id === data.subraceId,
-  );
-
+  const selectedSubrace = selectedRace?.subraces.find((s) => s.id === data.subraceId);
   const hasSubraces = !!selectedRace && selectedRace.subraces.length > 0;
-  const canProceed =
-    !!data.raceId && (!hasSubraces || !!data.subraceId);
+  const ageRange = selectedRace?.ageRange;
+  const currentAge = data.age ?? ageRange?.maturity ?? 25;
 
-  const handleRaceSelect = (raceId: string, subraceId?: string) => {
-    onUpdate({ raceId, subraceId });
+  const handleRaceSelect = (raceId: string) => {
     const race = RACES.find((r) => r.id === raceId);
-    if (!race) return;
-    const raceHasSubraces = race.subraces.length > 0;
-    if (!raceHasSubraces || subraceId) {
-      onGenerateImage(2);
-    }
+    onUpdate({ raceId, subraceId: undefined, age: race?.ageRange.maturity });
+    if (race && race.subraces.length === 0) onGenerateImage(2);
   };
 
-  // Combina bônus de raça + sub-raça selecionada
+  const handleSubraceSelect = (subraceId: string) => {
+    onUpdate({ subraceId });
+    onGenerateImage(2);
+  };
+
   const combinedBonuses: Partial<Record<AbilityKey, number>> = {};
-  if (selectedRace) {
-    for (const [k, v] of Object.entries(selectedRace.abilityBonus)) {
-      if (typeof v === "number") {
-        combinedBonuses[k as AbilityKey] =
-          (combinedBonuses[k as AbilityKey] ?? 0) + v;
-      }
-    }
+  for (const [k, v] of Object.entries(selectedRace?.abilityBonus ?? {})) {
+    if (typeof v === "number") combinedBonuses[k as AbilityKey] = (combinedBonuses[k as AbilityKey] ?? 0) + v;
   }
-  if (selectedSubrace) {
-    for (const [k, v] of Object.entries(selectedSubrace.abilityBonus)) {
-      if (typeof v === "number") {
-        combinedBonuses[k as AbilityKey] =
-          (combinedBonuses[k as AbilityKey] ?? 0) + v;
-      }
-    }
+  for (const [k, v] of Object.entries(selectedSubrace?.abilityBonus ?? {})) {
+    if (typeof v === "number") combinedBonuses[k as AbilityKey] = (combinedBonuses[k as AbilityKey] ?? 0) + v;
   }
 
-  const combinedTraits = [
-    ...(selectedRace?.traits ?? []),
-    ...(selectedSubrace?.traits ?? []),
-  ];
+  const combinedTraits = [...(selectedRace?.traits ?? []), ...(selectedSubrace?.traits ?? [])];
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Escolha sua Raça
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            A herança que define seus traços
-          </p>
-        </header>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-5">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {RACES.map((race) => (
-            <RaceCard
-              key={race.id}
-              race={race}
-              selected={data.raceId === race.id}
-              selectedSubraceId={data.subraceId}
-              onSelect={handleRaceSelect}
-            />
-          ))}
+        {/* Lista */}
+        <div>
+          <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
+            Origem
+          </p>
+          <div className="arcana-list rounded-sm">
+            {RACES.map((race) => (
+              <RaceCard
+                key={race.id}
+                race={race}
+                selected={data.raceId === race.id}
+                onSelect={handleRaceSelect}
+              />
+            ))}
+          </div>
         </div>
 
-        {selectedRace && (
-          <div className="rounded-md border border-arcana-border bg-arcana-surface p-4 space-y-3">
+        {/* Painel de detalhes */}
+        {selectedRace ? (
+          <div className="arcana-panel rounded-sm p-5 space-y-5">
+            {/* Header */}
             <div>
-              <h3 className="font-cinzel text-lg uppercase tracking-[0.2em] text-arcana-gold-bright">
-                {selectedRace.name}
-                {selectedSubrace ? (
-                  <span className="text-arcana-text-dim font-crimson normal-case tracking-normal text-base">
-                    {" "}— {selectedSubrace.name}
+              <div className="flex items-baseline gap-2 mb-2">
+                <h3 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright">
+                  {selectedRace.name}
+                </h3>
+                {selectedSubrace && (
+                  <span className="font-crimson text-arcana-text-dim">
+                    {selectedSubrace.name}
                   </span>
-                ) : null}
-              </h3>
-            </div>
+                )}
+              </div>
 
-            {Object.keys(combinedBonuses).length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {(Object.entries(combinedBonuses) as [AbilityKey, number][]).map(
-                  ([key, value]) => (
+              {/* Ability bonuses */}
+              {Object.keys(combinedBonuses).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.entries(combinedBonuses) as [AbilityKey, number][]).map(([key, value]) => (
                     <span
                       key={key}
-                      className="rounded-full border border-arcana-gold/40 bg-arcana-gold/10 px-3 py-1 font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold"
+                      className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold"
                     >
                       {value >= 0 ? `+${value}` : value} {ABILITY_LABEL[key]}
                     </span>
-                  ),
-                )}
+                  ))}
+                  <span className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
+                    {selectedRace.speed}m
+                  </span>
+                  <span className="arcana-stat-chip rounded-sm px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
+                    {selectedRace.size === "small" ? "Pequeno" : "Médio"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Traits */}
+            {combinedTraits.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
+                  Traços
+                </p>
+                <ul className="space-y-1">
+                  {combinedTraits.slice(0, 6).map((trait) => (
+                    <li key={trait} className="flex items-start gap-2.5 font-crimson text-sm text-arcana-text">
+                      <span className="mt-[7px] block h-px w-3 shrink-0 bg-arcana-gold/50" />
+                      {trait}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
-            <p className="font-crimson text-sm text-arcana-text-dim">
-              Velocidade: {selectedRace.speed}m · Tamanho:{" "}
-              {selectedRace.size === "small" ? "Pequeno" : "Médio"}
-            </p>
+            {/* Subraça */}
+            {hasSubraces && (
+              <div className="space-y-2 pt-4 border-t border-arcana-border-dim">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
+                  Linhagem
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedRace.subraces.map((sub) => {
+                    const isActive = data.subraceId === sub.id;
+                    const subBonuses = Object.entries(sub.abilityBonus);
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => handleSubraceSelect(sub.id)}
+                        className={[
+                          "text-left px-4 py-3 rounded-sm border transition-all duration-150",
+                          isActive
+                            ? "arcana-stat-chip-active text-arcana-gold-bright"
+                            : "border-arcana-border-dim bg-arcana-surface hover:border-arcana-border text-arcana-text-dim",
+                        ].join(" ")}
+                      >
+                        <span className="font-cinzel text-sm uppercase tracking-[0.15em] block">
+                          {sub.name}
+                        </span>
+                        {subBonuses.length > 0 && (
+                          <span className="mt-0.5 font-cinzel text-[9px] tracking-[0.1em] text-arcana-gold/60 block">
+                            {subBonuses.map(([k, v]) =>
+                              `${v >= 0 ? "+" : ""}${v} ${ABILITY_LABEL[k as AbilityKey] ?? k.toUpperCase()}`
+                            ).join("  ")}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-            {combinedTraits.length > 0 && (
-              <ul className="list-disc pl-5 font-crimson text-sm text-arcana-text">
-                {combinedTraits.slice(0, 6).map((trait) => (
-                  <li key={trait}>{trait}</li>
-                ))}
-              </ul>
+            {/* Idade */}
+            {ageRange && (
+              <div className="space-y-3 pt-4 border-t border-arcana-border-dim">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim mb-1">
+                      Idade
+                    </p>
+                    <p className="font-cinzel text-3xl text-arcana-gold-bright leading-none">
+                      {currentAge}
+                      <span className="font-crimson text-sm text-arcana-text-dim ml-1.5">anos</span>
+                    </p>
+                    <p className="font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim mt-0.5">
+                      {getAgeLabel(currentAge, ageRange.maturity, ageRange.max)}
+                    </p>
+                  </div>
+                  <p className="font-crimson text-xs text-arcana-text-dim text-right">
+                    Longevidade até<br />{ageRange.max} anos
+                  </p>
+                </div>
+                <input
+                  type="range"
+                  min={ageRange.min}
+                  max={ageRange.max}
+                  step={1}
+                  value={currentAge}
+                  onChange={(e) => onUpdate({ age: Number(e.target.value) })}
+                  className="w-full accent-[var(--color-arcana-gold,#c9a84c)] cursor-pointer"
+                />
+                <div className="flex justify-between font-cinzel text-[9px] tracking-[0.15em] text-arcana-text-dim/50">
+                  <span>{ageRange.min}</span>
+                  <span>{Math.round((ageRange.min + ageRange.max) / 2)}</span>
+                  <span>{ageRange.max}</span>
+                </div>
+              </div>
             )}
           </div>
+        ) : (
+          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+            <p className="font-crimson italic text-arcana-text-dim text-sm">
+              Selecione uma origem
+            </p>
+          </div>
         )}
-      </div>
-
-      <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md border border-arcana-border text-arcana-text-dim hover:border-arcana-gold/40 hover:text-arcana-gold"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          disabled={!canProceed}
-          onClick={onNext}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            canProceed
-              ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-              : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-          }`}
-        >
-          Próximo →
-        </button>
       </div>
     </div>
   );

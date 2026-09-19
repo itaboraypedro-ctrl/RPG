@@ -5,6 +5,7 @@ type GmVariant = {
   variant: "gm";
   session: Session;
   playerCount: number;
+  compact?: boolean;
 };
 
 type PlayerVariant = {
@@ -12,6 +13,7 @@ type PlayerVariant = {
   session: Session;
   gmName: string;
   inviteStatus: SessionPlayerStatus;
+  compact?: boolean;
 };
 
 type Props = GmVariant | PlayerVariant;
@@ -50,6 +52,7 @@ function formatDate(iso: string): string {
 
 export function HubSessionCard(props: Props) {
   const { session } = props;
+  const compact = props.compact ?? false;
   const status = session.status;
   const isActive = status === "active";
   const isFinished = status === "finished";
@@ -57,8 +60,33 @@ export function HubSessionCard(props: Props) {
   const ctaHref =
     props.variant === "gm"
       ? `/dashboard/sessions/${session.id}`
-      : `/play/${session.id}`;
+      : `/join/${session.invite_code}`;
   const ctaLabel = props.variant === "gm" ? "Abrir" : "Entrar";
+
+  if (compact) {
+    return (
+      <Link
+        href={ctaHref}
+        className={`flex items-center gap-3 border px-3 py-3.5 transition-all hover:border-arcana-gold/40 ${STATUS_BORDER[status]} ${isActive ? "ring-1 ring-emerald-500/20" : ""}`}
+        style={{ background: "rgba(15,15,28,0.6)" }}
+      >
+        <span
+          className={`shrink-0 h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]} ${isActive ? "animate-pulse" : ""}`}
+          aria-hidden="true"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-cinzel text-[11px] tracking-[0.12em] text-arcana-text">{session.title}</p>
+          <p className="font-crimson text-[10px] text-arcana-text-dim/60">
+            {props.variant === "player" ? `Mestre: ${props.gmName}` : `${props.playerCount} jogador${props.playerCount === 1 ? "" : "es"}`}
+            {" · "}{formatDate(session.created_at)}
+          </p>
+        </div>
+        <span className={`shrink-0 font-cinzel text-[9px] uppercase tracking-[0.2em] ${isFinished ? "text-arcana-text-dim/50" : "text-arcana-gold"}`}>
+          {ctaLabel} →
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <article

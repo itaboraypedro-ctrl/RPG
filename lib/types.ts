@@ -183,6 +183,18 @@ export type Character = {
   notes: string;
   avatar_url: string | null;
   ai_summary: string;
+  // extended fields saved by the character wizard
+  background?: string | null;
+  subrace?: string | null;
+  sex?: string | null;
+  age?: number | null;
+  alignment?: string | null;
+  personality?: Record<string, unknown> | null;
+  race_traits?: { traits: string[] } | null;
+  class_features?: { features: Array<string | { id?: string; name: string; description?: string }> } | null;
+  appearance_description?: string | null;
+  reference_photo_url?: string | null;
+  avatar_history?: string[];
   created_at: string;
   updated_at: string;
 };

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Props = {
   currentStep: number;
   totalSteps?: number;
@@ -16,73 +18,99 @@ const STEP_LABELS = [
 
 export function StepIndicator({ currentStep, totalSteps = 8 }: Props) {
   const labels = STEP_LABELS.slice(0, totalSteps);
-  const progressPct =
-    totalSteps > 1
-      ? Math.max(
-          0,
-          Math.min(100, ((currentStep - 1) / (totalSteps - 1)) * 100)
-        )
-      : 0;
+  const currentLabel = STEP_LABELS[currentStep - 1] ?? "";
 
   return (
-    <div className="mb-6 w-full">
-      <div className="relative">
-        {/* Track background */}
-        <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-arcana-border" />
-        {/* Track filled */}
-        <div
-          className="absolute left-0 top-1/2 h-px -translate-y-1/2 bg-arcana-gold transition-all duration-300"
-          style={{ width: `${progressPct}%` }}
-        />
-
-        <ol className="relative flex items-center justify-between">
-          {labels.map((_, idx) => {
-            const step = idx + 1;
-            const isDone = step < currentStep;
-            const isCurrent = step === currentStep;
-
-            return (
-              <li key={step} className="relative z-10 flex flex-col items-center">
-                <span
-                  className={[
-                    "h-3 w-3 rounded-full border transition-all",
-                    isDone
-                      ? "bg-arcana-gold border-arcana-gold"
-                      : isCurrent
-                        ? "bg-arcana-gold-bright border-arcana-gold-bright animate-pulse ring-2 ring-arcana-gold-bright/40 ring-offset-2 ring-offset-arcana-bg"
-                        : "bg-arcana-bg border-arcana-border",
-                  ].join(" ")}
-                  aria-current={isCurrent ? "step" : undefined}
-                />
-              </li>
-            );
-          })}
-        </ol>
+    <div className="select-none space-y-4">
+      {/* Top row: back link + wizard title */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/hub"
+          className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim/60 hover:text-arcana-gold transition-colors"
+        >
+          ← Hub
+        </Link>
+        <span className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-text-dim/40">
+          Novo personagem
+        </span>
       </div>
 
-      {/* Desktop labels */}
-      <ol className="mt-3 hidden lg:flex items-start justify-between">
+      {/* Current step name */}
+      <div className="space-y-0.5">
+        <p className="font-cinzel text-[9px] uppercase tracking-[0.45em] text-arcana-text-dim/50">
+          Etapa {currentStep} de {totalSteps}
+        </p>
+        <h2
+          className="font-cinzel uppercase tracking-[0.22em] text-arcana-gold-bright leading-none"
+          style={{ fontSize: "clamp(1.4rem, 2.2vw, 1.85rem)" }}
+        >
+          {currentLabel}
+        </h2>
+      </div>
+
+      {/* Segmented progress bar */}
+      <div className="flex items-center gap-0.5">
         {labels.map((label, idx) => {
           const step = idx + 1;
           const isDone = step < currentStep;
           const isCurrent = step === currentStep;
+
           return (
-            <li
+            <div
               key={label}
-              className={[
-                "flex-1 text-center font-cinzel uppercase tracking-[0.2em] text-[10px]",
-                isCurrent
-                  ? "text-arcana-gold-bright"
-                  : isDone
-                    ? "text-arcana-gold"
-                    : "text-arcana-text-dim",
-              ].join(" ")}
+              title={label}
+              className="relative flex-1 h-[3px] rounded-full overflow-hidden transition-all duration-500"
+              style={{
+                background: isDone || isCurrent
+                  ? "transparent"
+                  : "rgba(42,42,66,0.6)",
+              }}
             >
-              {label}
-            </li>
+              {/* Filled portion */}
+              {(isDone || isCurrent) && (
+                <div
+                  className="absolute inset-0 rounded-full transition-all duration-700"
+                  style={{
+                    background: isDone
+                      ? "var(--color-arcana-gold)"
+                      : "linear-gradient(90deg, var(--color-arcana-gold), var(--color-arcana-gold-bright))",
+                    opacity: isDone ? 0.55 : 1,
+                    boxShadow: isCurrent
+                      ? "0 0 8px rgba(201,168,76,0.7), 0 0 2px rgba(201,168,76,0.9)"
+                      : "none",
+                  }}
+                />
+              )}
+            </div>
           );
         })}
-      </ol>
+      </div>
+
+      {/* Step labels — desktop only, below bar */}
+      <div className="hidden lg:flex items-start gap-0.5">
+        {labels.map((label, idx) => {
+          const step = idx + 1;
+          const isDone = step < currentStep;
+          const isCurrent = step === currentStep;
+
+          return (
+            <div key={label} className="flex-1 overflow-hidden">
+              <span
+                className={[
+                  "block font-cinzel text-[8px] uppercase tracking-[0.12em] whitespace-nowrap truncate transition-all duration-300",
+                  isCurrent
+                    ? "text-arcana-gold"
+                    : isDone
+                      ? "text-arcana-text-dim/50"
+                      : "text-arcana-border/40",
+                ].join(" ")}
+              >
+                {label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

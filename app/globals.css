@@ -19,15 +19,20 @@
   --font-rpg-hud: var(--font-rajdhani), system-ui, sans-serif;
 
   /* Arcana landing page tokens */
-  --color-arcana-bg: #0a0a0f;
-  --color-arcana-surface: #0e0e1a;
-  --color-arcana-border: #1a1a2e;
+  --color-arcana-bg: #07070d;
+  --color-arcana-surface: #0f0f1c;
+  --color-arcana-surface-2: #161625;
+  --color-arcana-surface-3: #1e1e30;
+  --color-arcana-border: #2a2a42;
+  --color-arcana-border-dim: #1a1a2e;
   --color-arcana-gold: #c9a84c;
   --color-arcana-gold-bright: #f0cc6a;
+  --color-arcana-gold-dim: #7a5c1e;
   --color-arcana-blood: #3f1c18;
   --color-arcana-mist: #252d34;
-  --color-arcana-text: #e0caab;
+  --color-arcana-text: #e8d5b4;
   --color-arcana-text-dim: #7a6a55;
+  --color-arcana-text-muted: #3d3028;
 }
 
 @theme inline {
@@ -51,13 +56,18 @@
 
   --color-arcana-bg: var(--color-arcana-bg);
   --color-arcana-surface: var(--color-arcana-surface);
+  --color-arcana-surface-2: var(--color-arcana-surface-2);
+  --color-arcana-surface-3: var(--color-arcana-surface-3);
   --color-arcana-border: var(--color-arcana-border);
+  --color-arcana-border-dim: var(--color-arcana-border-dim);
   --color-arcana-gold: var(--color-arcana-gold);
   --color-arcana-gold-bright: var(--color-arcana-gold-bright);
+  --color-arcana-gold-dim: var(--color-arcana-gold-dim);
   --color-arcana-blood: var(--color-arcana-blood);
   --color-arcana-mist: var(--color-arcana-mist);
   --color-arcana-text: var(--color-arcana-text);
   --color-arcana-text-dim: var(--color-arcana-text-dim);
+  --color-arcana-text-muted: var(--color-arcana-text-muted);
 
   --font-cinzel: var(--font-cinzel);
   --font-crimson: var(--font-crimson);
@@ -65,6 +75,173 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* ─── Wizard character creation ─── */
+
+/* Seleção ativa — item escolhido tem glow + background sólido */
+.arcana-item-selected {
+  background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.06) 100%);
+  border-left: 2px solid var(--color-arcana-gold);
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,0.15);
+}
+
+.arcana-item-idle {
+  border-left: 2px solid transparent;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.arcana-item-idle:hover {
+  background: rgba(201,168,76,0.04);
+  border-left-color: rgba(201,168,76,0.25);
+}
+
+/* Superfície de detalhe — camada 2 sobre fundo */
+.arcana-panel {
+  background: var(--color-arcana-surface-2);
+  border: 1px solid var(--color-arcana-border);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 2px 24px rgba(0,0,0,0.5);
+}
+
+/* Superfície elevada — camada 3 (modal, picker, badge) */
+.arcana-panel-elevated {
+  background: var(--color-arcana-surface-3);
+  border: 1px solid var(--color-arcana-border);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 8px 40px rgba(0,0,0,0.7);
+}
+
+/* Input com superfície própria */
+.arcana-input {
+  background: var(--color-arcana-surface);
+  border: 1px solid var(--color-arcana-border-dim);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.arcana-input:focus {
+  border-color: var(--color-arcana-gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  outline: none;
+}
+
+/* Stat chip — ficha de atributo/valor com peso real */
+.arcana-stat-chip {
+  background: var(--color-arcana-surface-2);
+  border: 1px solid var(--color-arcana-border);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.arcana-stat-chip-active {
+  background: linear-gradient(180deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.08) 100%);
+  border: 1px solid rgba(201,168,76,0.5);
+  box-shadow:
+    0 0 16px rgba(201,168,76,0.15),
+    0 1px 0 rgba(255,255,255,0.06) inset;
+}
+
+/* Pool chip — ficha de valor disponível para atribuição */
+.arcana-pool-chip {
+  background: var(--color-arcana-surface-3);
+  border: 1px solid var(--color-arcana-border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+  transition: all 120ms ease;
+}
+
+.arcana-pool-chip:hover:not(:disabled) {
+  background: var(--color-arcana-surface-3);
+  border-color: rgba(201,168,76,0.5);
+  box-shadow: 0 0 12px rgba(201,168,76,0.2), 0 2px 4px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+
+.arcana-pool-chip-pending {
+  background: linear-gradient(135deg, rgba(201,168,76,0.2) 0%, rgba(201,168,76,0.1) 100%);
+  border: 1px solid var(--color-arcana-gold);
+  box-shadow: 0 0 20px rgba(201,168,76,0.25), 0 2px 4px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+
+.arcana-pool-chip-used {
+  background: var(--color-arcana-surface);
+  border: 1px solid rgba(255,255,255,0.04);
+  opacity: 0.3;
+}
+
+/* Lista de seleção — container */
+.arcana-list {
+  background: var(--color-arcana-surface);
+  border: 1px solid var(--color-arcana-border-dim);
+  overflow: hidden;
+}
+
+.arcana-list-item {
+  border-bottom: 1px solid var(--color-arcana-border-dim);
+  transition: background 120ms ease;
+}
+
+.arcana-list-item:last-child {
+  border-bottom: none;
+}
+
+/* Glow de seleção dourado */
+@keyframes arcanaSelectPulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(201,168,76,0.15) inset, 0 0 20px rgba(201,168,76,0.08); }
+  50% { box-shadow: 0 0 0 1px rgba(201,168,76,0.25) inset, 0 0 30px rgba(201,168,76,0.15); }
+}
+
+.arcana-item-selected-glow {
+  animation: arcanaSelectPulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcana-item-selected-glow { animation: none; }
+}
+
+/* ─── Botões wizard ─── */
+.arcana-btn-primary {
+  font-family: var(--font-cinzel), serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.75rem;
+  padding: 0.75rem 2rem;
+  border-radius: 2px;
+  background: var(--color-arcana-gold);
+  color: var(--color-arcana-bg);
+  box-shadow: 0 0 0 1px rgba(240,204,106,0.3), 0 4px 16px rgba(201,168,76,0.25);
+  transition: all 150ms ease;
+}
+.arcana-btn-primary:hover {
+  background: var(--color-arcana-gold-bright);
+  box-shadow: 0 0 0 1px rgba(240,204,106,0.5), 0 4px 24px rgba(201,168,76,0.4);
+}
+.arcana-btn-primary-disabled {
+  font-family: var(--font-cinzel), serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.75rem;
+  padding: 0.75rem 2rem;
+  border-radius: 2px;
+  background: rgba(201,168,76,0.15);
+  color: rgba(201,168,76,0.3);
+  cursor: not-allowed;
+}
+.arcana-btn-ghost {
+  font-family: var(--font-cinzel), serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--color-arcana-border);
+  color: var(--color-arcana-text-dim);
+  transition: all 150ms ease;
+}
+.arcana-btn-ghost:hover {
+  border-color: rgba(201,168,76,0.4);
+  color: var(--color-arcana-gold);
 }
 
 @media (prefers-color-scheme: dark) {

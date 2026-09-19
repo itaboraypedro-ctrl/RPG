@@ -33,8 +33,6 @@ export function PlayerSheetTabNotes({
   const [showBackstory, setShowBackstory] = useState(false);
   const [npcs, setNpcs] = useState<NpcEntry[]>(initialNpcs);
 
-  // Sync prop -> state when external value changes (realtime).
-  // Pattern: setState during render guarded by ref-like comparison.
   const [lastNotesProp, setLastNotesProp] = useState(character.notes);
   if (character.notes !== lastNotesProp) {
     setLastNotesProp(character.notes);
@@ -67,9 +65,7 @@ export function PlayerSheetTabNotes({
   const saveBackstory = useCallback(
     async (v: string) => {
       if (!editable) return;
-      const { error } = await commitCharacterField(character.id, {
-        backstory: v,
-      });
+      const { error } = await commitCharacterField(character.id, { backstory: v });
       onError(error);
     },
     [character.id, editable, onError]
@@ -116,81 +112,101 @@ export function PlayerSheetTabNotes({
     setNpcs((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  const personality = character.personality ?? {};
+  const trait = (personality as Record<string, unknown>).trait as string | undefined;
+  const ideal = (personality as Record<string, unknown>).ideal as string | undefined;
+  const bond = (personality as Record<string, unknown>).bond as string | undefined;
+  const flaw = (personality as Record<string, unknown>).flaw as string | undefined;
+  const hasPersonality = trait || ideal || bond || flaw;
+
   return (
     <div className="flex flex-col gap-4">
-      <section>
-        <h3
-          className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-          style={{ fontFamily: "var(--font-rpg-hud)" }}
-        >
-          Notas de sessão
-        </h3>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          disabled={!editable}
-          rows={5}
-          placeholder="Pistas, decisões, eventos importantes..."
-          className="w-full rounded-md border border-rpg-border bg-rpg-bg p-3 text-sm leading-relaxed text-rpg-text placeholder:text-rpg-text-dim focus:border-rpg-blue focus:outline-none disabled:opacity-60"
-        />
-      </section>
+      {/* Personality from wizard */}
+      {hasPersonality && (
+        <section>
+          <SectionLabel>Personalidade</SectionLabel>
+          <div className="flex flex-col gap-1.5">
+            {[
+              { label: "Traço", value: trait },
+              { label: "Ideal", value: ideal },
+              { label: "Vínculo", value: bond },
+              { label: "Defeito", value: flaw },
+            ]
+              .filter((p) => p.value)
+              .map((p) => (
+                <div key={p.label} className="relative overflow-hidden rounded border border-zinc-800 bg-zinc-900 px-3 py-2">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+                  <span className="block text-[9px] uppercase tracking-[0.25em] text-amber-400" style={{ fontFamily: "var(--font-rpg-hud)" }}>
+                    {p.label}
+                  </span>
+                  <p className="mt-0.5 text-sm text-zinc-300">{p.value}</p>
+                </div>
+              ))}
+          </div>
+        </section>
+      )}
 
+      {/* Backstory — always visible at top, collapsible */}
       <section>
         <button
           type="button"
           onClick={() => setShowBackstory((v) => !v)}
-          className="flex w-full items-center justify-between rounded-md border border-rpg-border bg-rpg-bg px-3 py-2"
+          className="relative flex w-full items-center justify-between overflow-hidden rounded border border-zinc-800 bg-zinc-900 px-3 py-2.5 transition-colors hover:border-amber-500/40"
         >
-          <span
-            className="text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-            style={{ fontFamily: "var(--font-rpg-hud)" }}
-          >
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-amber-400" style={{ fontFamily: "var(--font-rpg-hud)" }}>
             História do personagem
           </span>
-          <span className="text-xs text-rpg-text-dim">
-            {showBackstory ? "▲" : "▼"}
-          </span>
+          <span className="text-xs text-zinc-500">{showBackstory ? "▲" : "▼"}</span>
         </button>
         {showBackstory && (
           <textarea
             value={backstory}
             onChange={(e) => setBackstory(e.target.value)}
             disabled={!editable}
-            rows={6}
+            rows={7}
             placeholder="Origem, motivações, vínculos..."
-            className="mt-2 w-full rounded-md border border-rpg-border bg-rpg-bg p-3 text-sm leading-relaxed text-rpg-text placeholder:text-rpg-text-dim focus:border-rpg-blue focus:outline-none disabled:opacity-60"
+            className="mt-1 w-full rounded border border-zinc-800 bg-zinc-950 p-3 text-sm leading-relaxed text-zinc-300 placeholder:text-zinc-700 focus:border-amber-500/50 focus:outline-none disabled:opacity-60"
           />
         )}
       </section>
 
+      {/* Session notes */}
+      <section>
+        <SectionLabel>Notas de sessão</SectionLabel>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          disabled={!editable}
+          rows={5}
+          placeholder="Pistas, decisões, eventos importantes..."
+          className="w-full rounded border border-zinc-800 bg-zinc-950 p-3 text-sm leading-relaxed text-zinc-300 placeholder:text-zinc-700 focus:border-blue-500/50 focus:outline-none disabled:opacity-60"
+          style={{ resize: "vertical" }}
+        />
+      </section>
+
+      {/* NPCs */}
       <section>
         <header className="mb-2 flex items-center justify-between">
-          <h3
-            className="text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-            style={{ fontFamily: "var(--font-rpg-hud)" }}
-          >
-            NPCs encontrados
-          </h3>
+          <SectionLabel>NPCs encontrados</SectionLabel>
           <button
             type="button"
             onClick={addNpc}
             disabled={!editable}
-            className="rounded-md border border-rpg-border bg-rpg-bg px-2 py-0.5 text-xs text-rpg-text hover:border-rpg-blue/60 disabled:opacity-40"
+            className="rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-400 hover:border-violet-500/50 hover:text-violet-400 disabled:opacity-40"
           >
             + Novo
           </button>
         </header>
         {npcs.length === 0 ? (
-          <p className="rounded-md border border-rpg-border bg-rpg-bg p-3 text-xs text-rpg-text-dim">
+          <p className="rounded border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-500">
             Nenhum NPC anotado ainda.
           </p>
         ) : (
           <div className="flex flex-col gap-2">
             {npcs.map((n, i) => (
-              <div
-                key={i}
-                className="flex flex-col gap-1.5 rounded-md border border-rpg-border bg-rpg-bg p-2"
-              >
+              <div key={i} className="relative overflow-hidden flex flex-col gap-1.5 rounded border border-zinc-800 bg-zinc-900 p-3">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
                 <div className="flex items-center gap-1.5">
                   <input
                     type="text"
@@ -198,24 +214,22 @@ export function PlayerSheetTabNotes({
                     onChange={(e) => updateNpc(i, { name: e.target.value })}
                     disabled={!editable}
                     placeholder="Nome"
-                    className="flex-1 rounded border border-rpg-border bg-rpg-bg px-2 py-1 text-sm text-rpg-text placeholder:text-rpg-text-dim focus:border-rpg-blue focus:outline-none"
+                    className="flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-sm font-semibold text-violet-300 placeholder:text-zinc-600 focus:border-violet-500/50 focus:outline-none"
                   />
                   <input
                     type="text"
                     value={n.relation ?? ""}
-                    onChange={(e) =>
-                      updateNpc(i, { relation: e.target.value })
-                    }
+                    onChange={(e) => updateNpc(i, { relation: e.target.value })}
                     disabled={!editable}
                     placeholder="Relação"
-                    className="w-28 rounded border border-rpg-border bg-rpg-bg px-2 py-1 text-sm text-rpg-text placeholder:text-rpg-text-dim focus:border-rpg-blue focus:outline-none"
+                    className="w-28 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs text-zinc-400 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => removeNpc(i)}
                     disabled={!editable}
                     aria-label="Remover NPC"
-                    className="flex h-7 w-7 items-center justify-center rounded text-rpg-text-dim hover:bg-rpg-red/20 hover:text-rpg-red disabled:opacity-40"
+                    className="flex h-7 w-7 items-center justify-center rounded text-zinc-500 hover:bg-red-950/40 hover:text-red-400 disabled:opacity-40"
                   >
                     ×
                   </button>
@@ -225,8 +239,8 @@ export function PlayerSheetTabNotes({
                   onChange={(e) => updateNpc(i, { notes: e.target.value })}
                   disabled={!editable}
                   rows={2}
-                  placeholder="Notas curtas sobre este NPC..."
-                  className="w-full rounded border border-rpg-border bg-rpg-bg px-2 py-1 text-xs leading-relaxed text-rpg-text placeholder:text-rpg-text-dim focus:border-rpg-blue focus:outline-none disabled:opacity-60"
+                  placeholder="Notas sobre este NPC..."
+                  className="w-full rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-xs leading-relaxed text-zinc-400 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none disabled:opacity-60"
                 />
               </div>
             ))}
@@ -234,15 +248,11 @@ export function PlayerSheetTabNotes({
         )}
       </section>
 
+      {/* Character event log */}
       <section>
-        <h3
-          className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-          style={{ fontFamily: "var(--font-rpg-hud)" }}
-        >
-          Log do personagem
-        </h3>
+        <SectionLabel>Log do personagem</SectionLabel>
         {characterEvents.length === 0 ? (
-          <p className="rounded-md border border-rpg-border bg-rpg-bg p-3 text-xs text-rpg-text-dim">
+          <p className="rounded border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-500">
             Sem eventos recentes envolvendo este personagem.
           </p>
         ) : (
@@ -253,25 +263,17 @@ export function PlayerSheetTabNotes({
                 minute: "2-digit",
               });
               return (
-                <li
-                  key={ev.id}
-                  className="rounded-md border border-rpg-border bg-rpg-bg px-3 py-2 text-xs text-rpg-text"
-                >
+                <li key={ev.id} className="relative overflow-hidden rounded border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                   <div className="flex items-baseline justify-between gap-2">
-                    <span
-                      className="text-[10px] uppercase tracking-wider text-rpg-text-dim"
-                      style={{ fontFamily: "var(--font-rpg-hud)" }}
-                    >
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
                       {ev.type}
                     </span>
-                    <span
-                      className="text-[10px] tabular-nums text-rpg-text-dim"
-                      style={{ fontFamily: "var(--font-rpg-numbers)" }}
-                    >
+                    <span className="text-[10px] tabular-nums text-zinc-600" style={{ fontFamily: "var(--font-rpg-numbers)" }}>
                       {time}
                     </span>
                   </div>
-                  <p className="text-xs text-rpg-text">
+                  <p className="mt-0.5 text-zinc-300">
                     {summarize(ev.payload as Record<string, unknown>)}
                   </p>
                 </li>
@@ -281,6 +283,14 @@ export function PlayerSheetTabNotes({
         )}
       </section>
     </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
+      {children}
+    </h3>
   );
 }
 

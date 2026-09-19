@@ -217,7 +217,7 @@ export function PlayerView({
 
   return (
     <div
-      className={`mx-auto flex min-h-dvh w-full max-w-[390px] flex-col bg-zinc-950 text-zinc-100 ${containerBorder}`}
+      className={`flex h-dvh w-full flex-col bg-zinc-950 text-zinc-100 overflow-hidden ${containerBorder}`}
     >
       {session.status === "lobby" ? (
         <PlayerLobby

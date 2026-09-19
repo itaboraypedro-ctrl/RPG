@@ -15,8 +15,8 @@ export function PlayerSheetTabInventory({ character }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <section className="grid grid-cols-2 gap-2">
-        <Stat label="Itens" value={String(items.length)} />
-        <Stat label="Ouro" value={String(character.gold)} accent="gold" />
+        <InvStat label="Itens" value={String(items.length)} />
+        <InvStat label="Ouro" value={String(character.gold)} accent="gold" />
       </section>
 
       <InventoryGrid
@@ -26,14 +26,14 @@ export function PlayerSheetTabInventory({ character }: Props) {
         onChange={() => {}}
       />
 
-      <p className="text-center text-[10px] text-rpg-text-dim">
+      <p className="text-center text-[10px] text-zinc-600">
         Inventário em modo leitura. Peça ao Mestre para mover itens.
       </p>
     </div>
   );
 }
 
-function Stat({
+function InvStat({
   label,
   value,
   accent = "blue",
@@ -43,17 +43,13 @@ function Stat({
   accent?: "blue" | "gold";
 }) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-rpg-border bg-rpg-bg px-3 py-2">
-      <span
-        className="text-[10px] uppercase tracking-[0.2em] text-rpg-text-dim"
-        style={{ fontFamily: "var(--font-rpg-hud)" }}
-      >
+    <div className="relative overflow-hidden flex items-center justify-between rounded border border-zinc-800 bg-zinc-900 px-3 py-2.5">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+      <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
         {label}
       </span>
       <span
-        className={`text-base tabular-nums ${
-          accent === "gold" ? "text-rpg-gold" : "text-rpg-blue"
-        }`}
+        className={`text-base tabular-nums ${accent === "gold" ? "text-amber-400" : "text-blue-400"}`}
         style={{ fontFamily: "var(--font-rpg-numbers)" }}
       >
         {value}

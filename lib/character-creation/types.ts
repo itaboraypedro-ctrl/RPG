@@ -5,7 +5,8 @@ export type AbilityKey = "str" | "dex" | "con" | "int" | "wis" | "cha";
 export type StatBlock = Record<AbilityKey, number>;
 
 export type Sex = "male" | "female" | "androgynous";
-export type AgeCategory = "young" | "adult" | "mature" | "elder";
+
+export type AgeRange = { min: number; max: number; maturity: number };
 
 export type SubRace = {
   id: string;
@@ -25,6 +26,7 @@ export type Race = {
   traits: string[];
   languages: string[];
   visualDescription: string;
+  ageRange: AgeRange;
 };
 
 export type EquipmentChoiceOption = {
@@ -76,7 +78,7 @@ export type Background = {
 export type CharacterCreationData = {
   name?: string;
   sex?: Sex;
-  ageCategory?: AgeCategory;
+  age?: number;
   referencePhotoBase64?: string;
 
   raceId?: string;

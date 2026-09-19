@@ -8,7 +8,6 @@ type Props = {
   data: Partial<CharacterCreationData>;
   onUpdate: (partial: Partial<CharacterCreationData>) => void;
   onNext: () => void;
-  onBack: () => void;
 };
 
 type SpellSummary = {
@@ -187,7 +186,7 @@ function mapOpen5eSpell(s: Open5eSpell, fallbackLevel: number): SpellSummary | n
 
 type TabKey = "cantrips" | "level1";
 
-export default function Step7Spells({ data, onUpdate, onNext, onBack }: Props) {
+export default function Step7Spells({ data, onUpdate, onNext }: Props) {
   const classData = useMemo(
     () => CLASSES.find((c) => c.id === data.classId),
     [data.classId]
@@ -209,7 +208,6 @@ export default function Step7Spells({ data, onUpdate, onNext, onBack }: Props) {
   const selectedCantrips = data.cantripIds ?? [];
   const selectedLevel1 = data.level1SpellIds ?? [];
 
-  // Auto-skip se classe não conjura
   useEffect(() => {
     if (!classData) return;
     if (!isSpellcaster) {
@@ -219,7 +217,6 @@ export default function Step7Spells({ data, onUpdate, onNext, onBack }: Props) {
     return undefined;
   }, [classData, isSpellcaster, onNext]);
 
-  // Fetch Open5e spells
   useEffect(() => {
     if (!isSpellcaster || !classNameEn) return;
 
@@ -307,22 +304,10 @@ export default function Step7Spells({ data, onUpdate, onNext, onBack }: Props) {
     }
   };
 
-  const canNext =
-    isSpellcaster &&
-    selectedCantrips.length >= cantripLimit &&
-    selectedLevel1.length >= level1Limit;
-
   if (!classData) {
     return (
       <div className="flex flex-col gap-4">
         <p className="font-crimson text-arcana-text-dim">Classe não selecionada.</p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="self-start font-cinzel text-xs uppercase tracking-[0.3em] text-arcana-text-dim hover:text-arcana-gold"
-        >
-          ← Voltar
-        </button>
       </div>
     );
   }
@@ -346,135 +331,104 @@ export default function Step7Spells({ data, onUpdate, onNext, onBack }: Props) {
   const limit = tab === "cantrips" ? cantripLimit : level1Limit;
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Magias
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            Escolha seus truques e magias de 1° nível.
-          </p>
-        </header>
+    <div className="space-y-6">
+      <p className="font-crimson text-arcana-text-dim">
+        Escolha seus truques e magias de 1° nível.
+      </p>
 
-        {/* Tabs */}
-        <div className="flex gap-2 rounded-lg border border-arcana-border bg-arcana-surface p-1">
-          {cantripLimit > 0 ? (
-            <button
-              type="button"
-              onClick={() => setTab("cantrips")}
-              className={`flex-1 rounded px-3 py-2 font-cinzel text-xs uppercase tracking-[0.2em] transition-colors ${
-                tab === "cantrips"
-                  ? "bg-arcana-gold text-arcana-bg"
-                  : "text-arcana-text-dim hover:text-arcana-text"
-              }`}
-            >
-              Truques
-            </button>
-          ) : null}
-          {level1Limit > 0 ? (
-            <button
-              type="button"
-              onClick={() => setTab("level1")}
-              className={`flex-1 rounded px-3 py-2 font-cinzel text-xs uppercase tracking-[0.2em] transition-colors ${
-                tab === "level1"
-                  ? "bg-arcana-gold text-arcana-bg"
-                  : "text-arcana-text-dim hover:text-arcana-text"
-              }`}
-            >
-              Magias 1° Nível
-            </button>
-          ) : null}
-        </div>
-
-        {/* Counter */}
-        <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-          {selectedList.length} / {limit} selecionados
-        </p>
-
-        {error ? (
-          <p className="font-crimson italic text-arcana-text-dim">{error}</p>
+      {/* Tabs */}
+      <div className="flex gap-2 rounded-lg border border-arcana-border bg-arcana-surface p-1">
+        {cantripLimit > 0 ? (
+          <button
+            type="button"
+            onClick={() => setTab("cantrips")}
+            className={`flex-1 rounded px-3 py-2 font-cinzel text-xs uppercase tracking-[0.2em] transition-colors ${
+              tab === "cantrips"
+                ? "bg-arcana-gold text-arcana-bg"
+                : "text-arcana-text-dim hover:text-arcana-text"
+            }`}
+          >
+            Truques
+          </button>
         ) : null}
+        {level1Limit > 0 ? (
+          <button
+            type="button"
+            onClick={() => setTab("level1")}
+            className={`flex-1 rounded px-3 py-2 font-cinzel text-xs uppercase tracking-[0.2em] transition-colors ${
+              tab === "level1"
+                ? "bg-arcana-gold text-arcana-bg"
+                : "text-arcana-text-dim hover:text-arcana-text"
+            }`}
+          >
+            Magias 1° Nível
+          </button>
+        ) : null}
+      </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-12">
-            <div
-              aria-hidden
-              className="h-10 w-10 animate-spin rounded-full border-2 border-arcana-gold/30 border-t-arcana-gold"
-            />
-            <p className="font-cinzel italic text-arcana-text-dim">
-              Invocando o grimório...
-            </p>
-          </div>
-        ) : list.length === 0 ? (
-          <p className="font-crimson italic text-arcana-text-dim">
-            {tab === "cantrips"
-              ? "Sua classe não escolhe truques desta forma."
-              : "Sua classe prepara magias de 1° nível em vez de escolher."}
+      <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
+        {selectedList.length} / {limit} selecionados
+      </p>
+
+      {error ? (
+        <p className="font-crimson italic text-arcana-text-dim">{error}</p>
+      ) : null}
+
+      {loading ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-12">
+          <div
+            aria-hidden
+            className="h-10 w-10 animate-spin rounded-full border-2 border-arcana-gold/30 border-t-arcana-gold"
+          />
+          <p className="font-cinzel italic text-arcana-text-dim">
+            Invocando o grimório...
           </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            {list.map((spell) => {
-              const isSelected = selectedList.includes(spell.slug);
-              const canSelectMore = selectedList.length < limit;
-              const disabled = !isSelected && !canSelectMore;
-              return (
-                <button
-                  key={spell.slug}
-                  type="button"
-                  onClick={() => toggleSpell(spell.slug, tab)}
-                  disabled={disabled}
-                  className={`flex flex-col gap-1 rounded-md border p-3 text-left transition ${
-                    isSelected
-                      ? "border-arcana-gold bg-arcana-gold/10"
-                      : disabled
-                        ? "border-arcana-border bg-arcana-surface opacity-40 cursor-not-allowed"
-                        : "border-arcana-border bg-arcana-surface hover:border-arcana-gold/40"
-                  }`}
-                >
-                  <span className="font-cinzel text-sm text-arcana-text">
-                    {spell.name}
-                  </span>
-                  <span className="font-crimson text-xs italic text-arcana-text-dim">
-                    {spell.school}
-                  </span>
-                  <span className="font-crimson text-xs text-arcana-text-dim">
-                    {spell.range}
-                    {spell.concentration ? (
-                      <span title="Concentração" className="ml-1" aria-label="Concentração">
-                        ⏱
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="sticky bottom-0 flex justify-between gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md text-arcana-text-dim hover:text-arcana-gold transition"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          disabled={!canNext}
-          onClick={onNext}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            canNext
-              ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-              : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-          }`}
-        >
-          Próximo →
-        </button>
-      </div>
+        </div>
+      ) : list.length === 0 ? (
+        <p className="font-crimson italic text-arcana-text-dim">
+          {tab === "cantrips"
+            ? "Sua classe não escolhe truques desta forma."
+            : "Sua classe prepara magias de 1° nível em vez de escolher."}
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          {list.map((spell) => {
+            const isSelected = selectedList.includes(spell.slug);
+            const canSelectMore = selectedList.length < limit;
+            const disabled = !isSelected && !canSelectMore;
+            return (
+              <button
+                key={spell.slug}
+                type="button"
+                onClick={() => toggleSpell(spell.slug, tab)}
+                disabled={disabled}
+                className={`flex flex-col gap-1 rounded-md border p-3 text-left transition ${
+                  isSelected
+                    ? "border-arcana-gold bg-arcana-gold/10"
+                    : disabled
+                      ? "border-arcana-border bg-arcana-surface opacity-40 cursor-not-allowed"
+                      : "border-arcana-border bg-arcana-surface hover:border-arcana-gold/40"
+                }`}
+              >
+                <span className="font-cinzel text-sm text-arcana-text">
+                  {spell.name}
+                </span>
+                <span className="font-crimson text-xs italic text-arcana-text-dim">
+                  {spell.school}
+                </span>
+                <span className="font-crimson text-xs text-arcana-text-dim">
+                  {spell.range}
+                  {spell.concentration ? (
+                    <span title="Concentração" className="ml-1" aria-label="Concentração">
+                      ⏱
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

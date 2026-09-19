@@ -58,56 +58,39 @@ export function PlayerSheetTabSpells({ character, editable, onError }: Props) {
       used: slots.used.slice(),
     };
     nextSlots.used[idx] = used;
-    const { error } = await commitSkillsField(
-      character.id,
-      meta,
-      "spell_slots",
-      nextSlots
-    );
+    const { error } = await commitSkillsField(character.id, meta, "spell_slots", nextSlots);
     onError(error);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="grid grid-cols-3 gap-2">
-        <Stat label="Atrib." value="INT" />
-        <Stat label="CD Magia" value={String(spellDc)} />
-        <Stat label="Bônus Atq" value={fmtMod(spellAtk)} />
+      <section className="relative overflow-hidden rounded border border-blue-500/20 bg-zinc-900">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent" />
+        <div className="grid grid-cols-3 divide-x divide-zinc-800 p-1">
+          <SpellStat label="Atrib." value="INT" />
+          <SpellStat label="CD Magia" value={String(spellDc)} />
+          <SpellStat label="Bônus Atq" value={fmtMod(spellAtk)} />
+        </div>
       </section>
 
       <section>
-        <h3
-          className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-          style={{ fontFamily: "var(--font-rpg-hud)" }}
-        >
-          Spell slots
-        </h3>
-        <PlayerSpellSlots
-          slots={slots}
-          disabled={!editable}
-          onToggle={toggleSlot}
-        />
+        <SectionLabel>Spell slots</SectionLabel>
+        <div className="rounded border border-zinc-800 bg-zinc-900 p-3">
+          <PlayerSpellSlots slots={slots} disabled={!editable} onToggle={toggleSlot} />
+        </div>
       </section>
 
       <section>
-        <h3
-          className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-rpg-text-dim"
-          style={{ fontFamily: "var(--font-rpg-hud)" }}
-        >
-          Magias conhecidas
-        </h3>
+        <SectionLabel>Magias conhecidas</SectionLabel>
         {grouped.length === 0 ? (
-          <p className="rounded-md border border-rpg-border bg-rpg-bg p-3 text-xs text-rpg-text-dim">
+          <p className="rounded border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-500">
             Nenhuma magia cadastrada.
           </p>
         ) : (
           <div className="flex flex-col gap-3">
             {grouped.map(([level, list]) => (
               <div key={level} className="flex flex-col gap-1">
-                <h4
-                  className="text-[10px] font-semibold uppercase tracking-[0.25em] text-rpg-purple"
-                  style={{ fontFamily: "var(--font-rpg-hud)" }}
-                >
+                <h4 className="text-[10px] font-semibold uppercase tracking-[0.25em] text-violet-400" style={{ fontFamily: "var(--font-rpg-hud)" }}>
                   {LEVEL_LABEL(level)}
                 </h4>
                 <div className="flex flex-col gap-1">
@@ -116,24 +99,17 @@ export function PlayerSheetTabSpells({ character, editable, onError }: Props) {
                       key={`${sp.name}-${i}`}
                       type="button"
                       onClick={() => setOpenSpell(sp)}
-                      className="flex items-baseline justify-between gap-2 rounded-md border border-rpg-border bg-rpg-bg px-3 py-2 text-left transition-colors hover:border-rpg-purple/60"
+                      className="relative flex items-baseline justify-between gap-2 overflow-hidden rounded border border-zinc-800 bg-zinc-900 px-3 py-2 text-left transition-colors hover:border-violet-500/50"
                     >
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
                       <span className="flex items-baseline gap-2">
-                        {level > 0 && (
-                          <span className="text-rpg-purple">♦</span>
-                        )}
-                        <span
-                          className="text-sm text-rpg-text"
-                          style={{ fontFamily: "var(--font-rpg-numbers)" }}
-                        >
+                        {level > 0 && <span className="text-violet-500 text-xs">♦</span>}
+                        <span className="text-sm text-zinc-200" style={{ fontFamily: "var(--font-rpg-numbers)" }}>
                           {sp.name}
                         </span>
                       </span>
                       {sp.school && (
-                        <span
-                          className="text-[10px] uppercase tracking-wider text-rpg-text-dim"
-                          style={{ fontFamily: "var(--font-rpg-hud)" }}
-                        >
+                        <span className="text-[10px] uppercase tracking-wider text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
                           {sp.school}
                         </span>
                       )}
@@ -156,7 +132,7 @@ export function PlayerSheetTabSpells({ character, editable, onError }: Props) {
         {openSpell && (
           <div className="flex flex-col gap-3">
             {openSpell.school && (
-              <div className="grid grid-cols-2 gap-2 rounded-md border border-rpg-border bg-rpg-bg p-3">
+              <div className="grid grid-cols-2 gap-2 rounded border border-zinc-800 bg-zinc-950 p-3">
                 <DetailRow label="Escola" value={openSpell.school} />
                 {openSpell.components && (
                   <DetailRow label="Componentes" value={openSpell.components} />
@@ -164,7 +140,7 @@ export function PlayerSheetTabSpells({ character, editable, onError }: Props) {
               </div>
             )}
             {openSpell.description && (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-rpg-text">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
                 {openSpell.description}
               </p>
             )}
@@ -175,19 +151,21 @@ export function PlayerSheetTabSpells({ character, editable, onError }: Props) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 rounded-md border border-rpg-border bg-rpg-bg py-2">
-      <span
-        className="text-[9px] uppercase tracking-[0.2em] text-rpg-text-dim"
-        style={{ fontFamily: "var(--font-rpg-hud)" }}
-      >
+    <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
+      {children}
+    </h3>
+  );
+}
+
+function SpellStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 py-2">
+      <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
         {label}
       </span>
-      <span
-        className="text-base tabular-nums text-rpg-purple"
-        style={{ fontFamily: "var(--font-rpg-numbers)" }}
-      >
+      <span className="text-base tabular-nums text-blue-400" style={{ fontFamily: "var(--font-rpg-numbers)" }}>
         {value}
       </span>
     </div>
@@ -197,16 +175,10 @@ function Stat({ label, value }: { label: string; value: string }) {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <span
-        className="text-[10px] uppercase tracking-[0.2em] text-rpg-text-dim"
-        style={{ fontFamily: "var(--font-rpg-hud)" }}
-      >
+      <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500" style={{ fontFamily: "var(--font-rpg-hud)" }}>
         {label}
       </span>
-      <span
-        className="text-sm text-rpg-text"
-        style={{ fontFamily: "var(--font-rpg-numbers)" }}
-      >
+      <span className="text-sm text-zinc-200" style={{ fontFamily: "var(--font-rpg-numbers)" }}>
         {value}
       </span>
     </div>

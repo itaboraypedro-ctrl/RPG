@@ -31,6 +31,11 @@ export function CharacterWizard() {
   const [historyIndex, setHistoryIndex] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Steps with internal "commit then navigate" logic expose it via imperative ref
+  const step4TriggerRef = useRef<(() => void) | null>(null);
+  const step8TriggerRef = useRef<(() => void) | null>(null);
+  const [step8Saving, setStep8Saving] = useState(false);
+
   const currentImageUrl = data.currentImageUrl ?? null;
   const imageHistory = data.imageHistory ?? [];
 
@@ -60,7 +65,7 @@ export function CharacterWizard() {
 
       const prompt = buildCharacterPrompt({
         sex: data.sex,
-        ageCategory: data.ageCategory,
+        age: data.age,
         raceName: race?.name,
         subraceName: subrace?.name,
         raceVisualDescription: visualParts,
@@ -119,67 +124,59 @@ export function CharacterWizard() {
   const regenerateStep: PromptStep =
     step >= 6 ? 6 : step === 5 ? 5 : step === 3 ? 3 : 2;
 
-  const formContent = (
-    <div className="flex flex-col gap-8">
-      <StepIndicator currentStep={step} />
-      {step === 1 && (
-        <Step1Identity data={data} onUpdate={updateData} onNext={goNext} />
+  // canProceed per step (used by the shared footer)
+  const hasSubraces = !!race && race.subraces.length > 0;
+  const canProceedMap: Record<WizardStep, boolean> = {
+    1: !!data.name && data.name.trim().length >= 2 && !!data.sex,
+    2: !!data.raceId && (!hasSubraces || !!data.subraceId) && !!data.age,
+    3: !!data.classId,
+    4: !!data.stats,
+    5: !!data.backgroundId,
+    6: !!data.currentImageUrl,
+    7: true,
+    8: !step8Saving,
+  };
+  const canProceed = canProceedMap[step];
+
+  const handleFooterNext = () => {
+    if (step === 4) {
+      step4TriggerRef.current?.();
+    } else if (step === 8) {
+      step8TriggerRef.current?.();
+    } else {
+      goNext();
+    }
+  };
+
+  const header = <StepIndicator currentStep={step} />;
+
+  const footer = (
+    <div className="flex items-center justify-between gap-3">
+      {step > 1 ? (
+        <button type="button" onClick={goBack} className="arcana-btn-ghost">
+          Voltar
+        </button>
+      ) : (
+        <div />
       )}
-      {step === 2 && (
-        <Step2Race
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-          onGenerateImage={() => generateImage(2)}
-        />
-      )}
-      {step === 3 && (
-        <Step3Class
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-          onGenerateImage={() => generateImage(3)}
-        />
-      )}
-      {step === 4 && (
-        <Step4Stats
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-        />
-      )}
-      {step === 5 && (
-        <Step5Background
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-          onGenerateImage={() => generateImage(5)}
-        />
-      )}
-      {step === 6 && (
-        <Step6Equipment
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-          onGenerateImage={() => generateImage(6)}
-          isGenerating={isGenerating}
-        />
-      )}
-      {step === 7 && (
-        <Step7Spells
-          data={data}
-          onUpdate={updateData}
-          onNext={goNext}
-          onBack={goBack}
-        />
-      )}
-      {step === 8 && (
-        <Step8Review data={data as CharacterCreationData} onBack={goBack} />
+      {step === 8 ? (
+        <button
+          type="button"
+          onClick={handleFooterNext}
+          disabled={step8Saving}
+          className={step8Saving ? "arcana-btn-primary-disabled" : "arcana-btn-primary"}
+        >
+          {step8Saving ? "Forjando lenda..." : "Criar Personagem"}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleFooterNext}
+          disabled={!canProceed}
+          className={canProceed ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
+        >
+          Continuar
+        </button>
       )}
     </div>
   );
@@ -202,6 +199,61 @@ export function CharacterWizard() {
   );
 
   return (
-    <WizardLayout formContent={formContent} previewContent={previewContent} />
+    <WizardLayout header={header} footer={footer} previewContent={previewContent}>
+      {step === 1 && (
+        <Step1Identity data={data} onUpdate={updateData} />
+      )}
+      {step === 2 && (
+        <Step2Race
+          data={data}
+          onUpdate={updateData}
+          onGenerateImage={() => generateImage(2)}
+        />
+      )}
+      {step === 3 && (
+        <Step3Class
+          data={data}
+          onUpdate={updateData}
+          onGenerateImage={() => generateImage(3)}
+        />
+      )}
+      {step === 4 && (
+        <Step4Stats
+          data={data}
+          onUpdate={updateData}
+          onNext={goNext}
+          triggerRef={step4TriggerRef}
+        />
+      )}
+      {step === 5 && (
+        <Step5Background
+          data={data}
+          onUpdate={updateData}
+          onGenerateImage={() => generateImage(5)}
+        />
+      )}
+      {step === 6 && (
+        <Step6Equipment
+          data={data}
+          onUpdate={updateData}
+          onGenerateImage={() => generateImage(6)}
+          isGenerating={isGenerating}
+        />
+      )}
+      {step === 7 && (
+        <Step7Spells
+          data={data}
+          onUpdate={updateData}
+          onNext={goNext}
+        />
+      )}
+      {step === 8 && (
+        <Step8Review
+          data={data as CharacterCreationData}
+          triggerRef={step8TriggerRef}
+          onSavingChange={setStep8Saving}
+        />
+      )}
+    </WizardLayout>
   );
 }

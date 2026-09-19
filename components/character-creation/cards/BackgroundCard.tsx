@@ -16,50 +16,46 @@ type Props = {
 
 export function BackgroundCard({ background, selected, onSelect }: Props) {
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={() => onSelect(background.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(background.id);
-        }
-      }}
       className={[
-        "border bg-arcana-surface p-5 cursor-pointer transition-all rounded-md",
+        "arcana-list-item w-full text-left px-4 py-3 transition-all duration-150",
         selected
-          ? "border-arcana-gold shadow-[0_0_20px_rgba(201,168,76,0.3)]"
-          : "border-arcana-border hover:border-arcana-gold/40",
+          ? "arcana-item-selected arcana-item-selected-glow"
+          : "arcana-item-idle",
       ].join(" ")}
     >
-      <h3
-        className="font-cinzel text-arcana-text"
-        style={{ fontSize: "1.25rem" }}
-      >
-        {background.name}
-      </h3>
-
-      {background.skills.length > 0 ? (
-        <p className="mt-2 text-xs text-arcana-text-dim font-crimson">
-          <span className="text-arcana-text-dim">Perícias: </span>
-          <span className="text-arcana-text">
-            {background.skills.join(", ")}
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className={[
+            "font-cinzel text-sm uppercase tracking-[0.18em] transition-colors duration-150",
+            selected ? "text-arcana-gold-bright" : "text-arcana-text-dim",
+          ].join(" ")}
+        >
+          {background.name}
+        </span>
+        {background.feature && (
+          <span
+            className={[
+              "font-cinzel text-[9px] tracking-[0.1em] uppercase shrink-0 transition-colors duration-150",
+              selected ? "text-arcana-gold/60" : "text-arcana-text-muted",
+            ].join(" ")}
+          >
+            {background.feature}
           </span>
+        )}
+      </div>
+      {background.skills.length > 0 && (
+        <p
+          className={[
+            "mt-0.5 font-crimson text-[11px] transition-colors duration-150",
+            selected ? "text-arcana-text-dim" : "text-arcana-text-muted",
+          ].join(" ")}
+        >
+          {background.skills.join(", ")}
         </p>
-      ) : null}
-
-      {background.feature ? (
-        <p className="mt-2 font-cinzel uppercase tracking-[0.2em] text-[10px] text-arcana-gold">
-          {background.feature}
-        </p>
-      ) : null}
-
-      {background.visualDetail ? (
-        <p className="mt-3 font-crimson italic text-arcana-text-dim text-sm leading-snug">
-          ✦ {background.visualDetail}
-        </p>
-      ) : null}
-    </div>
+      )}
+    </button>
   );
 }

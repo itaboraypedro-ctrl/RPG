@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { CharacterCreationData } from "@/lib/character-creation/types";
 import { BACKGROUNDS } from "@/lib/character-creation/background-data";
 import { BackgroundCard } from "@/components/character-creation/cards/BackgroundCard";
@@ -8,211 +8,216 @@ import { BackgroundCard } from "@/components/character-creation/cards/Background
 type Props = {
   data: Partial<CharacterCreationData>;
   onUpdate: (partial: Partial<CharacterCreationData>) => void;
-  onNext: () => void;
-  onBack: () => void;
   onGenerateImage: (step: 5) => void;
 };
 
-export default function Step5Background({
-  data,
-  onUpdate,
-  onNext,
-  onBack,
-  onGenerateImage,
-}: Props) {
+type PersonalityField = "trait" | "ideal" | "bond" | "flaw";
+
+const PERSONALITY_LABELS: Record<PersonalityField, string> = {
+  trait: "Traço",
+  ideal: "Ideal",
+  bond: "Vínculo",
+  flaw: "Defeito",
+};
+
+const PERSONALITY_DESC: Record<PersonalityField, string> = {
+  trait: "Como você age",
+  ideal: "O que te move",
+  bond: "A que você está preso",
+  flaw: "Sua fraqueza",
+};
+
+export default function Step5Background({ data, onUpdate, onGenerateImage }: Props) {
+  const [openPickerField, setOpenPickerField] = useState<PersonalityField | null>(null);
+
   const selectedBg = useMemo(
     () => BACKGROUNDS.find((bg) => bg.id === data.backgroundId),
-    [data.backgroundId]
+    [data.backgroundId],
   );
 
   const personality = data.personality ?? {};
 
-  const updatePersonality = (
-    field: "trait" | "ideal" | "bond" | "flaw",
-    value: string
-  ) => {
-    onUpdate({
-      personality: {
-        ...personality,
-        [field]: value || undefined,
-      },
-    });
+  const updatePersonality = (field: PersonalityField, value: string) => {
+    onUpdate({ personality: { ...personality, [field]: value || undefined } });
+    setOpenPickerField(null);
   };
 
-  const isValid = !!data.backgroundId;
+  const personalityOptions: Record<PersonalityField, string[]> = {
+    trait: selectedBg?.personalityTraits ?? [],
+    ideal: selectedBg?.ideals ?? [],
+    bond: selectedBg?.bonds ?? [],
+    flaw: selectedBg?.flaws ?? [],
+  };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Escolha seu Antecedente
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            A história que te trouxe até aqui.
-          </p>
-        </header>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-5">
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {BACKGROUNDS.map((bg) => (
-            <BackgroundCard
-              key={bg.id}
-              background={bg}
-              selected={data.backgroundId === bg.id}
-              onSelect={(id) => onUpdate({ backgroundId: id })}
-            />
-          ))}
+        {/* Lista */}
+        <div>
+          <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
+            Antecedente
+          </p>
+          <div className="arcana-list rounded-sm">
+            {BACKGROUNDS.map((bg) => (
+              <BackgroundCard
+                key={bg.id}
+                background={bg}
+                selected={data.backgroundId === bg.id}
+                onSelect={(id) => {
+                  onUpdate({ backgroundId: id });
+                  setOpenPickerField(null);
+                }}
+              />
+            ))}
+          </div>
         </div>
 
+        {/* Painel */}
         {selectedBg ? (
-          <div className="space-y-5 rounded-md border border-arcana-gold/30 bg-arcana-surface/60 p-5">
-            {/* Perícias */}
-            {selectedBg.skills.length > 0 ? (
-              <div className="space-y-1">
-                <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                  Perícias treinadas
+          <div className="arcana-panel rounded-sm p-5 space-y-5">
+            <div>
+              <h3 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright mb-2">
+                {selectedBg.name}
+              </h3>
+              {selectedBg.visualDetail && (
+                <p className="font-crimson italic text-arcana-text-dim text-sm leading-relaxed">
+                  {selectedBg.visualDetail}
                 </p>
-                <p className="font-crimson text-arcana-text">
-                  {selectedBg.skills.join(", ")}
-                </p>
-              </div>
-            ) : null}
+              )}
+            </div>
 
-            {/* Equipamento */}
-            {selectedBg.equipment.length > 0 ? (
-              <div className="space-y-1">
-                <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
+            <div className="grid grid-cols-2 gap-2">
+              {selectedBg.skills.length > 0 && (
+                <div className="col-span-2 arcana-stat-chip rounded-sm px-3 py-2.5">
+                  <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim">
+                    Perícias treinadas
+                  </p>
+                  <p className="mt-0.5 font-crimson text-sm text-arcana-gold">
+                    {selectedBg.skills.join(", ")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {selectedBg.equipment.length > 0 && (
+              <div className="space-y-1.5 pt-3 border-t border-arcana-border-dim">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
                   Equipamento inicial
                 </p>
-                <ul className="font-crimson text-arcana-text">
+                <ul className="space-y-1">
                   {selectedBg.equipment.map((item, i) => (
-                    <li key={`${item}-${i}`}>· {item}</li>
+                    <li key={`${item}-${i}`} className="flex items-start gap-2.5 font-crimson text-sm text-arcana-text">
+                      <span className="mt-[7px] block h-px w-3 shrink-0 bg-arcana-gold/40" />
+                      {item}
+                    </li>
                   ))}
                 </ul>
               </div>
-            ) : null}
+            )}
 
-            {/* Característica */}
-            {selectedBg.feature ? (
-              <div className="space-y-1">
-                <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                  Característica especial: {selectedBg.feature}
+            {selectedBg.feature && (
+              <div className="space-y-1 pt-3 border-t border-arcana-border-dim">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-gold/70">
+                  {selectedBg.feature}
                 </p>
-                {selectedBg.featureDesc ? (
-                  <p className="font-crimson text-arcana-text-dim">
-                    {selectedBg.featureDesc}
-                  </p>
-                ) : null}
+                {selectedBg.featureDesc && (
+                  <p className="font-crimson text-sm text-arcana-text-dim">{selectedBg.featureDesc}</p>
+                )}
               </div>
-            ) : null}
+            )}
 
-            {/* Detalhe visual */}
-            {selectedBg.visualDetail ? (
-              <div className="space-y-1">
-                <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                  Detalhe visual sugerido
-                </p>
-                <p className="font-crimson italic text-arcana-text">
-                  ✦ {selectedBg.visualDetail}
-                </p>
+            {/* Personalidade */}
+            <div className="space-y-2 pt-3 border-t border-arcana-border-dim">
+              <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
+                Personalidade — opcional
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["trait", "ideal", "bond", "flaw"] as PersonalityField[]).map((field) => {
+                  const chosen = personality[field];
+                  const options = personalityOptions[field];
+                  const isOpen = openPickerField === field;
+
+                  return (
+                    <div key={field} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setOpenPickerField(isOpen ? null : field)}
+                        className={[
+                          "w-full text-left px-3 py-2.5 rounded-sm border transition-all duration-150",
+                          isOpen
+                            ? "border-arcana-gold bg-arcana-gold/8"
+                            : chosen
+                              ? "arcana-stat-chip"
+                              : "border-arcana-border-dim bg-arcana-surface hover:border-arcana-border",
+                        ].join(" ")}
+                      >
+                        <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim mb-1">
+                          {PERSONALITY_LABELS[field]}
+                        </p>
+                        {chosen ? (
+                          <p className="font-crimson text-xs text-arcana-text leading-snug line-clamp-2">{chosen}</p>
+                        ) : (
+                          <p className="font-crimson text-xs text-arcana-text-muted italic">{PERSONALITY_DESC[field]}</p>
+                        )}
+                      </button>
+
+                      {isOpen && options.length > 0 && (
+                        <div className="absolute left-0 top-full z-20 mt-1 w-[280px] max-h-[240px] overflow-y-auto rounded-sm arcana-panel-elevated">
+                          {chosen && (
+                            <button
+                              type="button"
+                              onClick={() => { onUpdate({ personality: { ...personality, [field]: undefined } }); setOpenPickerField(null); }}
+                              className="w-full text-left px-4 py-2.5 font-crimson text-xs text-arcana-text-dim hover:text-arcana-text hover:bg-arcana-surface-3 border-b border-arcana-border-dim"
+                            >
+                              Nenhum
+                            </button>
+                          )}
+                          {options.map((opt, i) => (
+                            <button
+                              key={`${opt}-${i}`}
+                              type="button"
+                              onClick={() => updatePersonality(field, opt)}
+                              className={[
+                                "w-full text-left px-4 py-3 font-crimson text-sm leading-snug transition-colors border-b border-arcana-border-dim last:border-b-0",
+                                opt === chosen
+                                  ? "bg-arcana-gold/10 text-arcana-gold"
+                                  : "text-arcana-text hover:bg-arcana-surface-3",
+                              ].join(" ")}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            ) : null}
-
-            {/* Personalidade selects */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <PersonalitySelect
-                label="Traço de personalidade"
-                value={personality.trait}
-                options={selectedBg.personalityTraits}
-                onChange={(v) => updatePersonality("trait", v)}
-              />
-              <PersonalitySelect
-                label="Ideal"
-                value={personality.ideal}
-                options={selectedBg.ideals}
-                onChange={(v) => updatePersonality("ideal", v)}
-              />
-              <PersonalitySelect
-                label="Vínculo"
-                value={personality.bond}
-                options={selectedBg.bonds}
-                onChange={(v) => updatePersonality("bond", v)}
-              />
-              <PersonalitySelect
-                label="Defeito"
-                value={personality.flaw}
-                options={selectedBg.flaws}
-                onChange={(v) => updatePersonality("flaw", v)}
-              />
             </div>
 
-            {/* Botão atualizar visual */}
-            <div className="space-y-1 pt-2">
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={() => onGenerateImage(5)}
-                className="rounded-md border border-arcana-gold bg-arcana-gold/10 px-4 py-2 font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold-bright hover:bg-arcana-gold/20"
+                className="arcana-btn-ghost text-xs"
               >
-                ✨ Atualizar visual do personagem
+                Atualizar retrato com antecedente
               </button>
-              <p className="font-crimson text-xs text-arcana-text-dim">
-                (opcional — atualiza a imagem com o detalhe do antecedente)
-              </p>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+            <p className="font-crimson italic text-arcana-text-dim text-sm">
+              Selecione um antecedente
+            </p>
+          </div>
+        )}
       </div>
 
-      <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md border border-arcana-border text-arcana-text-dim hover:text-arcana-text hover:border-arcana-gold/40"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          disabled={!isValid}
-          onClick={onNext}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            isValid
-              ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-              : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-          }`}
-        >
-          Próximo →
-        </button>
-      </div>
+      {openPickerField && (
+        <div className="fixed inset-0 z-10" onClick={() => setOpenPickerField(null)} />
+      )}
     </div>
-  );
-}
-
-type SelectProps = {
-  label: string;
-  value: string | undefined;
-  options: string[];
-  onChange: (value: string) => void;
-};
-
-function PersonalitySelect({ label, value, options, onChange }: SelectProps) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-        {label}
-      </span>
-      <select
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-arcana-text focus:border-arcana-gold focus:outline-none"
-      >
-        <option value="">— escolher —</option>
-        {options.map((opt, i) => (
-          <option key={`${opt}-${i}`} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

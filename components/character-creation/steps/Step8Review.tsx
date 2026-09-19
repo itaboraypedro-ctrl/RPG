@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AbilityKey,
-  AgeCategory,
   CharacterCreationData,
   Sex,
   StatBlock,
@@ -16,20 +15,14 @@ import { createCharacter, type CreateCharacterPayload } from "@/app/play/charact
 
 type Props = {
   data: CharacterCreationData;
-  onBack: () => void;
+  triggerRef: React.MutableRefObject<(() => void) | null>;
+  onSavingChange: (saving: boolean) => void;
 };
 
 const SEX_LABEL: Record<Sex, string> = {
   male: "Masculino",
   female: "Feminino",
   androgynous: "Andrógino",
-};
-
-const AGE_LABEL: Record<AgeCategory, string> = {
-  young: "Jovem",
-  adult: "Adulto",
-  mature: "Maduro",
-  elder: "Ancião",
 };
 
 const ABILITY_LABEL: Record<AbilityKey, string> = {
@@ -51,7 +44,7 @@ function fmtMod(m: number): string {
   return m >= 0 ? `+${m}` : `${m}`;
 }
 
-export default function Step8Review({ data, onBack }: Props) {
+export default function Step8Review({ data, triggerRef, onSavingChange }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,7 +97,6 @@ export default function Step8Review({ data, onBack }: Props) {
   const initiative = mod(dexTotal);
   const speed = race?.speed ?? 9;
 
-  // Inventário compilado
   const inventoryItems: string[] = useMemo(() => {
     const items: string[] = [];
     if (classData) {
@@ -136,7 +128,7 @@ export default function Step8Review({ data, onBack }: Props) {
       setError("Dados incompletos.");
       return;
     }
-    if (!data.name || !data.sex || !data.ageCategory || !data.stats) {
+    if (!data.name || !data.sex || !data.age || !data.stats) {
       setError("Dados de identidade incompletos.");
       return;
     }
@@ -153,7 +145,7 @@ export default function Step8Review({ data, onBack }: Props) {
       const payload: CreateCharacterPayload = {
         name: data.name,
         sex: data.sex,
-        ageCategory: data.ageCategory,
+        age: data.age,
         raceId: race.id,
         subraceId: subrace?.id,
         raceName: race.name + (subrace ? ` (${subrace.name})` : ""),
@@ -181,17 +173,13 @@ export default function Step8Review({ data, onBack }: Props) {
       };
 
       const result = await createCharacter(payload);
-      // Em caminho feliz, createCharacter chama redirect e nunca retorna.
-      // Se voltou aqui, é erro.
       if (result && result.ok === false) {
         setError(result.error);
         setIsSaving(false);
       }
     } catch (err) {
-      // redirect() lança um NEXT_REDIRECT — não é um erro real.
       const e = err as { digest?: string; message?: string };
       if (typeof e.digest === "string" && e.digest.startsWith("NEXT_REDIRECT")) {
-        // Re-throw para o Next processar o redirect
         throw err;
       }
       setError(e.message ?? "Falha ao criar personagem.");
@@ -199,19 +187,27 @@ export default function Step8Review({ data, onBack }: Props) {
     }
   };
 
+  // Sync saving state to parent
+  useEffect(() => {
+    onSavingChange(isSaving);
+  }, [isSaving, onSavingChange]);
+
+  // Expose handleCreate to parent footer via ref
+  const handleCreateRef = useRef(handleCreate);
+  useEffect(() => {
+    handleCreateRef.current = handleCreate;
+  });
+  useEffect(() => {
+    triggerRef.current = () => { void handleCreateRef.current(); };
+    return () => { triggerRef.current = null; };
+  }, [triggerRef]);
+
   if (!race || !classData || !background) {
     return (
       <div className="flex flex-col gap-4 py-12 text-center">
         <p className="font-crimson italic text-arcana-text-dim">
           Dados incompletos. Volte e preencha todos os passos.
         </p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="self-center font-cinzel text-xs uppercase tracking-[0.3em] text-arcana-text-dim hover:text-arcana-gold"
-        >
-          ← Voltar
-        </button>
       </div>
     );
   }
@@ -219,214 +215,183 @@ export default function Step8Review({ data, onBack }: Props) {
   const subtitleParts = [race.name + (subrace ? ` (${subrace.name})` : ""), classData.name];
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Revisão
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            Revise sua ficha antes de selar o destino.
-          </p>
-        </header>
+    <div className="space-y-6">
+      <p className="font-crimson text-arcana-text-dim">
+        Revise sua ficha antes de selar o destino.
+      </p>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Esquerda: ficha */}
-          <div className="flex flex-col gap-5">
-            {/* Identidade */}
-            <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                Identidade
-              </h3>
-              <p className="font-cinzel text-xl text-arcana-text">{data.name}</p>
-              <p className="font-crimson text-sm text-arcana-text-dim">
-                {data.sex ? SEX_LABEL[data.sex] : ""} · {data.ageCategory ? AGE_LABEL[data.ageCategory] : ""}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Esquerda: ficha */}
+        <div className="flex flex-col gap-5">
+          {/* Identidade */}
+          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+              Identidade
+            </h3>
+            <p className="font-cinzel text-xl text-arcana-text">{data.name}</p>
+            <p className="font-crimson text-sm text-arcana-text-dim">
+              {data.sex ? SEX_LABEL[data.sex] : ""} · {data.age ? `${data.age} anos` : ""}
+            </p>
+            <p className="mt-2 font-crimson text-sm text-arcana-text">
+              {race.name}
+              {subrace ? ` (${subrace.name})` : ""}
+            </p>
+            <p className="font-crimson text-sm text-arcana-text">
+              {classData.name} · Nível 1
+            </p>
+            <p className="font-crimson text-sm text-arcana-text-dim italic">
+              {background.name}
+            </p>
+          </section>
+
+          {/* Atributos */}
+          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+              Atributos
+            </h3>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {ABILITY_ORDER.map((k) => {
+                const base = stats[k] ?? 10;
+                const bonus = racialBonuses[k] ?? 0;
+                const total = totals[k];
+                return (
+                  <div
+                    key={k}
+                    className="rounded border border-arcana-border bg-arcana-bg/40 p-2 text-center"
+                  >
+                    <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
+                      {ABILITY_LABEL[k]}
+                    </p>
+                    <p className="font-cinzel text-lg text-arcana-text">{total}</p>
+                    <p className="font-crimson text-[10px] text-arcana-text-dim">
+                      {base}
+                      {bonus !== 0 ? ` (${fmtMod(bonus)} racial)` : ""}
+                    </p>
+                    <p className="font-cinzel text-xs text-arcana-gold">{fmtMod(mod(total))}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Combate */}
+          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+              Combate
+            </h3>
+            <dl className="grid grid-cols-2 gap-y-2 font-crimson text-sm">
+              <dt className="text-arcana-text-dim">PV máximo</dt>
+              <dd className="text-arcana-text text-right">{maxHp}</dd>
+              <dt className="text-arcana-text-dim">CA</dt>
+              <dd className="text-arcana-text text-right">{ac}</dd>
+              <dt className="text-arcana-text-dim">Iniciativa</dt>
+              <dd className="text-arcana-text text-right">{fmtMod(initiative)}</dd>
+              <dt className="text-arcana-text-dim">Deslocamento</dt>
+              <dd className="text-arcana-text text-right">{speed}m</dd>
+            </dl>
+          </section>
+
+          {/* Proficiências */}
+          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+              Proficiências
+            </h3>
+            <div className="space-y-2 font-crimson text-sm">
+              <div>
+                <p className="text-arcana-text-dim">Resistências</p>
+                <p className="text-arcana-text">
+                  {classData.savingThrows.map((s) => ABILITY_LABEL[s]).join(", ")}
+                </p>
+              </div>
+              <div>
+                <p className="text-arcana-text-dim">Perícias</p>
+                <p className="text-arcana-text">{background.skills.join(", ")}</p>
+              </div>
+              <div>
+                <p className="text-arcana-text-dim">Armaduras</p>
+                <p className="text-arcana-text">
+                  {classData.armorProficiency.length > 0
+                    ? classData.armorProficiency.join(", ")
+                    : "Nenhuma"}
+                </p>
+              </div>
+              <div>
+                <p className="text-arcana-text-dim">Armas</p>
+                <p className="text-arcana-text">
+                  {classData.weaponProficiency.join(", ")}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Inventário */}
+          <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+            <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+              Inventário
+            </h3>
+            {inventoryItems.length === 0 ? (
+              <p className="font-crimson italic text-arcana-text-dim text-sm">
+                Nenhum item.
               </p>
-              <p className="mt-2 font-crimson text-sm text-arcana-text">
-                {race.name}
-                {subrace ? ` (${subrace.name})` : ""}
+            ) : (
+              <ul className="space-y-1 font-crimson text-sm text-arcana-text">
+                {inventoryItems.map((it, idx) => (
+                  <li key={`${it}-${idx}`}>· {it}</li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
+              Ouro: {background.gold} po
+            </p>
+          </section>
+
+          {/* Magias */}
+          {classData.isSpellcaster ? (
+            <section className="rounded-sm border border-arcana-border/50 bg-arcana-surface/40 p-4">
+              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
+                Magias
+              </h3>
+              <p className="font-crimson text-sm text-arcana-text">
+                Truques selecionados: <span className="text-arcana-gold">{cantripCount}</span>
               </p>
               <p className="font-crimson text-sm text-arcana-text">
-                {classData.name} · Nível 1
-              </p>
-              <p className="font-crimson text-sm text-arcana-text-dim italic">
-                {background.name}
+                Magias 1° nível: <span className="text-arcana-gold">{level1Count}</span>
               </p>
             </section>
-
-            {/* Atributos */}
-            <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                Atributos
-              </h3>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {ABILITY_ORDER.map((k) => {
-                  const base = stats[k] ?? 10;
-                  const bonus = racialBonuses[k] ?? 0;
-                  const total = totals[k];
-                  return (
-                    <div
-                      key={k}
-                      className="rounded border border-arcana-border bg-arcana-bg/40 p-2 text-center"
-                    >
-                      <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                        {ABILITY_LABEL[k]}
-                      </p>
-                      <p className="font-cinzel text-lg text-arcana-text">{total}</p>
-                      <p className="font-crimson text-[10px] text-arcana-text-dim">
-                        {base}
-                        {bonus !== 0 ? ` (${fmtMod(bonus)} racial)` : ""}
-                      </p>
-                      <p className="font-cinzel text-xs text-arcana-gold">{fmtMod(mod(total))}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Combate */}
-            <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                Combate
-              </h3>
-              <dl className="grid grid-cols-2 gap-y-2 font-crimson text-sm">
-                <dt className="text-arcana-text-dim">PV máximo</dt>
-                <dd className="text-arcana-text text-right">{maxHp}</dd>
-                <dt className="text-arcana-text-dim">CA</dt>
-                <dd className="text-arcana-text text-right">{ac}</dd>
-                <dt className="text-arcana-text-dim">Iniciativa</dt>
-                <dd className="text-arcana-text text-right">{fmtMod(initiative)}</dd>
-                <dt className="text-arcana-text-dim">Deslocamento</dt>
-                <dd className="text-arcana-text text-right">{speed}m</dd>
-              </dl>
-            </section>
-
-            {/* Proficiências */}
-            <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                Proficiências
-              </h3>
-              <div className="space-y-2 font-crimson text-sm">
-                <div>
-                  <p className="text-arcana-text-dim">Resistências</p>
-                  <p className="text-arcana-text">
-                    {classData.savingThrows.map((s) => ABILITY_LABEL[s]).join(", ")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-arcana-text-dim">Perícias</p>
-                  <p className="text-arcana-text">{background.skills.join(", ")}</p>
-                </div>
-                <div>
-                  <p className="text-arcana-text-dim">Armaduras</p>
-                  <p className="text-arcana-text">
-                    {classData.armorProficiency.length > 0
-                      ? classData.armorProficiency.join(", ")
-                      : "Nenhuma"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-arcana-text-dim">Armas</p>
-                  <p className="text-arcana-text">
-                    {classData.weaponProficiency.join(", ")}
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Inventário */}
-            <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-              <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                Inventário
-              </h3>
-              {inventoryItems.length === 0 ? (
-                <p className="font-crimson italic text-arcana-text-dim text-sm">
-                  Nenhum item.
-                </p>
-              ) : (
-                <ul className="space-y-1 font-crimson text-sm text-arcana-text">
-                  {inventoryItems.map((it, idx) => (
-                    <li key={`${it}-${idx}`}>· {it}</li>
-                  ))}
-                </ul>
-              )}
-              <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                Ouro: {background.gold} po
-              </p>
-            </section>
-
-            {/* Magias */}
-            {classData.isSpellcaster ? (
-              <section className="rounded-md border border-arcana-border bg-arcana-surface p-4">
-                <h3 className="font-cinzel text-sm uppercase tracking-[0.3em] text-arcana-gold mb-3">
-                  Magias
-                </h3>
-                <p className="font-crimson text-sm text-arcana-text">
-                  Truques selecionados: <span className="text-arcana-gold">{cantripCount}</span>
-                </p>
-                <p className="font-crimson text-sm text-arcana-text">
-                  Magias 1° nível: <span className="text-arcana-gold">{level1Count}</span>
-                </p>
-              </section>
-            ) : null}
-          </div>
-
-          {/* Direita: avatar */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-md border border-arcana-gold/40 bg-arcana-surface">
-              {data.currentImageUrl ? (
-                <Image
-                  src={data.currentImageUrl}
-                  alt={`Retrato de ${data.name}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 40vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="font-crimson italic text-arcana-text-dim text-sm text-center px-4">
-                    Sem retrato gerado.
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="text-center">
-              <h3 className="font-cinzel text-2xl text-arcana-text">{data.name}</h3>
-              <p className="mt-1 font-cinzel uppercase tracking-[0.2em] text-arcana-gold/70 text-xs">
-                {subtitleParts.join(" · ")} · Nível 1
-              </p>
-            </div>
-          </div>
+          ) : null}
         </div>
 
-        {error ? (
-          <p className="text-center font-crimson italic text-red-400">{error}</p>
-        ) : null}
+        {/* Direita: avatar */}
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-md border border-arcana-gold/40 bg-arcana-surface">
+            {data.currentImageUrl ? (
+              <Image
+                src={data.currentImageUrl}
+                alt={`Retrato de ${data.name}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 40vw"
+                className="object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="font-crimson italic text-arcana-text-dim text-sm text-center px-4">
+                  Sem retrato gerado.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="text-center">
+            <h3 className="font-cinzel text-2xl text-arcana-text">{data.name}</h3>
+            <p className="mt-1 font-cinzel uppercase tracking-[0.2em] text-arcana-gold/70 text-xs">
+              {subtitleParts.join(" · ")} · Nível 1
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="sticky bottom-0 flex flex-col items-center gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur sm:flex-row sm:justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isSaving}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md text-arcana-text-dim hover:text-arcana-gold transition disabled:opacity-50"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={isSaving}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            isSaving
-              ? "bg-arcana-gold/60 text-arcana-bg cursor-wait"
-              : "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-          }`}
-        >
-          {isSaving ? "Forjando lenda..." : "✨ Criar Personagem"}
-        </button>
-      </div>
+      {error ? (
+        <p className="text-center font-crimson italic text-red-400">{error}</p>
+      ) : null}
     </div>
   );
 }

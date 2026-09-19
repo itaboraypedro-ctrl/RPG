@@ -11,6 +11,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Anão"],
     visualDescription:
       "stocky and broad, thick beard, ruddy skin, deep-set eyes",
+    ageRange: { min: 18, max: 350, maturity: 50 },
     subraces: [
       {
         id: "anao-colina",
@@ -44,6 +45,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Élfico"],
     visualDescription:
       "slender frame, pointed ears, almond-shaped eyes, graceful posture",
+    ageRange: { min: 100, max: 750, maturity: 100 },
     subraces: [
       {
         id: "elfo-alto",
@@ -85,6 +87,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Halfling"],
     visualDescription:
       "small stature, curly hair, cheerful round face, hairy bare feet",
+    ageRange: { min: 20, max: 250, maturity: 20 },
     subraces: [
       {
         id: "halfling-pesleves",
@@ -114,6 +117,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "1 idioma extra"],
     visualDescription:
       "average build for a human adult, varied features, balanced proportions",
+    ageRange: { min: 16, max: 100, maturity: 18 },
     subraces: [],
   },
   {
@@ -126,6 +130,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Dracônico"],
     visualDescription:
       "dragon-like humanoid, scaled skin, draconic snout, no hair",
+    ageRange: { min: 15, max: 80, maturity: 15 },
     subraces: [],
   },
   {
@@ -138,6 +143,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Gnômico"],
     visualDescription:
       "very small, wide curious eyes, big round nose, wild hair",
+    ageRange: { min: 40, max: 500, maturity: 40 },
     subraces: [
       {
         id: "gnomo-floresta",
@@ -171,6 +177,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Élfico", "1 extra"],
     visualDescription:
       "tall and lean, slightly pointed ears, fine features, expressive eyes",
+    ageRange: { min: 20, max: 180, maturity: 20 },
     subraces: [],
   },
   {
@@ -188,6 +195,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Orc"],
     visualDescription:
       "muscular and tall, greenish skin, prominent lower tusks, heavy brow",
+    ageRange: { min: 14, max: 75, maturity: 14 },
     subraces: [],
   },
   {
@@ -200,6 +208,7 @@ export const RACES: Race[] = [
     languages: ["Comum", "Infernal"],
     visualDescription:
       "humanoid with curling horns, thin tail, unusual eye color, slightly reddish or purple skin tone",
+    ageRange: { min: 16, max: 100, maturity: 18 },
     subraces: [],
   },
 ] as const;

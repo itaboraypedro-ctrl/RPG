@@ -8,47 +8,26 @@ import { getOutfitSuggestions } from "@/lib/character-creation/outfit-suggestion
 type Props = {
   data: Partial<CharacterCreationData>;
   onUpdate: (partial: Partial<CharacterCreationData>) => void;
-  onNext: () => void;
-  onBack: () => void;
   onGenerateImage: (step: 6) => void;
   isGenerating: boolean;
 };
 
-type SectionKey = "kit" | "outfit" | "weapon";
-
 const MAX_OUTFIT_LEN = 300;
 
 const WEAPON_HINT_KEYWORDS = [
-  "arma",
-  "machado",
-  "espada",
-  "rapieira",
-  "besta",
-  "arco",
-  "cajado",
-  "maça",
-  "martelo",
-  "adaga",
-  "lança",
-  "azagaia",
-  "cimitarra",
+  "arma", "machado", "espada", "rapieira", "besta", "arco",
+  "cajado", "maça", "martelo", "adaga", "lança", "azagaia", "cimitarra",
 ];
 
 export default function Step6Equipment({
   data,
   onUpdate,
-  onNext,
-  onBack,
   onGenerateImage,
   isGenerating,
 }: Props) {
-  const [openSection, setOpenSection] = useState<SectionKey | null>("kit");
+  const [kitOpen, setKitOpen] = useState(false);
 
-  const klass = useMemo(
-    () => CLASSES.find((c) => c.id === data.classId),
-    [data.classId]
-  );
-
+  const klass = useMemo(() => CLASSES.find((c) => c.id === data.classId), [data.classId]);
   const equipmentChoices = data.equipmentChoices ?? {};
 
   const inventory = useMemo(() => {
@@ -64,15 +43,9 @@ export default function Step6Equipment({
   }, [klass, equipmentChoices]);
 
   const setEquipmentChoice = (choiceId: string, optionId: string) => {
-    onUpdate({
-      equipmentChoices: {
-        ...equipmentChoices,
-        [choiceId]: optionId,
-      },
-    });
+    onUpdate({ equipmentChoices: { ...equipmentChoices, [choiceId]: optionId } });
   };
 
-  // --- Outfit suggestions ---
   const outfitSuggestions = useMemo(() => {
     if (!data.classId || !data.backgroundId) return [];
     return getOutfitSuggestions(data.classId, data.backgroundId);
@@ -82,19 +55,16 @@ export default function Step6Equipment({
   const weaponDescription = data.weaponDescription ?? "";
   const focusDescription = data.focusDescription ?? "";
 
-  // Weapon placeholder: from first equipmentChoice that looks like a weapon
   const weaponPlaceholder = useMemo(() => {
     if (!klass) return "ex: machado de batalha enferrujado com runas";
     for (const choice of klass.startingEquipmentChoices) {
       const promptLc = choice.prompt.toLowerCase();
-      const isWeapon = WEAPON_HINT_KEYWORDS.some((kw) =>
-        promptLc.includes(kw)
-      );
+      const isWeapon = WEAPON_HINT_KEYWORDS.some((kw) => promptLc.includes(kw));
       if (!isWeapon) continue;
       const optionId = equipmentChoices[choice.id];
       if (!optionId) continue;
       const option = choice.options.find((o) => o.id === optionId);
-      if (option && option.items.length > 0) {
+      if (option?.items.length) {
         return `ex: ${option.items[0].toLowerCase()} com detalhes únicos`;
       }
     }
@@ -107,268 +77,207 @@ export default function Step6Equipment({
     weaponDescription.trim().length > 0 &&
     !isGenerating;
 
-  const isValid = imageGenerated;
-
-  const toggleSection = (key: SectionKey) => {
-    setOpenSection((cur) => (cur === key ? null : key));
-  };
-
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Equipamento e Visual
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            Defina seu kit inicial, visual e arma para gerar a imagem final.
-          </p>
-        </header>
+    <div className="space-y-6">
 
-        {/* 6.1 Kit */}
-        <AccordionSection
-          title="Kit de Equipamento Inicial"
-          isOpen={openSection === "kit"}
-          onToggle={() => toggleSection("kit")}
-        >
-          {!klass ? (
-            <p className="font-crimson text-arcana-text-dim">
-              Nenhuma classe selecionada.
+      {/* Primary inputs */}
+      <div className="space-y-5">
+        {/* Outfit */}
+        <div className="space-y-3">
+          <div>
+            <label className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim block mb-1">
+              Como seu personagem se veste?
+            </label>
+            <p className="font-crimson text-xs text-arcana-text-dim/60">
+              Descreva as roupas, armadura ou aparência que definem seu visual
             </p>
-          ) : (
-            <div className="space-y-4">
-              {klass.startingEquipmentChoices.map((choice) => {
-                const selectedOption = equipmentChoices[choice.id];
-                return (
-                  <div key={choice.id} className="space-y-2">
-                    <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                      {choice.prompt}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {choice.options.map((opt) => {
-                        const checked = selectedOption === opt.id;
-                        return (
-                          <label
-                            key={opt.id}
-                            className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 transition ${
-                              checked
-                                ? "border-arcana-gold bg-arcana-gold/10"
-                                : "border-arcana-border bg-arcana-surface/80 hover:border-arcana-gold/40"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={choice.id}
-                              value={opt.id}
-                              checked={checked}
-                              onChange={() =>
-                                setEquipmentChoice(choice.id, opt.id)
-                              }
-                              className="accent-arcana-gold"
-                            />
-                            <span className="font-crimson text-arcana-text">
-                              {opt.label}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {inventory.length > 0 ? (
-                <div className="rounded-md border border-arcana-border bg-arcana-surface/60 p-4">
-                  <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                    Resumo do inventário
-                  </p>
-                  <ul className="mt-2 font-crimson text-arcana-text">
-                    {inventory.map((item, i) => (
-                      <li key={`${item}-${i}`}>· {item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </AccordionSection>
-
-        {/* 6.2 Outfit */}
-        <AccordionSection
-          title="Como seu personagem se veste?"
-          isOpen={openSection === "outfit"}
-          onToggle={() => toggleSection("outfit")}
-        >
-          <div className="space-y-3">
-            <textarea
-              rows={3}
-              value={outfitDescription}
-              maxLength={MAX_OUTFIT_LEN}
-              onChange={(e) =>
-                onUpdate({ outfitDescription: e.target.value })
-              }
-              placeholder="ex: armadura de placas com manto vermelho..."
-              className="w-full rounded-md border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/60 focus:border-arcana-gold focus:outline-none"
-            />
-            <div className="flex justify-end">
-              <span className="font-cinzel text-xs text-arcana-text-dim">
-                {outfitDescription.length} / {MAX_OUTFIT_LEN}
-              </span>
-            </div>
-            {outfitSuggestions.length > 0 ? (
+          </div>
+          <textarea
+            rows={3}
+            value={outfitDescription}
+            maxLength={MAX_OUTFIT_LEN}
+            onChange={(e) => onUpdate({ outfitDescription: e.target.value })}
+            placeholder="ex: armadura de couro surrada com um manto carmesim e botas reforçadas..."
+            className="arcana-input w-full rounded-sm px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/40 resize-none"
+          />
+          <div className="flex items-center justify-between">
+            {outfitSuggestions.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {outfitSuggestions.map((suggestion, i) => (
+                {outfitSuggestions.slice(0, 3).map((s, i) => (
                   <button
-                    key={`${suggestion}-${i}`}
+                    key={`${s}-${i}`}
                     type="button"
-                    onClick={() =>
-                      onUpdate({ outfitDescription: suggestion })
-                    }
-                    className="rounded-full border border-arcana-border bg-arcana-surface/80 px-3 py-1 font-crimson text-xs text-arcana-text-dim hover:border-arcana-gold/30 hover:text-arcana-text"
+                    onClick={() => onUpdate({ outfitDescription: s })}
+                    className="rounded-sm border border-arcana-border/40 bg-arcana-surface/30 px-3 py-1 font-crimson text-xs text-arcana-text-dim hover:border-arcana-gold/30 hover:text-arcana-text transition-colors"
                   >
-                    {suggestion}
+                    {s.length > 40 ? s.slice(0, 40) + "..." : s}
                   </button>
                 ))}
               </div>
-            ) : null}
+            )}
+            <span className="ml-auto font-cinzel text-[10px] text-arcana-text-dim/40 shrink-0">
+              {outfitDescription.length}/{MAX_OUTFIT_LEN}
+            </span>
           </div>
-        </AccordionSection>
+        </div>
 
-        {/* 6.3 Weapon & Focus */}
-        <AccordionSection
-          title="Arma e Foco"
-          isOpen={openSection === "weapon"}
-          onToggle={() => toggleSection("weapon")}
-        >
-          <div className="space-y-3">
-            <label className="flex flex-col gap-1">
-              <span className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                Descreva sua arma principal
-              </span>
-              <input
-                type="text"
-                value={weaponDescription}
-                onChange={(e) =>
-                  onUpdate({ weaponDescription: e.target.value })
-                }
-                placeholder={weaponPlaceholder}
-                className="w-full rounded-md border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/60 focus:border-arcana-gold focus:outline-none"
-              />
+        {/* Weapon */}
+        <div className="space-y-2">
+          <label className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim block">
+            Arma principal
+          </label>
+          <input
+            type="text"
+            value={weaponDescription}
+            onChange={(e) => onUpdate({ weaponDescription: e.target.value })}
+            placeholder={weaponPlaceholder}
+            className="arcana-input w-full rounded-sm px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/40"
+          />
+        </div>
+
+        {/* Focus — spellcasters only */}
+        {klass?.isSpellcaster && (
+          <div className="space-y-2">
+            <label className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim block">
+              Foco mágico
             </label>
-
-            {klass?.isSpellcaster ? (
-              <label className="flex flex-col gap-1">
-                <span className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold">
-                  Descreva seu foco mágico
-                </span>
-                <input
-                  type="text"
-                  value={focusDescription}
-                  onChange={(e) =>
-                    onUpdate({ focusDescription: e.target.value })
-                  }
-                  placeholder="ex: cajado de carvalho com cristal azul no topo"
-                  className="w-full rounded-md border border-arcana-border bg-arcana-surface/80 px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/60 focus:border-arcana-gold focus:outline-none"
-                />
-              </label>
-            ) : null}
+            <input
+              type="text"
+              value={focusDescription}
+              onChange={(e) => onUpdate({ focusDescription: e.target.value })}
+              placeholder="ex: cajado de carvalho com cristal azul no topo"
+              className="arcana-input w-full rounded-sm px-4 py-3 font-crimson text-arcana-text placeholder:text-arcana-text-dim/40"
+            />
           </div>
-        </AccordionSection>
-
-        {/* Botão Gerar */}
-        <div className="space-y-2 pt-2">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => onGenerateImage(6)}
-              disabled={!canGenerate}
-              className={`flex-1 min-w-[16rem] rounded-md font-cinzel uppercase tracking-[0.3em] px-6 py-4 transition ${
-                canGenerate
-                  ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-                  : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-              }`}
-            >
-              {isGenerating
-                ? "Gerando..."
-                : imageGenerated
-                  ? "⚔️ Gerar novamente"
-                  : "⚔️ Gerar personagem completo"}
-            </button>
-            {imageGenerated && !isGenerating ? (
-              <button
-                type="button"
-                onClick={() => onGenerateImage(6)}
-                className="rounded-md border border-arcana-border px-4 py-2 font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-text-dim hover:border-arcana-gold/40 hover:text-arcana-text"
-              >
-                🔄 Regenerar
-              </button>
-            ) : null}
-          </div>
-          {!canGenerate && !isGenerating ? (
-            <p className="font-crimson text-xs text-arcana-text-dim">
-              Preencha visual e arma para gerar.
-            </p>
-          ) : null}
-        </div>
+        )}
       </div>
 
-      <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur">
+      {/* Generate CTA */}
+      <div className="rounded-sm border border-arcana-gold/25 p-5 space-y-3" style={{background: "linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.03) 100%)", boxShadow: "0 0 0 1px rgba(201,168,76,0.1) inset"}}>
+        <div className="space-y-1">
+          <p className="font-cinzel text-xs uppercase tracking-[0.3em] text-arcana-gold/70">
+            {imageGenerated ? "Retrato gerado" : "Gerar retrato final"}
+          </p>
+          <p className="font-crimson text-sm text-arcana-text-dim">
+            {imageGenerated
+              ? "O visual do seu personagem foi criado. Você pode gerar novamente com variações."
+              : "Com outfit e arma preenchidos, gere o retrato definitivo do seu personagem."}
+          </p>
+        </div>
         <button
           type="button"
-          onClick={onBack}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md border border-arcana-border text-arcana-text-dim hover:text-arcana-text hover:border-arcana-gold/40"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          disabled={!isValid}
-          onClick={onNext}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            isValid
+          onClick={() => onGenerateImage(6)}
+          disabled={!canGenerate}
+          className={[
+            "w-full py-4 rounded-sm font-cinzel uppercase tracking-[0.3em] text-sm transition-all duration-200",
+            canGenerate
               ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-              : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-          }`}
+              : "bg-arcana-gold/20 text-arcana-bg/40 cursor-not-allowed",
+          ].join(" ")}
         >
-          Próximo →
+          {isGenerating
+            ? "Gerando retrato..."
+            : imageGenerated
+              ? "Gerar novamente"
+              : "Gerar personagem"}
         </button>
+        {!canGenerate && !isGenerating && (
+          <p className="font-crimson text-xs text-arcana-text-dim/50">
+            Preencha o visual e a arma para desbloquear a geração.
+          </p>
+        )}
+        {!imageGenerated && canGenerate && (
+          <p className="font-crimson text-xs text-arcana-text-dim/50">
+            Gere o retrato para continuar.
+          </p>
+        )}
       </div>
-    </div>
-  );
-}
 
-type AccordionProps = {
-  title: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-};
+      {/* Equipment kit — collapsible */}
+      <div className="rounded-sm border border-arcana-border/30 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setKitOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-arcana-surface/20 transition-colors"
+        >
+          <div>
+            <span className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-text-dim">
+              Kit de equipamento inicial
+            </span>
+            {inventory.length > 0 && (
+              <span className="ml-3 font-crimson text-xs text-arcana-text-dim/50">
+                {inventory.length} {inventory.length === 1 ? "item" : "itens"}
+              </span>
+            )}
+          </div>
+          <span className="font-cinzel text-arcana-text-dim/60 text-sm">
+            {kitOpen ? "−" : "+"}
+          </span>
+        </button>
 
-function AccordionSection({
-  title,
-  isOpen,
-  onToggle,
-  children,
-}: AccordionProps) {
-  return (
-    <div className="rounded-md border border-arcana-border bg-arcana-surface/40">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-      >
-        <span className="font-cinzel text-sm uppercase tracking-[0.2em] text-arcana-gold">
-          {title}
-        </span>
-        <span className="font-cinzel text-arcana-text-dim">
-          {isOpen ? "−" : "+"}
-        </span>
-      </button>
-      {isOpen ? (
-        <div className="border-t border-arcana-border px-4 py-4">
-          {children}
-        </div>
-      ) : null}
+        {kitOpen && (
+          <div className="border-t border-arcana-border/30 px-4 py-4 space-y-5">
+            {!klass ? (
+              <p className="font-crimson text-sm text-arcana-text-dim">
+                Nenhuma classe selecionada.
+              </p>
+            ) : (
+              <>
+                {klass.startingEquipmentChoices.map((choice) => {
+                  const selectedOption = equipmentChoices[choice.id];
+                  return (
+                    <div key={choice.id} className="space-y-2">
+                      <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim">
+                        {choice.prompt}
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {choice.options.map((opt) => {
+                          const checked = selectedOption === opt.id;
+                          return (
+                            <label
+                              key={opt.id}
+                              className={[
+                                "flex items-center gap-3 px-3 py-2.5 rounded-sm border cursor-pointer transition-all",
+                                checked
+                                  ? "border-arcana-gold/60 bg-arcana-gold/8 text-arcana-text"
+                                  : "border-arcana-border/30 hover:border-arcana-gold/30 text-arcana-text-dim",
+                              ].join(" ")}
+                            >
+                              <input
+                                type="radio"
+                                name={choice.id}
+                                value={opt.id}
+                                checked={checked}
+                                onChange={() => setEquipmentChoice(choice.id, opt.id)}
+                                className="accent-arcana-gold"
+                              />
+                              <span className="font-crimson text-sm">{opt.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {inventory.length > 0 && (
+                  <div className="rounded-sm border border-arcana-border/30 bg-arcana-surface/20 p-3 space-y-1">
+                    <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim mb-2">
+                      Inventário completo
+                    </p>
+                    {inventory.map((item, i) => (
+                      <p key={`${item}-${i}`} className="flex items-start gap-2 font-crimson text-sm text-arcana-text">
+                        <span className="mt-1.5 block h-px w-3 shrink-0 bg-arcana-gold/30" />
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

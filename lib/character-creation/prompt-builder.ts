@@ -2,7 +2,7 @@ export type PromptStep = 2 | 3 | 5 | 6;
 
 export type PromptInput = {
   sex?: "male" | "female" | "androgynous";
-  ageCategory?: "young" | "adult" | "mature" | "elder";
+  age?: number;
   raceName?: string;
   subraceName?: string;
   raceVisualDescription?: string;
@@ -23,12 +23,12 @@ const SEX_MAP: Record<NonNullable<PromptInput["sex"]>, string> = {
   androgynous: "androgynous",
 };
 
-const AGE_MAP: Record<NonNullable<PromptInput["ageCategory"]>, string> = {
-  young: "young adult",
-  adult: "adult",
-  mature: "mature",
-  elder: "elderly",
-};
+function ageToPromptLabel(age: number): string {
+  if (age <= 25) return "young adult";
+  if (age <= 50) return "adult";
+  if (age <= 75) return "mature";
+  return "elderly";
+}
 
 function normalize(text: string): string {
   return text
@@ -41,7 +41,7 @@ function normalize(text: string): string {
 
 function buildSubject(input: PromptInput): string {
   const sex = input.sex ? SEX_MAP[input.sex] : "";
-  const age = input.ageCategory ? AGE_MAP[input.ageCategory] : "";
+  const age = input.age != null ? ageToPromptLabel(input.age) : "";
   const race = input.raceName ?? "";
   const subrace = input.subraceName ? ` ${input.subraceName}` : "";
 

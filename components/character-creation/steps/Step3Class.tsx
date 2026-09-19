@@ -2,37 +2,20 @@
 
 import { ClassCard } from "@/components/character-creation/cards/ClassCard";
 import { CLASSES } from "@/lib/character-creation/class-data";
-import type {
-  AbilityKey,
-  CharacterCreationData,
-} from "@/lib/character-creation/types";
+import type { AbilityKey, CharacterCreationData } from "@/lib/character-creation/types";
 
 type Props = {
   data: Partial<CharacterCreationData>;
   onUpdate: (partial: Partial<CharacterCreationData>) => void;
-  onNext: () => void;
-  onBack: () => void;
   onGenerateImage: (step: 3) => void;
 };
 
 const ABILITY_LABEL: Record<AbilityKey, string> = {
-  str: "FOR",
-  dex: "DES",
-  con: "CON",
-  int: "INT",
-  wis: "SAB",
-  cha: "CAR",
+  str: "FOR", dex: "DES", con: "CON", int: "INT", wis: "SAB", cha: "CAR",
 };
 
-export default function Step3Class({
-  data,
-  onUpdate,
-  onNext,
-  onBack,
-  onGenerateImage,
-}: Props) {
+export default function Step3Class({ data, onUpdate, onGenerateImage }: Props) {
   const selectedClass = CLASSES.find((c) => c.id === data.classId);
-  const canProceed = !!data.classId;
 
   const handleClassSelect = (classId: string) => {
     onUpdate({ classId });
@@ -40,99 +23,102 @@ export default function Step3Class({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-1 pb-4">
-        <header className="space-y-1">
-          <h2 className="font-cinzel text-2xl uppercase tracking-[0.25em] text-arcana-gold-bright">
-            Escolha sua Classe
-          </h2>
-          <p className="font-crimson text-arcana-text-dim">
-            O caminho que define suas habilidades
-          </p>
-        </header>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-5">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CLASSES.map((classData) => (
-            <ClassCard
-              key={classData.id}
-              classData={classData}
-              selected={data.classId === classData.id}
-              onSelect={handleClassSelect}
-            />
-          ))}
+        {/* Lista */}
+        <div>
+          <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-text-dim">
+            Vocação
+          </p>
+          <div className="arcana-list rounded-sm">
+            {CLASSES.map((classData) => (
+              <ClassCard
+                key={classData.id}
+                classData={classData}
+                selected={data.classId === classData.id}
+                onSelect={handleClassSelect}
+              />
+            ))}
+          </div>
         </div>
 
-        {selectedClass && (
-          <div className="rounded-md border border-arcana-border bg-arcana-surface p-4 space-y-3">
-            <h3 className="font-cinzel text-2xl uppercase tracking-[0.2em] text-arcana-gold-bright">
-              {selectedClass.name}
-            </h3>
+        {/* Painel de detalhes */}
+        {selectedClass ? (
+          <div className="arcana-panel rounded-sm p-5 space-y-5">
+            <div>
+              <h3 className="font-cinzel text-xl uppercase tracking-[0.2em] text-arcana-gold-bright mb-2">
+                {selectedClass.name}
+              </h3>
+              <p className="font-crimson italic text-arcana-text-dim leading-relaxed text-sm">
+                {selectedClass.vibe}
+              </p>
+            </div>
 
-            <p className="font-crimson text-sm text-arcana-text">
-              Dado de Vida: d{selectedClass.hitDie} · HP inicial:{" "}
-              {selectedClass.hitDie} + mod CON
-            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <StatTile label="Dado de vida" value={`d${selectedClass.hitDie}`} />
+              <StatTile label="Atributo principal" value={selectedClass.primaryAbility} />
+              <StatTile
+                label="Resistências"
+                value={selectedClass.savingThrows.map((k) => ABILITY_LABEL[k]).join(", ")}
+              />
+              <StatTile label="HP nível 1" value={`${selectedClass.hitDie} + mod CON`} />
+            </div>
 
-            <p className="font-crimson text-sm text-arcana-text">
-              Atributo principal:{" "}
-              <span className="text-arcana-gold">
-                {selectedClass.primaryAbility}
-              </span>
-            </p>
+            {selectedClass.armorProficiency.length > 0 && (
+              <div className="space-y-1 pt-3 border-t border-arcana-border-dim">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
+                  Proficiência em armaduras
+                </p>
+                <p className="font-crimson text-sm text-arcana-text">
+                  {selectedClass.armorProficiency.join(", ")}
+                </p>
+              </div>
+            )}
 
-            <p className="font-crimson text-sm text-arcana-text">
-              Resistências:{" "}
-              <span className="text-arcana-gold">
-                {selectedClass.savingThrows
-                  .map((k) => ABILITY_LABEL[k])
-                  .join(", ")}
-              </span>
-            </p>
-
-            <p className="font-crimson text-sm text-arcana-text">
-              Armaduras:{" "}
-              <span className="text-arcana-text-dim">
-                {selectedClass.armorProficiency.length > 0
-                  ? selectedClass.armorProficiency.join(", ")
-                  : "Nenhuma"}
-              </span>
-            </p>
-
-            <p className="font-crimson text-sm text-arcana-text">
-              Armas:{" "}
-              <span className="text-arcana-text-dim">
+            <div className="space-y-1">
+              <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-text-dim">
+                Proficiência em armas
+              </p>
+              <p className="font-crimson text-sm text-arcana-text">
                 {selectedClass.weaponProficiency.join(", ")}
-              </span>
-            </p>
+              </p>
+            </div>
 
-            <p className="font-crimson text-sm italic text-arcana-text-dim">
-              {selectedClass.vibe}
+            {selectedClass.isSpellcaster && (
+              <div className="rounded-sm border border-arcana-gold/20 bg-arcana-gold/6 px-4 py-3">
+                <p className="font-cinzel text-[9px] uppercase tracking-[0.35em] text-arcana-gold/70 mb-1">
+                  Conjurador
+                </p>
+                <p className="font-crimson text-sm text-arcana-text">
+                  Conjuração via{" "}
+                  <span className="text-arcana-gold">
+                    {ABILITY_LABEL[selectedClass.spellcastingAbility as AbilityKey] ??
+                      selectedClass.spellcastingAbility}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="arcana-panel rounded-sm flex items-center justify-center min-h-[200px]">
+            <p className="font-crimson italic text-arcana-text-dim text-sm">
+              Selecione uma vocação
             </p>
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-arcana-border bg-arcana-bg/95 pt-4 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          className="font-cinzel uppercase tracking-[0.3em] px-6 py-3 rounded-md border border-arcana-border text-arcana-text-dim hover:border-arcana-gold/40 hover:text-arcana-gold"
-        >
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          disabled={!canProceed}
-          onClick={onNext}
-          className={`font-cinzel uppercase tracking-[0.3em] px-8 py-3 rounded-md transition ${
-            canProceed
-              ? "bg-arcana-gold text-arcana-bg hover:bg-arcana-gold-bright"
-              : "bg-arcana-gold text-arcana-bg opacity-50 cursor-not-allowed"
-          }`}
-        >
-          Próximo →
-        </button>
-      </div>
+function StatTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="arcana-stat-chip rounded-sm px-3 py-2.5">
+      <p className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim">
+        {label}
+      </p>
+      <p className="mt-0.5 font-cinzel text-sm text-arcana-gold">{value}</p>
     </div>
   );
 }

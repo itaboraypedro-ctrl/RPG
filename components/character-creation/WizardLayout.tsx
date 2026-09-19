@@ -30,8 +30,7 @@ export function WizardLayout({
       <div className="lg:hidden h-full flex flex-col">
         {/* Mobile tab toggle */}
         <div
-          className="shrink-0 z-20 border-b border-arcana-border-dim px-4 py-3"
-          style={{ background: "rgba(7,7,13,0.97)" }}
+          className="arcana-glass-edge shrink-0 z-20 border-b border-arcana-border-dim px-4 py-3"
         >
           <div className="flex rounded-sm overflow-hidden border border-arcana-border-dim">
             <button
@@ -76,8 +75,7 @@ export function WizardLayout({
             </div>
             {/* Mobile footer */}
             <div
-              className="shrink-0 px-4 py-4 border-t border-arcana-border-dim"
-              style={{ background: "rgba(7,7,13,0.97)" }}
+              className="arcana-glass-edge shrink-0 px-4 py-4 border-t border-arcana-border-dim"
             >
               {footer}
             </div>
@@ -108,8 +106,7 @@ export function WizardLayout({
 
           {/* Fixed footer */}
           <div
-            className="shrink-0 px-12 py-5 border-t border-arcana-border-dim"
-            style={{ background: "rgba(7,7,13,0.98)", backdropFilter: "blur(8px)" }}
+            className="arcana-glass-edge shrink-0 px-12 py-5 border-t border-arcana-border-dim"
           >
             {footer}
           </div>

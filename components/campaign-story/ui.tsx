@@ -3,8 +3,8 @@
 // Primitivos de UI compartilhados pelas seções do Hub de História.
 
 export const labelClass =
-  "font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-text-dim";
-export const hintClass = "font-crimson text-xs italic text-arcana-text-dim/50";
+  "font-cinzel text-[10px] uppercase tracking-[0.28em] text-arcana-gold/90";
+export const hintClass = "font-crimson text-[13px] italic text-arcana-text-dim";
 
 export function Field({
   label,
@@ -82,12 +82,7 @@ export function GhostButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={[
-        "rounded-sm border px-3 py-1.5 font-cinzel text-[9px] uppercase tracking-[0.25em] transition-all disabled:opacity-40",
-        danger
-          ? "border-red-900/60 text-red-300/70 hover:border-red-500/60 hover:text-red-300"
-          : "border-arcana-border text-arcana-text-dim hover:border-arcana-gold/50 hover:text-arcana-gold",
-      ].join(" ")}
+      className={danger ? "arcana-btn-danger arcana-btn-sm" : "arcana-btn-ghost arcana-btn-sm"}
     >
       {children}
     </button>
@@ -103,14 +98,15 @@ export function GoldButton({
   onClick?: () => void;
   disabled?: boolean;
 }) {
+  if (disabled) {
+    return (
+      <button type="button" disabled className="arcana-btn-disabled arcana-btn-sm">
+        {children}
+      </button>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-sm px-4 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-bg transition-all hover:shadow-[0_0_20px_rgba(201,168,76,0.4)] disabled:opacity-40 disabled:hover:shadow-none"
-      style={{ background: "linear-gradient(135deg, #c9a84c, #f0cc6a)" }}
-    >
+    <button type="button" onClick={onClick} className="arcana-btn-primary arcana-btn-sm">
       {children}
     </button>
   );
@@ -120,10 +116,10 @@ export function OriginBadge({ origem }: { origem: "canon" | "campanha" }) {
   return (
     <span
       className={[
-        "border px-1.5 py-0.5 font-cinzel text-[7px] uppercase tracking-[0.2em]",
+        "border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em]",
         origem === "canon"
-          ? "border-arcana-gold/40 text-arcana-gold/80"
-          : "border-arcana-border text-arcana-text-dim/70",
+          ? "border-arcana-gold/40 text-arcana-gold"
+          : "border-arcana-border text-arcana-text-dim",
       ].join(" ")}
       title={
         origem === "canon"
@@ -155,10 +151,10 @@ export function VisibilityBadge({
           : "Visível para jogadores da campanha. Clique para ocultar."
       }
       className={[
-        "border px-1.5 py-0.5 font-cinzel text-[7px] uppercase tracking-[0.2em] transition-colors",
+        "border px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-colors",
         isSecret
-          ? "border-red-900/60 text-red-300/80"
-          : "border-emerald-900/60 text-emerald-300/80",
+          ? "border-red-900/60 text-red-300"
+          : "border-emerald-900/60 text-emerald-300",
         onToggle ? "hover:opacity-80 cursor-pointer" : "cursor-default",
       ].join(" ")}
     >
@@ -174,21 +170,17 @@ export function PageRef({ paginas }: { paginas?: number[] }) {
       ? `pp. ${paginas[0]}–${paginas[1]}`
       : `p. ${paginas.join(", ")}`;
   return (
-    <span className="font-crimson text-[11px] italic text-arcana-text-dim/40">{text}</span>
+    <span className="font-crimson text-[11px] italic text-arcana-text-muted">{text}</span>
   );
 }
 
 export function ElementCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-sm border border-arcana-border bg-arcana-surface/70 p-4">
-      {children}
-    </div>
-  );
+  return <div className="arcana-card p-4">{children}</div>;
 }
 
 export function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-sm border border-dashed border-arcana-border/50 px-4 py-6 text-center font-crimson text-sm italic text-arcana-text-dim/50">
+    <p className="rounded-sm border border-dashed border-arcana-border/50 px-4 py-6 text-center font-crimson text-sm italic text-arcana-text-dim">
       {children}
     </p>
   );
@@ -200,10 +192,10 @@ export function SaveState({ state }: { state: "idle" | "saving" | "saved" | "err
   return (
     <span
       className={[
-        "font-cinzel text-[8px] uppercase tracking-[0.25em]",
-        state === "saving" && "text-arcana-text-dim/60",
-        state === "saved" && "text-emerald-300/80",
-        state === "error" && "text-red-300/80",
+        "font-cinzel text-[10px] uppercase tracking-[0.25em]",
+        state === "saving" && "text-arcana-text-dim",
+        state === "saved" && "text-emerald-300",
+        state === "error" && "text-red-300",
       ]
         .filter(Boolean)
         .join(" ")}

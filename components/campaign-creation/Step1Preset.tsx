@@ -47,7 +47,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-cinzel text-[9px] uppercase tracking-[0.4em] text-arcana-gold/70">
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.4em] text-arcana-gold">
               {SACRAMENTO_META.subtitulo}
             </p>
             <h3 className="mt-1 font-cinzel text-2xl uppercase tracking-[0.15em] text-arcana-gold-bright">
@@ -56,7 +56,7 @@ export function Step1Preset({ data, onUpdate }: Props) {
           </div>
           <span
             className={[
-              "shrink-0 border px-2.5 py-1 font-cinzel text-[9px] uppercase tracking-[0.25em]",
+              "shrink-0 border px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.25em]",
               selected
                 ? "border-arcana-gold text-arcana-gold"
                 : "border-arcana-border text-arcana-text-dim",
@@ -73,14 +73,14 @@ export function Step1Preset({ data, onUpdate }: Props) {
             (tag) => (
               <span
                 key={tag}
-                className="border border-arcana-border/60 px-2 py-0.5 font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-text-dim/70"
+                className="border border-arcana-border/60 px-2 py-0.5 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim"
               >
                 {tag}
               </span>
             ),
           )}
         </div>
-        <p className="mt-3 font-crimson text-xs italic text-arcana-text-dim/50">
+        <p className="mt-3 font-crimson text-xs italic text-arcana-text-dim">
           Fonte: {SACRAMENTO_META.fonte}
         </p>
       </button>
@@ -95,18 +95,18 @@ export function Step1Preset({ data, onUpdate }: Props) {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-cinzel text-[8px] uppercase tracking-[0.35em] text-arcana-text-dim/60">
+                <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-text-dim">
                   {preset.subtitulo}
                 </p>
                 <h4 className="mt-1 font-cinzel text-base uppercase tracking-[0.12em] text-arcana-text-dim">
                   {preset.nome}
                 </h4>
               </div>
-              <span className="shrink-0 border border-arcana-border-dim px-2 py-0.5 font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-text-dim/60">
+              <span className="shrink-0 border border-arcana-border-dim px-2 py-0.5 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text-dim">
                 Em breve
               </span>
             </div>
-            <p className="mt-2 font-crimson text-sm text-arcana-text-dim/60">
+            <p className="mt-2 font-crimson text-sm text-arcana-text-dim">
               {preset.resumo}
             </p>
           </div>

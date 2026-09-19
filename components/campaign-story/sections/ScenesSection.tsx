@@ -230,8 +230,8 @@ function SceneCard({ element, api }: { element: CampaignElement; api: StoryHubAp
 function SceneRow({ label, text, secret }: { label: string; text: string; secret?: boolean }) {
   return (
     <div className={secret ? "border-l-2 border-red-900/50 pl-2" : ""}>
-      <p className="font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-gold/60">{label}</p>
-      <p className={`font-crimson text-sm ${secret ? "text-red-200/70 italic" : "text-arcana-text-dim"}`}>
+      <p className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">{label}</p>
+      <p className={`font-crimson text-sm ${secret ? "text-red-200/90 italic" : "text-arcana-text-dim"}`}>
         {text}
       </p>
     </div>

@@ -27,7 +27,7 @@ export function Step2Identity({ data, onUpdate }: Props) {
           className="arcana-input w-full font-crimson text-lg"
           autoFocus
         />
-        <p className="font-crimson text-xs italic text-arcana-text-dim/50">
+        <p className="font-crimson text-xs italic text-arcana-text-dim">
           Mínimo de 2 caracteres. É o nome que o bando verá no convite.
         </p>
       </div>
@@ -45,7 +45,7 @@ export function Step2Identity({ data, onUpdate }: Props) {
           placeholder="Do que trata esta campanha? Qual a situação inicial do Oeste que o bando vai encontrar? (Você poderá aprofundar a história na próxima fase.)"
           className="arcana-input w-full font-crimson text-base leading-relaxed resize-y"
         />
-        <p className="font-crimson text-xs italic text-arcana-text-dim/50">
+        <p className="font-crimson text-xs italic text-arcana-text-dim">
           Opcional aqui — a premissa completa, lugares, facções, NPCs, cenas e
           missões são configurados no hub de história, logo após a criação.
         </p>

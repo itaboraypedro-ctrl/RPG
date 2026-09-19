@@ -87,7 +87,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
       {/* Eventos da campanha */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold/70">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
             Eventos marcados
           </p>
           <GhostButton onClick={() => setCreating((v) => !v)}>
@@ -115,7 +115,7 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
           onClick={() => setShowBomDeGole((v) => !v)}
           className="flex w-full items-center justify-between px-4 py-3 text-left"
         >
-          <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold/80">
+          <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Calendário do Bom de Gole (p. 149) — importar eventos
           </span>
           <span className="font-cinzel text-xs text-arcana-text-dim">{showBomDeGole ? "−" : "+"}</span>
@@ -130,13 +130,13 @@ export function CalendarSection({ api }: { api: StoryHubApi }) {
               return (
                 <div key={mes} className="flex items-center justify-between gap-3 py-1">
                   <p className="font-crimson text-sm text-arcana-text-dim">
-                    <span className="font-cinzel text-[9px] uppercase tracking-[0.15em] text-arcana-gold/60">
+                    <span className="font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-gold">
                       {mes}
                     </span>{" "}
                     · {evento}
                   </p>
                   {imported ? (
-                    <span className="shrink-0 font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-gold">
+                    <span className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
                       ✓
                     </span>
                   ) : (
@@ -214,7 +214,7 @@ function EventCard({ element, api }: { element: CampaignElement; api: StoryHubAp
             <OriginBadge origem={data.origem} />
           </div>
           <p className="mt-0.5 font-crimson text-xs text-arcana-text-dim">
-            <span className="text-arcana-gold/70">{data.quando}</span>
+            <span className="text-arcana-gold">{data.quando}</span>
             {data.descricao && <> · {data.descricao}</>}
           </p>
         </div>

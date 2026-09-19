@@ -32,13 +32,13 @@ export function InviteChip({ inviteCode }: { inviteCode: string }) {
       title={url || "Link de convite"}
       className="flex items-center gap-2 rounded-sm border border-arcana-border bg-arcana-surface px-3 py-2 transition-all hover:border-arcana-gold/50 disabled:opacity-50"
     >
-      <span className="font-cinzel text-[8px] uppercase tracking-[0.3em] text-arcana-text-dim">
+      <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim">
         Convite
       </span>
       <code className="max-w-[140px] truncate font-crimson text-xs text-arcana-text lg:max-w-[220px]">
         /join/{inviteCode}
       </code>
-      <span className="font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-gold">
+      <span className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
         {copied ? "Copiado!" : "Copiar"}
       </span>
     </button>

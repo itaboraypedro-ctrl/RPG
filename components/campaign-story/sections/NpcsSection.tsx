@@ -62,7 +62,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
 
       {lastDraw && draft && (
         <div className="rounded-sm border border-arcana-gold/30 bg-arcana-gold/5 px-4 py-3">
-          <p className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-gold/80">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Gerador do livro (pp. 119–120) — uma carta por coluna, reação pelo naipe da última
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3 font-crimson text-sm text-arcana-text-dim">
@@ -140,7 +140,7 @@ export function NpcsSection({ api }: { api: StoryHubApi }) {
 function CardSeed({ label, card, value }: { label: string; card: string; value: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className="font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-text-dim/60">
+      <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">
         {label}
       </span>
       <span className="rounded-sm border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">
@@ -256,10 +256,8 @@ function NpcForm({
                       type="button"
                       onClick={() => update({ ficha: { ...ficha, tipo } })}
                       className={[
-                        "rounded-sm border px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
-                        ficha.tipo === tipo
-                          ? "border-arcana-gold bg-arcana-gold/10 text-arcana-gold"
-                          : "border-arcana-border text-arcana-text-dim",
+                        "px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em]",
+                        ficha.tipo === tipo ? "arcana-chip-active" : "arcana-chip",
                       ].join(" ")}
                     >
                       {tipo}
@@ -275,10 +273,8 @@ function NpcForm({
                       type="button"
                       onClick={() => update({ ficha: { ...ficha, ndc: n } })}
                       className={[
-                        "h-9 w-9 rounded-sm border font-cinzel text-sm transition-all",
-                        ficha.ndc === n
-                          ? "border-arcana-gold bg-arcana-gold/10 text-arcana-gold"
-                          : "border-arcana-border text-arcana-text-dim",
+                        "h-9 w-9 font-cinzel text-sm",
+                        ficha.ndc === n ? "arcana-chip-active" : "arcana-chip",
                       ].join(" ")}
                     >
                       {n}
@@ -337,7 +333,7 @@ function NpcForm({
 function DerivedStat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="text-center">
-      <p className="font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-text-dim/60">
+      <p className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text-dim">
         {label}
       </p>
       <p className="font-cinzel text-lg text-arcana-gold-bright">{value}</p>
@@ -384,7 +380,7 @@ function NpcCard({ element, api }: { element: CampaignElement; api: StoryHubApi 
           </p>
         </div>
         {derived && data.ficha && (
-          <span className="shrink-0 rounded-sm border border-arcana-border px-2 py-1 font-cinzel text-[9px] uppercase tracking-[0.15em] text-arcana-text-dim">
+          <span className="shrink-0 rounded-sm border border-arcana-border px-2 py-1 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim">
             {data.ficha.tipo} {data.ficha.ndc} · V{derived.vida} · A{derived.acoes}
           </span>
         )}
@@ -394,14 +390,14 @@ function NpcCard({ element, api }: { element: CampaignElement; api: StoryHubApi 
         <p className="mt-2 font-crimson text-sm text-arcana-text-dim line-clamp-2">{data.descricao}</p>
       )}
       {(data.desejo || data.medo) && (
-        <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim/70">
+        <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim">
           {data.desejo && <>Quer: {data.desejo}</>}
           {data.desejo && data.medo && " · "}
           {data.medo && <>Teme: {data.medo}</>}
         </p>
       )}
       {data.segredo && (
-        <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/60 line-clamp-2">
+        <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/90 line-clamp-2">
           🔒 {data.segredo}
         </p>
       )}

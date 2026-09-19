@@ -16,7 +16,7 @@ type Props = {
 
 const labelClass =
   "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
-const hintClass = "font-crimson text-xs italic text-arcana-text-dim/50";
+const hintClass = "font-crimson text-xs italic text-arcana-text-dim";
 
 function SectionTitle({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
@@ -85,10 +85,8 @@ export function Step3Table({ data, onUpdate }: Props) {
               onClick={() => onUpdate({ maxPlayers: n })}
               aria-pressed={data.maxPlayers === n}
               className={[
-                "h-10 w-10 rounded-sm border font-cinzel text-sm transition-all",
-                data.maxPlayers === n
-                  ? "border-arcana-gold bg-arcana-gold/10 text-arcana-gold shadow-[0_0_12px_rgba(201,168,76,0.25)]"
-                  : "border-arcana-border text-arcana-text-dim hover:border-arcana-gold/40",
+                "h-10 w-10 font-cinzel text-sm",
+                data.maxPlayers === n ? "arcana-chip-active" : "arcana-chip",
               ].join(" ")}
             >
               {n}
@@ -153,7 +151,7 @@ export function Step3Table({ data, onUpdate }: Props) {
             className="arcana-input w-28 font-crimson text-base"
           />
           {data.epoch !== SACRAMENTO_META.defaults.epoca && (
-            <span className="border border-arcana-gold/40 px-2 py-1 font-cinzel text-[8px] uppercase tracking-[0.25em] text-arcana-gold/80">
+            <span className="border border-arcana-gold/40 px-2 py-1 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
               Versão da mesa
             </span>
           )}

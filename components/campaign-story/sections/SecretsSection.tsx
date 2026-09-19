@@ -100,7 +100,7 @@ function SecretCard({ element, api }: { element: CampaignElement; api: StoryHubA
   return (
     <ElementCard>
       <div className="border-l-2 border-red-900/50 pl-3">
-        <h3 className="font-cinzel text-sm uppercase tracking-[0.15em] text-red-200/80">
+        <h3 className="font-cinzel text-sm uppercase tracking-[0.15em] text-red-200/90">
           🔒 {data.titulo}
         </h3>
         {editing ? (

@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* App é dark-only — evita flash branco no overscroll */
+  --background: #0b0b14;
+  --foreground: #f2e6cf;
 
   /* RPG Sheet design tokens */
   --color-rpg-bg: #0a0c10;
@@ -18,21 +19,23 @@
   --font-rpg-numbers: Georgia, "Times New Roman", serif;
   --font-rpg-hud: var(--font-rajdhani), system-ui, sans-serif;
 
-  /* Arcana landing page tokens */
-  --color-arcana-bg: #07070d;
-  --color-arcana-surface: #0f0f1c;
-  --color-arcana-surface-2: #161625;
-  --color-arcana-surface-3: #1e1e30;
-  --color-arcana-border: #2a2a42;
-  --color-arcana-border-dim: #1a1a2e;
-  --color-arcana-gold: #c9a84c;
-  --color-arcana-gold-bright: #f0cc6a;
-  --color-arcana-gold-dim: #7a5c1e;
-  --color-arcana-blood: #3f1c18;
+  /* Arcana design tokens v2 "Ouro Vivo" — ver SPEC_DESIGN_SYSTEM.md.
+     Contraste mínimo: text 14:1, text-dim 7:1; muted é decorativo. */
+  --color-arcana-bg: #0b0b14;
+  --color-arcana-surface: #14141f;
+  --color-arcana-surface-2: #1b1b2a;
+  --color-arcana-surface-3: #232336;
+  --color-arcana-border: #3d3d5c;
+  --color-arcana-border-dim: #2a2a40;
+  --color-arcana-gold: #d1ab55;
+  --color-arcana-gold-bright: #f5d478;
+  --color-arcana-gold-dim: #8a6a2a;
+  --color-arcana-blood: #5c241d;
+  --color-arcana-danger: #e0705f;
   --color-arcana-mist: #252d34;
-  --color-arcana-text: #e8d5b4;
-  --color-arcana-text-dim: #7a6a55;
-  --color-arcana-text-muted: #3d3028;
+  --color-arcana-text: #f2e6cf;
+  --color-arcana-text-dim: #b5a68c;
+  --color-arcana-text-muted: #807460;
 }
 
 @theme inline {
@@ -64,6 +67,7 @@
   --color-arcana-gold-bright: var(--color-arcana-gold-bright);
   --color-arcana-gold-dim: var(--color-arcana-gold-dim);
   --color-arcana-blood: var(--color-arcana-blood);
+  --color-arcana-danger: var(--color-arcana-danger);
   --color-arcana-mist: var(--color-arcana-mist);
   --color-arcana-text: var(--color-arcana-text);
   --color-arcana-text-dim: var(--color-arcana-text-dim);
@@ -114,16 +118,25 @@ html {
     0 8px 40px rgba(0,0,0,0.7);
 }
 
-/* Input com superfície própria */
+/* Input com superfície própria — §4.2 */
 .arcana-input {
-  background: var(--color-arcana-surface);
-  border: 1px solid var(--color-arcana-border-dim);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  background: rgba(8, 8, 15, 0.55);
+  border: 1px solid var(--color-arcana-border);
+  border-radius: 3px;
+  color: var(--color-arcana-text);
+  caret-color: var(--color-arcana-gold);
+  padding: 0.6rem 0.85rem;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.arcana-input::placeholder {
+  color: rgba(242, 230, 207, 0.38);
 }
 
 .arcana-input:focus {
   border-color: var(--color-arcana-gold);
-  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  background: rgba(12, 12, 22, 0.75);
+  box-shadow: 0 0 0 3px rgba(209, 171, 85, 0.22);
   outline: none;
 }
 
@@ -200,61 +213,235 @@ html {
   .arcana-item-selected-glow { animation: none; }
 }
 
-/* ─── Botões wizard ─── */
+/* ─── Botões v2 — ver SPEC_DESIGN_SYSTEM.md §4.1 ───
+   Estados completos: repouso → hover (acende, sobe 1px) → active (pressiona)
+   → focus-visible (anel). Ouro sempre em gradiente vertical (luz de cima). */
 .arcana-btn-primary {
   font-family: var(--font-cinzel), serif;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.28em;
   font-size: 0.75rem;
   padding: 0.75rem 2rem;
-  border-radius: 2px;
-  background: var(--color-arcana-gold);
-  color: var(--color-arcana-bg);
-  box-shadow: 0 0 0 1px rgba(240,204,106,0.3), 0 4px 16px rgba(201,168,76,0.25);
-  transition: all 150ms ease;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f0cc6a 0%, #d1ab55 55%, #bd9540 100%);
+  color: #1c1206;
+  border: 1px solid rgba(255, 235, 180, 0.55);
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 215, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 18px rgba(209, 171, 85, 0.28);
+  transition: all 140ms ease;
 }
 .arcana-btn-primary:hover {
-  background: var(--color-arcana-gold-bright);
-  box-shadow: 0 0 0 1px rgba(240,204,106,0.5), 0 4px 24px rgba(201,168,76,0.4);
+  background: linear-gradient(180deg, #f7dd8f 0%, #e0bc64 55%, #cfa952 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 225, 0.7),
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(224, 188, 100, 0.45);
+  transform: translateY(-1px);
 }
+.arcana-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 6px rgba(90, 60, 10, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.arcana-btn-disabled,
 .arcana-btn-primary-disabled {
   font-family: var(--font-cinzel), serif;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.28em;
   font-size: 0.75rem;
   padding: 0.75rem 2rem;
-  border-radius: 2px;
-  background: rgba(201,168,76,0.15);
-  color: rgba(201,168,76,0.3);
+  border-radius: 3px;
+  background: rgba(209, 171, 85, 0.1);
+  border: 1px solid rgba(209, 171, 85, 0.2);
+  color: rgba(242, 230, 207, 0.4);
   cursor: not-allowed;
 }
+
 .arcana-btn-ghost {
   font-family: var(--font-cinzel), serif;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.28em;
   font-size: 0.75rem;
   padding: 0.75rem 1.5rem;
-  border-radius: 2px;
-  border: 1px solid var(--color-arcana-border);
-  color: var(--color-arcana-text-dim);
-  transition: all 150ms ease;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(209, 171, 85, 0.35);
+  color: var(--color-arcana-text);
+  transition: all 140ms ease;
 }
-.arcana-btn-ghost:hover {
-  border-color: rgba(201,168,76,0.4);
-  color: var(--color-arcana-gold);
+.arcana-btn-ghost:hover:not(:disabled) {
+  background: rgba(209, 171, 85, 0.1);
+  border-color: var(--color-arcana-gold);
+  color: var(--color-arcana-gold-bright);
+  box-shadow: 0 0 14px rgba(209, 171, 85, 0.2);
+}
+.arcana-btn-ghost:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.arcana-btn-ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.arcana-btn-danger {
+  font-family: var(--font-cinzel), serif;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 3px;
+  background: rgba(224, 112, 95, 0.06);
+  border: 1px solid rgba(224, 112, 95, 0.4);
+  color: var(--color-arcana-danger);
+  transition: all 140ms ease;
+}
+.arcana-btn-danger:hover:not(:disabled) {
+  background: rgba(224, 112, 95, 0.14);
+  border-color: var(--color-arcana-danger);
+  box-shadow: 0 0 14px rgba(224, 112, 95, 0.2);
+}
+
+/* Modificador para ações dentro de cards */
+.arcana-btn-sm {
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  padding: 0.45rem 0.9rem;
+}
+
+/* ─── Select / dropdown nativo vestido — §4.3 ─── */
+.arcana-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(8, 8, 15, 0.55);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23d1ab55' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 8px;
+  border: 1px solid var(--color-arcana-border);
+  border-radius: 3px;
+  color: var(--color-arcana-text);
+  padding: 0.6rem 2.4rem 0.6rem 0.85rem;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.arcana-select:focus {
+  border-color: var(--color-arcana-gold);
+  box-shadow: 0 0 0 3px rgba(209, 171, 85, 0.22);
+  outline: none;
+}
+.arcana-select option {
+  background: var(--color-arcana-surface-3);
+  color: var(--color-arcana-text);
+}
+
+/* ─── Vidro fosco — material de chrome (§4.5) ─── */
+.arcana-glass {
+  background: rgba(15, 15, 26, 0.72);
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.55);
+}
+.arcana-glass-edge {
+  /* variante para barras coladas na borda da tela: sem borda própria nos 4 lados */
+  background: rgba(15, 15, 26, 0.78);
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Item de menu (dropdowns custom) — §4.3 ─── */
+.arcana-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 1rem;
+  color: var(--color-arcana-text);
+  border-left: 2px solid transparent;
+  transition: all 120ms ease;
+}
+.arcana-menu-item:hover {
+  background: rgba(209, 171, 85, 0.1);
+  border-left-color: var(--color-arcana-gold);
+  color: var(--color-arcana-gold-bright);
+}
+
+/* ─── Chips de seleção (temas, tons, NdC, tags) — §4.6 ─── */
+.arcana-chip {
+  border-radius: 3px;
+  border: 1px solid var(--color-arcana-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-arcana-text-dim);
+  transition: all 130ms ease;
+}
+.arcana-chip:hover {
+  border-color: rgba(209, 171, 85, 0.55);
+  color: var(--color-arcana-text);
+  background: rgba(209, 171, 85, 0.06);
+}
+.arcana-chip-active {
+  border-radius: 3px;
+  border: 1px solid var(--color-arcana-gold);
+  background: linear-gradient(180deg, rgba(209, 171, 85, 0.22), rgba(209, 171, 85, 0.1));
+  color: var(--color-arcana-gold-bright);
+  box-shadow: 0 0 12px rgba(209, 171, 85, 0.22), inset 0 1px 0 rgba(255, 245, 215, 0.12);
+  transition: all 130ms ease;
+}
+
+/* ─── Card com hover — §4.6 ─── */
+.arcana-card {
+  background: var(--color-arcana-surface-2);
+  border: 1px solid var(--color-arcana-border-dim);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 12px rgba(0, 0, 0, 0.35);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.arcana-card:hover {
+  border-color: rgba(209, 171, 85, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ─── Foco visível global — anel dourado (teclado) ─── */
+:focus-visible {
+  outline: 2px solid rgba(209, 171, 85, 0.75);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ─── Scrollbar — parte do cenário, não widget de browser ─── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(138, 106, 42, 0.75) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(209, 171, 85, 0.45), rgba(138, 106, 42, 0.65));
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(245, 212, 120, 0.7), rgba(209, 171, 85, 0.7));
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @keyframes rpgSheetSlideUp {

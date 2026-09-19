@@ -146,7 +146,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
             />
             {(draft.epoch ?? SACRAMENTO_META.defaults.epoca) !==
               SACRAMENTO_META.defaults.epoca && (
-              <span className="border border-arcana-gold/40 px-2 py-0.5 font-cinzel text-[7px] uppercase tracking-[0.25em] text-arcana-gold/80">
+              <span className="border border-arcana-gold/40 px-2 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold">
                 Versão da mesa
               </span>
             )}
@@ -172,7 +172,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
           onClick={() => setShowTimeline((v) => !v)}
           className="flex w-full items-center justify-between px-4 py-3 text-left"
         >
-          <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold/80">
+          <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Cronologia do mundo (referência, pp. 131–132)
           </span>
           <span className="font-cinzel text-xs text-arcana-text-dim">
@@ -185,7 +185,7 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
               <tbody>
                 {SACRAMENTO_TIMELINE.map((anchor) => (
                   <tr key={`${anchor.ano}-${anchor.marco}`} className="align-top">
-                    <td className="whitespace-nowrap pr-4 py-1 font-cinzel text-[10px] tracking-[0.15em] text-arcana-gold/70">
+                    <td className="whitespace-nowrap pr-4 py-1 font-cinzel text-[10px] tracking-[0.15em] text-arcana-gold">
                       {anchor.ano}
                     </td>
                     <td className="py-1 font-crimson text-sm text-arcana-text-dim">

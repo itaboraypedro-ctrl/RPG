@@ -174,20 +174,17 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
       style={{ background: "var(--color-arcana-bg)" }}
     >
       {/* Header fixo */}
-      <header
-        className="shrink-0 border-b border-arcana-border-dim"
-        style={{ background: "rgba(7,7,13,0.97)", backdropFilter: "blur(12px)" }}
-      >
+      <header className="arcana-glass-edge shrink-0 border-b border-arcana-border-dim">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 lg:px-8">
           <div className="flex min-w-0 items-center gap-4">
             <Link
               href="/hub"
-              className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim/60 transition-colors hover:text-arcana-gold"
+              className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim transition-colors hover:text-arcana-gold"
             >
               ← Hub
             </Link>
             <div className="min-w-0">
-              <p className="font-cinzel text-[8px] uppercase tracking-[0.4em] text-arcana-gold/60">
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.4em] text-arcana-gold">
                 Hub de História · Sacramento
               </p>
               <h1 className="truncate font-cinzel text-base uppercase tracking-[0.15em] text-arcana-gold-bright">
@@ -199,7 +196,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
             <InviteChip inviteCode={session.invite_code} />
             <Link
               href={`/dashboard/sessions/${session.id}`}
-              className="rounded-sm border border-arcana-gold/50 px-4 py-2 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
+              className="rounded-sm border border-arcana-gold/50 px-4 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
             >
               Ir para o lobby
             </Link>
@@ -218,7 +215,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
             <button
               type="button"
               onClick={() => setBanner(false)}
-              className="shrink-0 font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-text-dim/50 hover:text-arcana-gold"
+              className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text-dim hover:text-arcana-gold"
             >
               Fechar
             </button>
@@ -253,7 +250,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
               >
                 <span>{section.label}</span>
                 {count > 0 && (
-                  <span className="font-crimson text-[11px] text-arcana-text-dim/60">
+                  <span className="font-crimson text-[11px] text-arcana-text-dim">
                     {count}
                   </span>
                 )}
@@ -272,7 +269,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
                   type="button"
                   onClick={() => setActive(section.id)}
                   className={[
-                    "shrink-0 rounded-sm px-3 py-1.5 font-cinzel text-[9px] uppercase tracking-[0.2em] transition-all",
+                    "shrink-0 rounded-sm px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] transition-all",
                     active === section.id
                       ? "bg-arcana-gold text-arcana-bg"
                       : "text-arcana-text-dim",

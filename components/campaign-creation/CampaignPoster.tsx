@@ -18,7 +18,7 @@ export function CampaignPoster({ data }: { data: CampaignWizardData }) {
         className="relative rounded-sm border border-arcana-border/70 px-8 py-10 text-center"
         style={{
           background:
-            "linear-gradient(175deg, rgba(30,30,48,0.9) 0%, rgba(15,15,28,0.95) 55%, rgba(7,7,13,1) 100%)",
+            "linear-gradient(175deg, rgba(30,30,48,0.9) 0%, rgba(15,15,28,0.95) 55%, rgba(11,11,20,1) 100%)",
           boxShadow: hasPreset
             ? "0 0 60px rgba(201,168,76,0.12), inset 0 0 40px rgba(0,0,0,0.5)"
             : "inset 0 0 40px rgba(0,0,0,0.5)",
@@ -46,7 +46,7 @@ export function CampaignPoster({ data }: { data: CampaignWizardData }) {
           />
         ))}
 
-        <p className="font-cinzel text-[9px] uppercase tracking-[0.5em] text-arcana-gold/60">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.5em] text-arcana-gold">
           {hasPreset ? SACRAMENTO_META.subtitulo : "Campanha"}
         </p>
 
@@ -96,7 +96,7 @@ export function CampaignPoster({ data }: { data: CampaignWizardData }) {
         </div>
 
         {!hasPreset && (
-          <p className="mt-6 font-crimson text-xs italic text-arcana-text-dim/50">
+          <p className="mt-6 font-crimson text-xs italic text-arcana-text-dim">
             Escolha um modelo para começar.
           </p>
         )}
@@ -108,7 +108,7 @@ export function CampaignPoster({ data }: { data: CampaignWizardData }) {
 function PosterRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="w-20 shrink-0 font-cinzel text-[8px] uppercase tracking-[0.3em] text-arcana-gold/60">
+      <span className="w-20 shrink-0 font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
         {label}
       </span>
       <span className="font-crimson text-sm text-arcana-text">{value}</span>

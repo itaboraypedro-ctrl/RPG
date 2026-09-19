@@ -38,18 +38,18 @@ export function StepIndicator({
       <div className="flex items-center justify-between">
         <Link
           href={backHref}
-          className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim/60 hover:text-arcana-gold transition-colors"
+          className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim hover:text-arcana-gold transition-colors"
         >
           {backLabel}
         </Link>
-        <span className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-text-dim/40">
+        <span className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-text-muted">
           {title}
         </span>
       </div>
 
       {/* Current step name */}
       <div className="space-y-0.5">
-        <p className="font-cinzel text-[9px] uppercase tracking-[0.45em] text-arcana-text-dim/50">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.45em] text-arcana-text-dim">
           Etapa {currentStep} de {total}
         </p>
         <h2
@@ -109,11 +109,11 @@ export function StepIndicator({
             <div key={label} className="flex-1 overflow-hidden">
               <span
                 className={[
-                  "block font-cinzel text-[8px] uppercase tracking-[0.12em] whitespace-nowrap truncate transition-all duration-300",
+                  "block font-cinzel text-[10px] uppercase tracking-[0.12em] whitespace-nowrap truncate transition-all duration-300",
                   isCurrent
                     ? "text-arcana-gold"
                     : isDone
-                      ? "text-arcana-text-dim/50"
+                      ? "text-arcana-text-dim"
                       : "text-arcana-border/40",
                 ].join(" ")}
               >

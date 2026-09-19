@@ -68,7 +68,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
 
       {/* Lugares na campanha */}
       <div className="space-y-3">
-        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold/70">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
           Na campanha
         </p>
         {elements.length === 0 ? (
@@ -86,7 +86,7 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
 
       {/* Galeria canônica */}
       <div className="space-y-3">
-        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold/70">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
           Cânone do Oeste (Doc. cap. 4 — guia condensado)
         </p>
         <p className={hintClass}>
@@ -115,12 +115,12 @@ export function PlacesSection({ api }: { api: StoryHubApi }) {
                 <p className="mt-1.5 font-crimson text-sm text-arcana-text-dim">
                   {place.caracteristicas}
                 </p>
-                <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim/60">
+                <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim">
                   {place.conflitos}
                 </p>
                 <div className="mt-3">
                   {added ? (
-                    <span className="font-cinzel text-[9px] uppercase tracking-[0.25em] text-arcana-gold">
+                    <span className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
                       ✓ Na campanha
                     </span>
                   ) : (
@@ -229,12 +229,12 @@ function PlaceCard({ element, api }: { element: CampaignElement; api: StoryHubAp
             <p className="mt-2 font-crimson text-sm text-arcana-text-dim">{data.descricao}</p>
           )}
           {data.conflitos && (
-            <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim/60">
+            <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim">
               {data.conflitos}
             </p>
           )}
           {data.notasDoJuiz && (
-            <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/60">
+            <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/90">
               🔒 {data.notasDoJuiz}
             </p>
           )}

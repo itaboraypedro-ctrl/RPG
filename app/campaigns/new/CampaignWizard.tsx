@@ -121,7 +121,7 @@ export function CampaignWizard() {
           type="button"
           onClick={goBack}
           disabled={step === 1 || isSaving}
-          className={step === 1 || isSaving ? "arcana-btn-ghost opacity-30 cursor-default" : "arcana-btn-ghost"}
+          className="arcana-btn-ghost"
         >
           Voltar
         </button>

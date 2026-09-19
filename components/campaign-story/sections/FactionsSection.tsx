@@ -60,7 +60,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
       {creating && <NewFactionForm api={api} onDone={() => setCreating(false)} />}
 
       <div className="space-y-3">
-        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold/70">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
           Na campanha
         </p>
         {elements.length === 0 ? (
@@ -75,7 +75,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
       </div>
 
       <div className="space-y-3">
-        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold/70">
+        <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
           Templates canônicos (pp. 258–266)
         </p>
         <div className="space-y-2">
@@ -101,14 +101,14 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
                     <span className="font-cinzel text-sm uppercase tracking-[0.12em] text-arcana-text">
                       {faction.nome}
                     </span>
-                    <span className="border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[7px] uppercase tracking-[0.2em] text-arcana-text-dim/70">
+                    <span className="border border-arcana-border/60 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-text-dim">
                       {faction.categoria === "lei" ? "Lei" : "Gangue"}
                     </span>
                     <PageRef paginas={faction.paginas} />
                   </button>
                   <div className="flex shrink-0 items-center gap-2">
                     {added ? (
-                      <span className="font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-gold">
+                      <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
                         ✓ Na campanha
                       </span>
                     ) : (
@@ -140,7 +140,7 @@ export function FactionsSection({ api }: { api: StoryHubApi }) {
                             <td className="whitespace-nowrap pr-3 py-1 font-crimson text-xs text-arcana-text-dim">
                               {m.tipo} · NdC {m.ndc}
                             </td>
-                            <td className="py-1 font-crimson text-xs text-arcana-text-dim/70">
+                            <td className="py-1 font-crimson text-xs text-arcana-text-dim">
                               {[
                                 ...m.habilidades,
                                 ...(m.habilidadesPendentes ?? []).map((h) => `${h} (sem verbete — decisão do Juiz)`),
@@ -254,19 +254,19 @@ function FactionCard({ element, api }: { element: CampaignElement; api: StoryHub
             <p className="mt-2 font-crimson text-sm text-arcana-text-dim">{data.resumo}</p>
           )}
           {data.agenda && (
-            <p className="mt-1 font-crimson text-xs text-arcana-text-dim/70">
-              <span className="font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-gold/60">Agenda · </span>
+            <p className="mt-1 font-crimson text-xs text-arcana-text-dim">
+              <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">Agenda · </span>
               {data.agenda}
             </p>
           )}
           {data.ameaca && (
-            <p className="mt-1 font-crimson text-xs text-arcana-text-dim/70">
-              <span className="font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-gold/60">Ameaça · </span>
+            <p className="mt-1 font-crimson text-xs text-arcana-text-dim">
+              <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">Ameaça · </span>
               {data.ameaca}
             </p>
           )}
           {data.notasDoJuiz && (
-            <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/60">
+            <p className="mt-2 border-l-2 border-red-900/50 pl-2 font-crimson text-xs italic text-red-200/90">
               🔒 {data.notasDoJuiz}
             </p>
           )}

@@ -57,7 +57,7 @@ export function MissionsSection({ api }: { api: StoryHubApi }) {
 
       {lastDraw && draft && (
         <div className="rounded-sm border border-arcana-gold/30 bg-arcana-gold/5 px-4 py-3">
-          <p className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-gold/80">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
             Sorteio (p. 104) — naipes ignorados
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-4 font-crimson text-sm text-arcana-text-dim">
@@ -129,7 +129,7 @@ export function MissionsSection({ api }: { api: StoryHubApi }) {
 function Seed({ label, card, value }: { label: string; card: string; value: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className="font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-text-dim/60">{label}</span>
+      <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">{label}</span>
       <span className="rounded-sm border border-arcana-border bg-arcana-bg px-1.5 py-0.5 font-cinzel text-[10px] text-arcana-gold">{card}</span>
       <span className="text-arcana-text">{value}</span>
     </span>
@@ -249,7 +249,7 @@ function MissionCard({ element, api }: { element: CampaignElement; api: StoryHub
         <p className="mt-2 font-crimson text-sm text-arcana-text-dim line-clamp-2">{data.objetivo}</p>
       )}
       {data.consequencias && (
-        <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim/60 line-clamp-2">
+        <p className="mt-1 font-crimson text-xs italic text-arcana-text-dim line-clamp-2">
           {data.consequencias}
         </p>
       )}

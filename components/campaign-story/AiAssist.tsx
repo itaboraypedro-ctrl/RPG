@@ -84,7 +84,7 @@ export function AiAssist({ sessionId, section, title, onApply }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
-        <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold/80">
+        <span className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
           ✦ {title}
         </span>
         <span className="font-cinzel text-xs text-arcana-text-dim">{open ? "−" : "+"}</span>
@@ -127,7 +127,7 @@ export function AiAssist({ sessionId, section, title, onApply }: Props) {
                 <p className="font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-gold-bright">
                   {proposal.titulo}
                 </p>
-                <span className="shrink-0 border border-arcana-gold/40 px-1.5 py-0.5 font-cinzel text-[7px] uppercase tracking-[0.2em] text-arcana-gold/80">
+                <span className="shrink-0 border border-arcana-gold/40 px-1.5 py-0.5 font-cinzel text-[9px] uppercase tracking-[0.2em] text-arcana-gold">
                   Proposta da IA
                 </span>
               </div>
@@ -136,14 +136,14 @@ export function AiAssist({ sessionId, section, title, onApply }: Props) {
                   .filter(([key, value]) => key !== "titulo" && key !== "referencias" && value)
                   .map(([key, value]) => (
                     <p key={key} className="font-crimson text-sm text-arcana-text-dim">
-                      <span className="font-cinzel text-[8px] uppercase tracking-[0.2em] text-arcana-gold/60">
+                      <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
                         {FIELD_LABELS[key] ?? key} ·{" "}
                       </span>
                       {value}
                     </p>
                   ))}
                 {proposal.referencias && (
-                  <p className="font-crimson text-xs italic text-arcana-text-dim/50">
+                  <p className="font-crimson text-xs italic text-arcana-text-dim">
                     Referências: {proposal.referencias}
                   </p>
                 )}

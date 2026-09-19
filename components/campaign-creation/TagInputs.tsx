@@ -20,10 +20,8 @@ export function Chip({
       title={title}
       aria-pressed={active}
       className={[
-        "rounded-sm border px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.18em] transition-all duration-150",
-        active
-          ? "border-arcana-gold bg-arcana-gold/10 text-arcana-gold"
-          : "border-arcana-border text-arcana-text-dim hover:border-arcana-gold/40 hover:text-arcana-text",
+        "px-3 py-1.5 font-cinzel text-[10px] uppercase tracking-[0.18em]",
+        active ? "arcana-chip-active" : "arcana-chip",
       ].join(" ")}
     >
       {children}
@@ -91,7 +89,7 @@ export function TagListEditor({
         <button
           type="button"
           onClick={addDraft}
-          className="arcana-btn-ghost shrink-0"
+          className="arcana-btn-ghost arcana-btn-sm shrink-0"
         >
           Adicionar
         </button>

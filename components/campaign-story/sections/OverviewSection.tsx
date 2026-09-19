@@ -103,12 +103,11 @@ export function OverviewSection({ api }: { api: StoryHubApi }) {
         </Field>
       </div>
 
-      {/* Época, data ficcional e cronologia — painel único */}
+      {/* Época e cronologia — painel único (data ficcional vive no Calendário) */}
       <EpochPanel
         epoch={draft.epoch ?? SACRAMENTO_META.defaults.epoca}
         onEpochChange={(epoch) => update({ epoch })}
-        fictionalDate={draft.fictional_date}
-        onFictionalDateChange={(fictional_date) => update({ fictional_date })}
+        footnote="A data ficcional da campanha (ex.: “Março de 1880”) é definida na seção Calendário."
       />
 
       {/* Sessão zero */}

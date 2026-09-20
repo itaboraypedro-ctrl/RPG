@@ -6,25 +6,38 @@
 import { SACRAMENTO_PLACES } from "@/lib/rulesets/sacramento/places";
 import { SACRAMENTO_FACTIONS } from "@/lib/rulesets/sacramento/factions";
 import type { SacramentoFaction, SacramentoPlace } from "@/lib/rulesets/sacramento/types";
+import type { Apresentacao } from "./types";
 
 export { SACRAMENTO_PLACES, SACRAMENTO_FACTIONS };
 export type { SacramentoFaction, SacramentoPlace };
 
+/** Texto com flexão de gênero — escolhido pela apresentação do personagem. */
+export interface TextoFlexionado {
+  m: string;
+  f: string;
+}
+
+export function flex(t: TextoFlexionado, apresentacao?: Apresentacao): string {
+  return apresentacao === "feminino" ? t.f : t.m;
+}
+
 /** Conceitos de exemplo (estilo p. 23) — atalhos, não classes. */
-export const CONCEITOS_SUGERIDOS: string[] = [
-  "Pistoleiro em busca de recomeço",
-  "Ex-padre que perdeu a fé, não o rebanho",
-  "Caçadora de recompensas com um nome na lista que dói",
-  "Médica que trata qualquer um — por um preço justo",
-  "Jogador que aposta tudo, menos a própria história",
-  "Vaqueiro sem terra procurando onde pertencer",
-  "Fugitiva com a recompensa na própria cabeça",
-  "Ferreiro que forjou a arma errada para a pessoa errada",
+export const CONCEITOS_SUGERIDOS: TextoFlexionado[] = [
+  { m: "Pistoleiro em busca de recomeço", f: "Pistoleira em busca de recomeço" },
+  { m: "Ex-padre que perdeu a fé, não o rebanho", f: "Ex-freira que perdeu a fé, não o rebanho" },
+  { m: "Caçador de recompensas com um nome na lista que dói", f: "Caçadora de recompensas com um nome na lista que dói" },
+  { m: "Médico que trata qualquer um — por um preço justo", f: "Médica que trata qualquer um — por um preço justo" },
+  { m: "Jogador que aposta tudo, menos a própria história", f: "Jogadora que aposta tudo, menos a própria história" },
+  { m: "Vaqueiro sem terra procurando onde pertencer", f: "Vaqueira sem terra procurando onde pertencer" },
+  { m: "Fugitivo com a recompensa na própria cabeça", f: "Fugitiva com a recompensa na própria cabeça" },
+  { m: "Ferreiro que forjou a arma errada para a pessoa errada", f: "Ferreira que forjou a arma errada para a pessoa errada" },
 ];
 
 export interface OcupacaoSugerida {
   id: string;
   nome: string;
+  /** Forma feminina do nome (igual ao nome quando neutra). */
+  nomeF: string;
   contexto: string;
   /** Emblema pintado em public/story/ocupacoes/<id>.webp (quando as artes chegarem). */
   emblema?: string;
@@ -32,18 +45,18 @@ export interface OcupacaoSugerida {
 
 /** Ocupações com contexto de mundo — não impactam a ficha (docs/01 §2). */
 export const OCUPACOES_SUGERIDAS: OcupacaoSugerida[] = [
-  { id: "pistoleiro-de-aluguel", nome: "Pistoleiro de aluguel", contexto: "Vive de escoltas, cobranças e serviços que a lei não faz", emblema: "/story/ocupacoes/pistoleiro-de-aluguel.webp" },
-  { id: "vaqueiro", nome: "Vaqueiro", contexto: "Toca boiada entre fazendas; conhece cada trilha e cada tempestade", emblema: "/story/ocupacoes/vaqueiro.webp" },
-  { id: "medico-de-fronteira", nome: "Médico de fronteira", contexto: "Único socorro em dias de viagem — de parto a bala alojada", emblema: "/story/ocupacoes/medico-de-fronteira.webp" },
-  { id: "jogador-de-cartas", nome: "Jogador de cartas", contexto: "Roda saloons vivendo do blefe e da sorte alheia", emblema: "/story/ocupacoes/jogador-de-cartas.webp" },
-  { id: "ferreiro", nome: "Ferreiro", contexto: "Ferra cavalos, conserta armas e guarda segredos da cidade", emblema: "/story/ocupacoes/ferreiro.webp" },
-  { id: "cacador-de-recompensas", nome: "Caçador de recompensas", contexto: "Persegue cartazes de procurado pelo Oeste — vivo ou morto", emblema: "/story/ocupacoes/cacador-de-recompensas.webp" },
-  { id: "padre-errante", nome: "Padre errante", contexto: "Leva missa, batismo e enterro onde não há igreja", emblema: "/story/ocupacoes/padre-errante.webp" },
-  { id: "minerador", nome: "Minerador", contexto: "Arranca carvão e esperança das minas de Araguari", emblema: "/story/ocupacoes/minerador.webp" },
-  { id: "musico-de-salao", nome: "Músico de salão", contexto: "Anima festas e funerais; ouve tudo o que ninguém devia contar", emblema: "/story/ocupacoes/musico-de-salao.webp" },
-  { id: "ex-soldado", nome: "Ex-soldado", contexto: "Sobrou da Guerra do Carvão com cicatrizes e histórias que não conta", emblema: "/story/ocupacoes/ex-soldado.webp" },
-  { id: "comerciante-de-rota", nome: "Comerciante de rota", contexto: "Cruza o Oeste com mercadorias, notícias e dívidas", emblema: "/story/ocupacoes/comerciante-de-rota.webp" },
-  { id: "rastreador", nome: "Rastreador", contexto: "Lê pegadas, vento e silêncio; acha quem não quer ser achado", emblema: "/story/ocupacoes/rastreador.webp" },
+  { id: "pistoleiro-de-aluguel", nome: "Pistoleiro de aluguel", nomeF: "Pistoleira de aluguel", contexto: "Vive de escoltas, cobranças e serviços que a lei não faz", emblema: "/story/ocupacoes/pistoleiro-de-aluguel.webp" },
+  { id: "vaqueiro", nome: "Vaqueiro", nomeF: "Vaqueira", contexto: "Toca boiada entre fazendas; conhece cada trilha e cada tempestade", emblema: "/story/ocupacoes/vaqueiro.webp" },
+  { id: "medico-de-fronteira", nome: "Médico de fronteira", nomeF: "Médica de fronteira", contexto: "Único socorro em dias de viagem — de parto a bala alojada", emblema: "/story/ocupacoes/medico-de-fronteira.webp" },
+  { id: "jogador-de-cartas", nome: "Jogador de cartas", nomeF: "Jogadora de cartas", contexto: "Roda saloons vivendo do blefe e da sorte alheia", emblema: "/story/ocupacoes/jogador-de-cartas.webp" },
+  { id: "ferreiro", nome: "Ferreiro", nomeF: "Ferreira", contexto: "Ferra cavalos, conserta armas e guarda segredos da cidade", emblema: "/story/ocupacoes/ferreiro.webp" },
+  { id: "cacador-de-recompensas", nome: "Caçador de recompensas", nomeF: "Caçadora de recompensas", contexto: "Persegue cartazes de procurado pelo Oeste — vivo ou morto", emblema: "/story/ocupacoes/cacador-de-recompensas.webp" },
+  { id: "padre-errante", nome: "Padre errante", nomeF: "Freira errante", contexto: "Leva missa, batismo e enterro onde não há igreja", emblema: "/story/ocupacoes/padre-errante.webp" },
+  { id: "minerador", nome: "Minerador", nomeF: "Mineradora", contexto: "Arranca carvão e esperança das minas de Araguari", emblema: "/story/ocupacoes/minerador.webp" },
+  { id: "musico-de-salao", nome: "Músico de salão", nomeF: "Música de salão", contexto: "Anima festas e funerais; ouve tudo o que ninguém devia contar", emblema: "/story/ocupacoes/musico-de-salao.webp" },
+  { id: "ex-soldado", nome: "Ex-soldado", nomeF: "Ex-soldada", contexto: "Sobrou da Guerra do Carvão com cicatrizes e histórias que não conta", emblema: "/story/ocupacoes/ex-soldado.webp" },
+  { id: "comerciante-de-rota", nome: "Comerciante de rota", nomeF: "Comerciante de rota", contexto: "Cruza o Oeste com mercadorias, notícias e dívidas", emblema: "/story/ocupacoes/comerciante-de-rota.webp" },
+  { id: "rastreador", nome: "Rastreador", nomeF: "Rastreadora", contexto: "Lê pegadas, vento e silêncio; acha quem não quer ser achado", emblema: "/story/ocupacoes/rastreador.webp" },
 ];
 
 /** Origens sem cidade canônica (docs/01 §2.1) — categorias abertas do livro. */
@@ -61,19 +74,19 @@ export const ORIGENS_ABERTAS: OrigemAberta[] = [
 ];
 
 /** Presets de família — atalhos que preenchem o campo, sempre editáveis. */
-export const FAMILIA_PRESETS: { detalhe: string; tipo: "sim" | "complicada" }[] = [
-  { tipo: "sim", detalhe: "Família viva no lugar de origem, esperando notícias que nunca chegam" },
-  { tipo: "sim", detalhe: "Irmãos espalhados pelo Oeste, cada um seguindo um caminho" },
-  { tipo: "complicada", detalhe: "Romperam quando parti; carrego o sobrenome como um peso" },
-  { tipo: "complicada", detalhe: "Metade da família não sabe que estou vivo — e é melhor assim" },
+export const FAMILIA_PRESETS: { detalhe: TextoFlexionado; tipo: "sim" | "complicada" }[] = [
+  { tipo: "sim", detalhe: { m: "Família viva no lugar de origem, esperando notícias que nunca chegam", f: "Família viva no lugar de origem, esperando notícias que nunca chegam" } },
+  { tipo: "sim", detalhe: { m: "Irmãos espalhados pelo Oeste, cada um seguindo um caminho", f: "Irmãos espalhados pelo Oeste, cada um seguindo um caminho" } },
+  { tipo: "complicada", detalhe: { m: "Romperam quando parti; carrego o sobrenome como um peso", f: "Romperam quando parti; carrego o sobrenome como um peso" } },
+  { tipo: "complicada", detalhe: { m: "Metade da família não sabe que estou vivo — e é melhor assim", f: "Metade da família não sabe que estou viva — e é melhor assim" } },
 ];
 
-export const PASSADO_PRESETS: string[] = [
-  "Cavalguei com uma gangue e saí sem me despedir — eles não esquecem",
-  "Um trabalho deu errado e alguém inocente pagou o preço",
-  "Fui acusado de um crime que não cometi; o verdadeiro culpado anda solto",
-  "Devo dinheiro a gente que não perdoa atraso",
-  "Sobrevivi a algo que ninguém acredita — e não conto a ninguém",
+export const PASSADO_PRESETS: TextoFlexionado[] = [
+  { m: "Cavalguei com uma gangue e saí sem me despedir — eles não esquecem", f: "Cavalguei com uma gangue e saí sem me despedir — eles não esquecem" },
+  { m: "Um trabalho deu errado e alguém inocente pagou o preço", f: "Um trabalho deu errado e alguém inocente pagou o preço" },
+  { m: "Fui acusado de um crime que não cometi; o verdadeiro culpado anda solto", f: "Fui acusada de um crime que não cometi; o verdadeiro culpado anda solto" },
+  { m: "Devo dinheiro a gente que não perdoa atraso", f: "Devo dinheiro a gente que não perdoa atraso" },
+  { m: "Sobrevivi a algo que ninguém acredita — e não conto a ninguém", f: "Sobrevivi a algo que ninguém acredita — e não conto a ninguém" },
 ];
 
 export const RELACOES_FACCAO_SUGERIDAS: string[] = [

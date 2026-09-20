@@ -8,7 +8,7 @@ import {
   LOJAS,
   itemById,
   itemImagem,
-  montariaComprada,
+  montariasCompradas,
   resumoCompras,
   type ItemCatalogo,
   type LojaInfo,
@@ -123,7 +123,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
 
   const qty = (id: string) => compras.find((c) => c.id === id)?.quantidade ?? 0;
   const resumo = useMemo(() => resumoCompras(compras), [compras]);
-  const montaria = montariaComprada(compras);
+  const animais = montariasCompradas(compras);
   const totalItens = compras.reduce((n, c) => n + c.quantidade, 0);
 
   const loja = lojasVisiveis.find((l) => l.id === lojaId) ?? lojasVisiveis[0] ?? LOJAS[0];
@@ -224,10 +224,11 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
         </button>
       </div>
 
-      {montaria && (
+      {animais.length > 0 && (
         <p className="font-crimson text-sm italic text-arcana-gold-bright">
-          {montaria === "cavalo" ? "Cavalo" : "Mula"} no alforje — a próxima etapa é batizar e
-          configurar sua montaria.
+          {animais.length === 1
+            ? `${animais[0] === "cavalo" ? "Cavalo" : "Mula"} no alforje — a próxima etapa é batizar e configurar sua montaria.`
+            : `${animais.length} animais no alforje — a próxima etapa é batizar e configurar cada montaria.`}
         </p>
       )}
       {resumo.avisos.map((a) => (

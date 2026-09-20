@@ -182,9 +182,12 @@ export function validarFicha(ficha: FichaMecanica): ValidacaoFicha {
     );
   }
 
-  if (ficha.montaria) {
-    const soma = ficha.montaria.potencia + ficha.montaria.resistencia;
-    if (soma !== 3) erros.push("A montaria distribui exatamente 3 pontos entre Potência e Resistência.");
+  for (const m of ficha.montarias ?? []) {
+    if (m.potencia + m.resistencia !== 3) {
+      erros.push(
+        `${m.nome || "A montaria"} distribui exatamente 3 pontos entre Potência e Resistência.`,
+      );
+    }
   }
 
   const compras = resumoCompras(ficha.compras ?? []);

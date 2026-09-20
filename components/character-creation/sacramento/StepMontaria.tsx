@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { HowItWorks } from "@/components/campaign-creation/Explainer";
 import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
-import { itemImagem, montariaComprada } from "@/lib/character-creation/sacramento/catalogo";
+import { itemImagem, montariasCompradas } from "@/lib/character-creation/sacramento/catalogo";
 import { derivadosMontaria } from "@/lib/character-creation/sacramento/rules";
 import {
   FICHA_INICIAL,
@@ -18,47 +18,42 @@ type Props = {
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
 
-const MONTARIA_NOVA: MontariaCriacao = {
-  nome: "",
-  descricao: "",
-  potencia: 2,
-  resistencia: 1,
-  origem: "comprar",
-};
-
 /** O temperamento que cada divisão de pontos compra — na voz da tratadora. */
-const TEMPERAMENTOS: Record<number, string> = {
-  3: "“Disparada pura: vence qualquer corrida — mas é só um susto entre o cavaleiro e o chão.”",
-  2: "“Corredora de casco firme: rápida na fuga e aguenta a lida de todo dia.”",
-  1: "“Estradeira de confiança: não ganha aposta, mas atravessa o sertão sem reclamar.”",
-  0: "“Uma fortaleza de quatro patas: ninguém apressa, nada derruba.”",
+const TEMPERAMENTOS: Record<"cavalo" | "mula", Record<number, string>> = {
+  cavalo: {
+    3: "“Disparado puro: vence qualquer corrida — mas é só um susto entre o cavaleiro e o chão.”",
+    2: "“Corredor de casco firme: rápido na fuga e aguenta a lida de todo dia.”",
+    1: "“Estradeiro de confiança: não ganha aposta, mas atravessa o sertão sem reclamar.”",
+    0: "“Uma fortaleza de quatro patas: ninguém apressa, nada derruba.”",
+  },
+  mula: {
+    3: "“Disparada pura: vence qualquer corrida — mas é só um susto entre o cavaleiro e o chão.”",
+    2: "“Corredora de casco firme: rápida na fuga e aguenta a lida de todo dia.”",
+    1: "“Estradeira de confiança: não ganha aposta, mas atravessa o sertão sem reclamar.”",
+    0: "“Uma fortaleza de quatro patas: ninguém apressa, nada derruba.”",
+  },
 };
 
-export default function StepMontaria({ data, onUpdate }: Props) {
-  const ficha = data.ficha ?? FICHA_INICIAL;
-  const animal = montariaComprada(ficha.compras ?? []);
-  const montaria = ficha.montaria;
-
-  // A etapa só existe quando um animal foi comprado — cria a ficha dele na entrada.
-  useEffect(() => {
-    if (animal && !montaria) {
-      onUpdate({ ficha: { ...ficha, montaria: MONTARIA_NOVA } });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [animal, montaria]);
-
-  if (!animal || !montaria) return null;
-
-  const setMontaria = (m: MontariaCriacao) => onUpdate({ ficha: { ...ficha, montaria: m } });
+function MontariaCard({
+  montaria,
+  uid,
+  antecedenteMontaria,
+  onChange,
+}: {
+  montaria: MontariaCriacao;
+  uid: number;
+  antecedenteMontaria: number;
+  onChange: (m: MontariaCriacao) => void;
+}) {
+  const animal = montaria.animal;
   const derivados = derivadosMontaria(montaria.potencia, montaria.resistencia);
-
   // Divisor de partilha: ouro (potência) à esquerda, cobre (resistência) à direita.
   const pot = montaria.potencia; // 0..3
   const pct = (pot / 3) * 100;
+  const setMontaria = onChange;
 
   return (
-    <div className="space-y-5 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.montaria} />
+    <>
 
       <div
         className="rounded-2xl overflow-hidden"
@@ -103,11 +98,11 @@ export default function StepMontaria({ data, onUpdate }: Props) {
           <div className="p-4 space-y-3" style={{ background: "rgba(27,27,42,0.72)" }}>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label htmlFor="mont-nome" className={LABEL}>
+                <label htmlFor={`mont-nome-${uid}`} className={LABEL}>
                   Nome
                 </label>
                 <input
-                  id="mont-nome"
+                  id={`mont-nome-${uid}`}
                   type="text"
                   value={montaria.nome}
                   onChange={(e) => setMontaria({ ...montaria, nome: e.target.value })}
@@ -117,11 +112,11 @@ export default function StepMontaria({ data, onUpdate }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="mont-desc" className={LABEL}>
+                <label htmlFor={`mont-desc-${uid}`} className={LABEL}>
                   Aparência
                 </label>
                 <input
-                  id="mont-desc"
+                  id={`mont-desc-${uid}`}
                   type="text"
                   value={montaria.descricao}
                   onChange={(e) => setMontaria({ ...montaria, descricao: e.target.value })}
@@ -168,7 +163,7 @@ export default function StepMontaria({ data, onUpdate }: Props) {
                 className="font-crimson text-[15px] italic text-arcana-text leading-snug mt-2"
                 aria-live="polite"
               >
-                {TEMPERAMENTOS[montaria.potencia]}
+                {TEMPERAMENTOS[animal][montaria.potencia]}
               </p>
             </div>
           </div>
@@ -197,7 +192,7 @@ export default function StepMontaria({ data, onUpdate }: Props) {
             ))}
           </div>
           <span className="font-crimson text-xs italic text-arcana-text-dim">
-            Corrida: 1d6 + Potência + Montaria ({ficha.antecedentes.montaria}), dificuldade 6
+            Corrida: 1d6 + Potência + Montaria ({antecedenteMontaria}), dificuldade 6
           </span>
         </div>
       </div>
@@ -261,6 +256,62 @@ export default function StepMontaria({ data, onUpdate }: Props) {
           outline-offset: 2px;
         }
       `}</style>
+    </>
+  );
+}
+
+export default function StepMontaria({ data, onUpdate }: Props) {
+  const ficha = data.ficha ?? FICHA_INICIAL;
+  const animais = montariasCompradas(ficha.compras ?? []);
+  const montarias = ficha.montarias ?? [];
+
+  // Reconcilia com as compras: uma ficha por animal, preservando o que já foi configurado.
+  useEffect(() => {
+    if (animais.length === montarias.length && animais.every((a, i) => montarias[i]?.animal === a))
+      return;
+    const filas: Record<"cavalo" | "mula", MontariaCriacao[]> = {
+      cavalo: montarias.filter((m) => m.animal === "cavalo"),
+      mula: montarias.filter((m) => m.animal === "mula"),
+    };
+    const novas = animais.map(
+      (animal) =>
+        filas[animal].shift() ?? {
+          animal,
+          nome: "",
+          descricao: "",
+          potencia: 2,
+          resistencia: 1,
+          origem: "comprar" as const,
+        },
+    );
+    onUpdate({ ficha: { ...ficha, montarias: novas } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animais.join(","), montarias]);
+
+  if (animais.length === 0 || montarias.length === 0) return null;
+
+  return (
+    <div className="space-y-5 max-w-2xl">
+      <HowItWorks guide={PLAYER_GUIDES.montaria} />
+      {montarias.length > 1 && (
+        <p className="font-crimson text-sm italic text-arcana-text-dim">
+          {montarias.length} animais saíram do estábulo — cada um com nome e temperamento
+          próprios.
+        </p>
+      )}
+      {montarias.map((m, i) => (
+        <MontariaCard
+          key={i}
+          uid={i}
+          montaria={m}
+          antecedenteMontaria={ficha.antecedentes.montaria}
+          onChange={(nova) =>
+            onUpdate({
+              ficha: { ...ficha, montarias: montarias.map((x, idx) => (idx === i ? nova : x)) },
+            })
+          }
+        />
+      ))}
     </div>
   );
 }

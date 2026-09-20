@@ -417,10 +417,15 @@ export default function StepRevisao({
             </p>
           </div>
           <div>
-            <span className={LABEL}>Montaria</span>
+            <span className={LABEL}>{(ficha.montarias?.length ?? 0) > 1 ? "Montarias" : "Montaria"}</span>
             <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {ficha.montaria
-                ? `${ficha.montaria.nome || "Sem nome"} · Pot ${ficha.montaria.potencia} · Res ${ficha.montaria.resistencia} · Vida ${6 + ficha.montaria.resistencia}`
+              {(ficha.montarias?.length ?? 0) > 0
+                ? ficha.montarias
+                    .map(
+                      (m) =>
+                        `${m.nome || (m.animal === "cavalo" ? "Cavalo" : "Mula")} · Pot ${m.potencia} · Res ${m.resistencia} · Vida ${6 + m.resistencia}`,
+                    )
+                    .join(" — ")
                 : "A resolver na mesa"}
             </p>
           </div>

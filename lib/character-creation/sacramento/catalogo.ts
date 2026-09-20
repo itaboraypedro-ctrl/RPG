@@ -337,11 +337,14 @@ export function itemImagem(id: string): string {
   return `/story/itens/${id}.webp`;
 }
 
-/** A montaria agora nasce da compra: cavalo ou mula no alforje. */
-export function montariaComprada(itens: CompraItem[]): "cavalo" | "mula" | null {
-  if (itens.some((i) => i.id === "cavalo" && i.quantidade > 0)) return "cavalo";
-  if (itens.some((i) => i.id === "mula" && i.quantidade > 0)) return "mula";
-  return null;
+/** Animais de montaria no alforje, um por unidade comprada (cavalos primeiro). */
+export function montariasCompradas(itens: CompraItem[]): ("cavalo" | "mula")[] {
+  const lista: ("cavalo" | "mula")[] = [];
+  for (const id of ["cavalo", "mula"] as const) {
+    const q = itens.find((i) => i.id === id)?.quantidade ?? 0;
+    for (let k = 0; k < q; k++) lista.push(id);
+  }
+  return lista;
 }
 
 export interface ResumoCompras {
@@ -371,7 +374,8 @@ export function resumoCompras(itens: CompraItem[]): ResumoCompras {
   let custoTotal = 0;
   let espaco = 0;
   const avisos: string[] = [];
-  const temMontaria = montariaComprada(itens) !== null;
+  const nMontarias = montariasCompradas(itens).length;
+  const temMontaria = nMontarias > 0;
 
   const qty = (id: string) => itens.find((i) => i.id === id)?.quantidade ?? 0;
   const suportes: Record<SuporteArma, number> = {
@@ -408,7 +412,7 @@ export function resumoCompras(itens: CompraItem[]): ResumoCompras {
     espaco += (item.espaco ?? 0) * guardadas;
   }
 
-  const capacidade = CAPACIDADE_MOCHILA + (temMontaria ? CAPACIDADE_MONTARIA : 0);
+  const capacidade = CAPACIDADE_MOCHILA + CAPACIDADE_MONTARIA * nMontarias;
   return {
     custoTotal,
     saldo: ORCAMENTO - custoTotal,

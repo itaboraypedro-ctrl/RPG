@@ -20,7 +20,7 @@ import {
   baseImagePath,
 } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath, kitById } from "@/lib/character-creation/sacramento/kits";
-import { montariaComprada } from "@/lib/character-creation/sacramento/catalogo";
+import { montariasCompradas } from "@/lib/character-creation/sacramento/catalogo";
 import { calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
 import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import type {
@@ -69,7 +69,8 @@ export function CharacterWizard() {
   const savedRef = useRef(false);
 
   const ficha = data.ficha ?? FICHA_INICIAL;
-  const animalComprado = montariaComprada(ficha.compras ?? []);
+  const animaisComprados = montariasCompradas(ficha.compras ?? []);
+  const temMontaria = animaisComprados.length > 0;
 
   // A etapa de montaria só existe se um cavalo/mula saiu da loja.
   const stepIds: StepId[] = useMemo(
@@ -79,24 +80,25 @@ export function CharacterWizard() {
       "atributos",
       "habilidades",
       "compras",
-      ...(animalComprado ? (["montaria"] as StepId[]) : []),
+      ...(temMontaria ? (["montaria"] as StepId[]) : []),
       "revisao",
     ],
-    [animalComprado],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [temMontaria],
   );
   const idx = Math.min(stepIdx, stepIds.length - 1);
   const step = stepIds[idx];
 
-  // Devolveu o animal na loja → a ficha da montaria vai junto.
+  // Devolveu os animais na loja → as fichas de montaria vão junto.
   useEffect(() => {
-    if (!animalComprado && ficha.montaria) {
+    if (!temMontaria && (ficha.montarias?.length ?? 0) > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setData((prev) => ({
         ...prev,
-        ficha: { ...(prev.ficha ?? FICHA_INICIAL), montaria: null },
+        ficha: { ...(prev.ficha ?? FICHA_INICIAL), montarias: [] },
       }));
     }
-  }, [animalComprado, ficha.montaria]);
+  }, [temMontaria, ficha.montarias]);
 
   // ---- Rascunho: restaura no mount, salva a cada mudança ----
   useEffect(() => {

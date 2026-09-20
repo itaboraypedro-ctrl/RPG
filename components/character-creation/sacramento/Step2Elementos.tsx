@@ -5,6 +5,7 @@ import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
   CONCEITOS_SUGERIDOS,
   FAMILIA_PRESETS,
+  flex,
   OCUPACOES_SUGERIDAS,
   ORIGENS_ABERTAS,
   PASSADO_PRESETS,
@@ -151,6 +152,7 @@ function Segmented<T extends string>({
 
 export default function Step2Elementos({ data, onUpdate }: Props) {
   const e = data.elementos ?? ELEMENTOS_VAZIOS;
+  const ap = data.base?.apresentacao;
   const set = (partial: Partial<ElementosHistoria>) =>
     onUpdate({ elementos: { ...e, ...partial } });
 
@@ -173,7 +175,8 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
             Conceito
           </label>
           <p className={HELPER}>
-            Uma frase que resume quem ele é e o que faz. Toque num exemplo ou escreva o seu.
+            Uma frase que resume quem seu personagem é e o que faz. Toque num exemplo ou escreva
+            a sua.
           </p>
         </div>
         <input
@@ -181,19 +184,27 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
           type="text"
           value={e.conceito}
           onChange={(ev) => set({ conceito: ev.target.value })}
-          placeholder='Ex.: "ex-padre que perdeu a fé, não o rebanho"'
+          placeholder={
+            ap === "feminino"
+              ? 'Ex.: "ex-freira que perdeu a fé, não o rebanho"'
+              : 'Ex.: "ex-padre que perdeu a fé, não o rebanho"'
+          }
           maxLength={160}
           className="arcana-input w-full font-crimson text-lg"
         />
         <div className="grid gap-1.5 sm:grid-cols-2">
-          {CONCEITOS_SUGERIDOS.map((c) => (
-            <PresetRow
-              key={c}
-              texto={c}
-              active={e.conceito === c}
-              onClick={() => set({ conceito: c })}
-            />
-          ))}
+          {CONCEITOS_SUGERIDOS.map((c) => {
+            const texto = flex(c, ap);
+            const active = e.conceito === c.m || e.conceito === c.f;
+            return (
+              <PresetRow
+                key={c.m}
+                texto={texto}
+                active={active}
+                onClick={() => set({ conceito: texto })}
+              />
+            );
+          })}
         </div>
       </section>
 
@@ -296,17 +307,18 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         <div>
           <span className={LABEL}>Ocupação</span>
           <p className={HELPER}>
-            Do que ele vive. Não muda números da ficha — mas diz muito sobre a história.
+            Do que seu personagem vive. Não muda números da ficha — mas diz muito sobre a história.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           {OCUPACOES_SUGERIDAS.map((o) => {
-            const active = e.ocupacao === o.nome;
+            const nomeExibido = ap === "feminino" ? o.nomeF : o.nome;
+            const active = e.ocupacao === o.nome || e.ocupacao === o.nomeF;
             return (
               <button
                 key={o.nome}
                 type="button"
-                onClick={() => set({ ocupacao: o.nome })}
+                onClick={() => set({ ocupacao: nomeExibido })}
                 aria-pressed={active}
                 className={[
                   "relative rounded-xl border p-3 text-left transition-all duration-150",
@@ -344,7 +356,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
                         active ? "font-bold text-arcana-gold-bright" : "text-arcana-text",
                       ].join(" ")}
                     >
-                      {o.nome}
+                      {nomeExibido}
                     </span>
                     <span className="mt-0.5 block font-crimson text-[13px] leading-snug text-arcana-text-dim">
                       {o.contexto}
@@ -357,7 +369,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         </div>
         <input
           type="text"
-          value={OCUPACOES_SUGERIDAS.some((o) => o.nome === e.ocupacao) ? "" : e.ocupacao}
+          value={OCUPACOES_SUGERIDAS.some((o) => o.nome === e.ocupacao || o.nomeF === e.ocupacao) ? "" : e.ocupacao}
           onChange={(ev) => set({ ocupacao: ev.target.value })}
           placeholder="…ou escreva outra ocupação"
           maxLength={80}
@@ -384,14 +396,17 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         {e.familia && e.familia !== "nao" && (
           <>
             <div className="grid gap-1.5">
-              {FAMILIA_PRESETS.filter((p) => p.tipo === e.familia).map((p) => (
-                <PresetRow
-                  key={p.detalhe}
-                  texto={p.detalhe}
-                  active={e.familiaDetalhe === p.detalhe}
-                  onClick={() => set({ familiaDetalhe: p.detalhe })}
-                />
-              ))}
+              {FAMILIA_PRESETS.filter((p) => p.tipo === e.familia).map((p) => {
+                const texto = flex(p.detalhe, ap);
+                return (
+                  <PresetRow
+                    key={p.detalhe.m}
+                    texto={texto}
+                    active={e.familiaDetalhe === p.detalhe.m || e.familiaDetalhe === p.detalhe.f}
+                    onClick={() => set({ familiaDetalhe: texto })}
+                  />
+                );
+              })}
             </div>
             <textarea
               value={e.familiaDetalhe}
@@ -426,14 +441,17 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         {e.passadoSombrio && (
           <>
             <div className="grid gap-1.5">
-              {PASSADO_PRESETS.map((p) => (
-                <PresetRow
-                  key={p}
-                  texto={p}
-                  active={e.passadoDetalhe === p}
-                  onClick={() => set({ passadoDetalhe: p })}
-                />
-              ))}
+              {PASSADO_PRESETS.map((p) => {
+                const texto = flex(p, ap);
+                return (
+                  <PresetRow
+                    key={p.m}
+                    texto={texto}
+                    active={e.passadoDetalhe === p.m || e.passadoDetalhe === p.f}
+                    onClick={() => set({ passadoDetalhe: texto })}
+                  />
+                );
+              })}
             </div>
             <textarea
               value={e.passadoDetalhe}

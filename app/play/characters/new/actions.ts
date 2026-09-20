@@ -116,7 +116,7 @@ export async function createSacramentoCharacter(
         acoesCombate: derivados.acoesCombate,
         cartasIniciativa: derivados.cartasIniciativa,
       },
-      montaria: ficha.montaria,
+      montarias: ficha.montarias ?? [],
     },
     skills: { antecedentes: ficha.antecedentes, habilidades: ficha.habilidades },
     inventory: inventario,

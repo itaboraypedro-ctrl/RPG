@@ -83,6 +83,8 @@ export type AntecedenteId =
 export type Nivel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface MontariaCriacao {
+  /** Qual animal comprado esta ficha configura. */
+  animal: "cavalo" | "mula";
   nome: string;
   descricao: string;
   potencia: number;
@@ -102,7 +104,8 @@ export interface FichaMecanica {
   antecedentes: Record<AntecedenteId, number>;
   /** IDs das habilidades adquiridas; só Parrudeza pode repetir (docs/01 §5). */
   habilidades: string[];
-  montaria: MontariaCriacao | null;
+  /** Uma ficha por animal comprado na loja (cavalo/mula). */
+  montarias: MontariaCriacao[];
   /** Compras iniciais com os $200 (preço máximo, sem barganha — p. 52). */
   compras: CompraItem[];
 }
@@ -121,7 +124,7 @@ export const FICHA_INICIAL: FichaMecanica = {
     violencia: 0,
   },
   habilidades: [],
-  montaria: null,
+  montarias: [],
   compras: [],
 };
 

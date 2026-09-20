@@ -58,9 +58,6 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
   const [activeIdx, setActiveIdx] = useState(0);
   const activeChar = characters[activeIdx] ?? null;
 
-  /* retratos de baixa resolução viram lavagem atmosférica em vez de imagem esticada */
-  const [heroLowRes, setHeroLowRes] = useState(false);
-
   /* parallax */
   const targetP = useRef({ x: 0, y: 0 });
   const currentP = useRef({ x: 0, y: 0 });
@@ -202,21 +199,10 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
 
           {/* Hero portrait de fundo */}
           {activeChar?.avatar_url && (
-            <div key={activeChar.id} className="absolute inset-0 pointer-events-none overflow-hidden"
+            <div key={activeChar.id} className="absolute inset-0 pointer-events-none"
               style={{ animation: "heroFadeIn 500ms ease forwards" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeChar.avatar_url}
-                alt=""
-                className="h-full w-full object-cover object-top transition-[filter,opacity] duration-500"
-                onLoad={e => {
-                  const img = e.currentTarget;
-                  setHeroLowRes(img.naturalHeight < 1000 || img.naturalWidth < 700);
-                }}
-                style={heroLowRes
-                  ? { filter: "blur(32px) saturate(1.2) brightness(0.8)", transform: "scale(1.15)", opacity: 0.75 }
-                  : undefined}
-              />
+              <img src={activeChar.avatar_url} alt="" className="h-full w-full object-cover object-top" />
               <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 80% at 60% 30%, ${heroColor}18, transparent 65%)` }} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />

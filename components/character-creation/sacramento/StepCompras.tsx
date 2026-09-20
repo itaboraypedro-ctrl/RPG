@@ -7,6 +7,7 @@ import {
   CATALOGO,
   LOJAS,
   itemById,
+  itemImagem,
   montariaComprada,
   resumoCompras,
   type ItemCatalogo,
@@ -284,12 +285,27 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
             <div
               key={item.id}
               className={[
-                "flex items-center gap-3 rounded-xl border px-3.5 py-2.5 transition-colors",
+                "flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors",
                 q > 0
                   ? "border-arcana-gold/50 bg-arcana-gold/[0.06]"
                   : "border-arcana-border bg-arcana-surface/60",
               ].join(" ")}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={itemImagem(item.id)}
+                alt=""
+                width={48}
+                height={48}
+                loading="lazy"
+                className="h-12 w-12 shrink-0 rounded-xl object-contain"
+                style={{
+                  background: "#0b0b14",
+                  border: q > 0
+                    ? "1px solid rgba(209,171,85,0.5)"
+                    : "1px solid var(--color-arcana-border-dim)",
+                }}
+              />
               <div className="min-w-0 flex-1">
                 <p className="font-crimson text-base text-arcana-text leading-tight">
                   {item.nome}
@@ -363,9 +379,21 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
           <ul className="space-y-1">
             {carrinho.map((c) => (
               <li key={c.id} className="flex items-center justify-between gap-2">
-                <span className="font-crimson text-sm text-arcana-text">
-                  {c.quantidade > 1 ? `${c.quantidade}× ` : ""}
-                  {c.item!.nome}
+                <span className="flex items-center gap-2 min-w-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={itemImagem(c.id)}
+                    alt=""
+                    width={28}
+                    height={28}
+                    loading="lazy"
+                    className="h-7 w-7 shrink-0 rounded-lg object-contain"
+                    style={{ background: "#0b0b14", border: "1px solid var(--color-arcana-border-dim)" }}
+                  />
+                  <span className="font-crimson text-sm text-arcana-text truncate">
+                    {c.quantidade > 1 ? `${c.quantidade}× ` : ""}
+                    {c.item!.nome}
+                  </span>
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="font-crimson text-sm text-arcana-text-dim">

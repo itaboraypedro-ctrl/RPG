@@ -332,6 +332,11 @@ export function itemById(id: string): ItemCatalogo | undefined {
   return CATALOGO.find((i) => i.id === id);
 }
 
+/** Ícone pintado do item — todos os 199 têm arte em public/story/itens. */
+export function itemImagem(id: string): string {
+  return `/story/itens/${id}.webp`;
+}
+
 /** A montaria agora nasce da compra: cavalo ou mula no alforje. */
 export function montariaComprada(itens: CompraItem[]): "cavalo" | "mula" | null {
   if (itens.some((i) => i.id === "cavalo" && i.quantidade > 0)) return "cavalo";

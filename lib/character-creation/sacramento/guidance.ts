@@ -6,7 +6,6 @@ import type { SectionGuide } from "@/lib/rulesets/sacramento/guidance";
 export const PLAYER_GUIDES: Record<
   | "tracos"
   | "elementos"
-  | "historia"
   | "atributos"
   | "habilidades"
   | "montaria"
@@ -34,16 +33,6 @@ export const PLAYER_GUIDES: Record<
       "Na dúvida, escolha um modelo pronto de trilha; dá para personalizar depois.",
     ],
     paginas: "23, 42–46",
-  },
-  historia: {
-    oQueE: "A biografia do personagem, escrita por você ou pela IA a partir dos elementos.",
-    paraQueServe:
-      "Vira o dossiê que o Juiz usa para criar cenas sob medida. Você aprova tudo antes de valer.",
-    naPratica: [
-      "Gere com IA e ajuste só o que quiser, ou escreva cada parte você mesmo.",
-      "Pode refazer uma seção específica ou a história inteira quantas vezes quiser.",
-      "Nada da história vira item, dinheiro ou poder — isso vem das regras.",
-    ],
   },
   atributos: {
     oQueE: "Os números do personagem: 4 atributos e 8 antecedentes (as perícias do jogo).",
@@ -91,11 +80,12 @@ export const PLAYER_GUIDES: Record<
     paginas: "52–65",
   },
   revisao: {
-    oQueE: "O resumo final de tudo: retrato, história e ficha.",
-    paraQueServe: "Última conferência antes de criar. Depois, ajustes finos acontecem com o Juiz na campanha.",
+    oQueE: "A conferência final — e onde a história do personagem ganha vida.",
+    paraQueServe:
+      "Gere a biografia com IA (ou escreva você mesmo), ajuste ponto a ponto e confira os números antes de criar.",
     naPratica: [
-      "Confira nome, números e a trilha de redenção.",
-      "O que sobrou dos $200 vira seu dinheiro; o alforje vira seu inventário.",
+      "Gere a história com IA e refaça qualquer seção quantas vezes quiser — nada vira poder ou item.",
+      "Confira ficha, alforje e trilha de redenção; o saldo dos $200 vira seu dinheiro.",
       "Clique em Criar personagem e bem-vindo ao Oeste.",
     ],
   },

@@ -54,6 +54,46 @@ function CornerCheck({ active }: { active: boolean }) {
   );
 }
 
+/** Fileira de preset de frase longa — substitui os chips-pílula. */
+function PresetRow({
+  texto,
+  active,
+  onClick,
+}: {
+  texto: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={[
+        "relative w-full rounded-xl border px-4 py-2.5 text-left transition-all duration-150",
+        active
+          ? "border-arcana-gold/70 bg-arcana-gold/[0.08]"
+          : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40 hover:bg-arcana-surface",
+      ].join(" ")}
+      style={
+        active
+          ? { boxShadow: "0 0 14px rgba(209,171,85,0.14), inset 0 1px 0 rgba(255,255,255,0.05)" }
+          : { boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }
+      }
+    >
+      <CornerCheck active={active} />
+      <span
+        className={[
+          "block font-crimson text-[15px] leading-snug pr-5",
+          active ? "text-arcana-gold-bright" : "text-arcana-text",
+        ].join(" ")}
+      >
+        {texto}
+      </span>
+    </button>
+  );
+}
+
 function Segmented<T extends string>({
   options,
   value,
@@ -145,16 +185,14 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
           maxLength={160}
           className="arcana-input w-full font-crimson text-lg"
         />
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-1.5 sm:grid-cols-2">
           {CONCEITOS_SUGERIDOS.map((c) => (
-            <button
+            <PresetRow
               key={c}
-              type="button"
+              texto={c}
+              active={e.conceito === c}
               onClick={() => set({ conceito: c })}
-              className={e.conceito === c ? "arcana-chip-active" : "arcana-chip"}
-            >
-              {c}
-            </button>
+            />
           ))}
         </div>
       </section>
@@ -345,16 +383,14 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         />
         {e.familia && e.familia !== "nao" && (
           <>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-1.5">
               {FAMILIA_PRESETS.filter((p) => p.tipo === e.familia).map((p) => (
-                <button
+                <PresetRow
                   key={p.detalhe}
-                  type="button"
+                  texto={p.detalhe}
+                  active={e.familiaDetalhe === p.detalhe}
                   onClick={() => set({ familiaDetalhe: p.detalhe })}
-                  className={e.familiaDetalhe === p.detalhe ? "arcana-chip-active" : "arcana-chip"}
-                >
-                  {p.detalhe}
-                </button>
+                />
               ))}
             </div>
             <textarea
@@ -389,16 +425,14 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
         />
         {e.passadoSombrio && (
           <>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-1.5">
               {PASSADO_PRESETS.map((p) => (
-                <button
+                <PresetRow
                   key={p}
-                  type="button"
+                  texto={p}
+                  active={e.passadoDetalhe === p}
                   onClick={() => set({ passadoDetalhe: p })}
-                  className={e.passadoDetalhe === p ? "arcana-chip-active" : "arcana-chip"}
-                >
-                  {p}
-                </button>
+                />
               ))}
             </div>
             <textarea

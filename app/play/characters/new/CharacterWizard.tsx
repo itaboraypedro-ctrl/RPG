@@ -6,7 +6,6 @@ import { StepIndicator } from "@/components/character-creation/StepIndicator";
 import { SacramentoPreview } from "@/components/character-creation/sacramento/SacramentoPreview";
 import Step1Tracos from "@/components/character-creation/sacramento/Step1Tracos";
 import Step2Elementos from "@/components/character-creation/sacramento/Step2Elementos";
-import StepHistoria from "@/components/character-creation/sacramento/Step5Historia";
 import Step4Atributos from "@/components/character-creation/sacramento/Step4Atributos";
 import Step5Habilidades from "@/components/character-creation/sacramento/Step5Habilidades";
 import StepCompras from "@/components/character-creation/sacramento/StepCompras";
@@ -35,7 +34,6 @@ import { FICHA_INICIAL } from "@/lib/character-creation/sacramento/types";
 type StepId =
   | "tracos"
   | "elementos"
-  | "historia"
   | "atributos"
   | "habilidades"
   | "compras"
@@ -45,7 +43,6 @@ type StepId =
 const STEP_LABELS: Record<StepId, string> = {
   tracos: "Traços",
   elementos: "Elementos",
-  historia: "História",
   atributos: "Atributos",
   habilidades: "Habilidades",
   compras: "Compras",
@@ -78,7 +75,6 @@ export function CharacterWizard() {
     () => [
       "tracos",
       "elementos",
-      "historia",
       "atributos",
       "habilidades",
       "compras",
@@ -226,7 +222,7 @@ export function CharacterWizard() {
         setAiError(json.error ?? "A geração da história falhou. Tente de novo.");
         return false;
       }
-      updateData({ historia: json.historia, historiaAprovada: false });
+      updateData({ historia: json.historia });
       return true;
     } catch {
       setAiError("A geração da história falhou. Verifique a conexão e tente de novo.");
@@ -253,12 +249,11 @@ export function CharacterWizard() {
       !!data.elementos &&
       data.elementos.conceito.trim().length > 0 &&
       data.elementos.redencaoTrilhaId.length > 0,
-    historia: !!data.historia && data.historiaAprovada === true && !isGenerating,
     atributos: atributosOk,
     habilidades: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
     compras: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
     montaria: true,
-    revisao: !saving,
+    revisao: !!data.historia && !saving && !isGenerating,
   };
   const canProceed = canProceedMap[step];
 
@@ -340,16 +335,6 @@ export function CharacterWizard() {
         <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} />
       )}
       {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} />}
-      {step === "historia" && (
-        <StepHistoria
-          data={data}
-          onUpdate={updateData}
-          onGenerateStory={generateStory}
-          isGenerating={isGenerating}
-          secaoGerando={secaoGerando}
-          error={aiError}
-        />
-      )}
       {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} />}
       {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} />}
       {step === "compras" && <StepCompras data={data} onUpdate={updateData} />}
@@ -357,6 +342,11 @@ export function CharacterWizard() {
       {step === "revisao" && (
         <StepRevisao
           data={data}
+          onUpdate={updateData}
+          onGenerateStory={generateStory}
+          isGenerating={isGenerating}
+          secaoGerando={secaoGerando}
+          aiError={aiError}
           triggerRef={revisaoTriggerRef}
           onSavingChange={setSaving}
           onSaved={clearDraft}

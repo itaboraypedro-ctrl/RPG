@@ -32,18 +32,18 @@ export interface OcupacaoSugerida {
 
 /** Ocupações com contexto de mundo — não impactam a ficha (docs/01 §2). */
 export const OCUPACOES_SUGERIDAS: OcupacaoSugerida[] = [
-  { id: "pistoleiro-de-aluguel", nome: "Pistoleiro de aluguel", contexto: "Vive de escoltas, cobranças e serviços que a lei não faz" },
-  { id: "vaqueiro", nome: "Vaqueiro", contexto: "Toca boiada entre fazendas; conhece cada trilha e cada tempestade" },
-  { id: "medico-de-fronteira", nome: "Médico de fronteira", contexto: "Único socorro em dias de viagem — de parto a bala alojada" },
-  { id: "jogador-de-cartas", nome: "Jogador de cartas", contexto: "Roda saloons vivendo do blefe e da sorte alheia" },
-  { id: "ferreiro", nome: "Ferreiro", contexto: "Ferra cavalos, conserta armas e guarda segredos da cidade" },
-  { id: "cacador-de-recompensas", nome: "Caçador de recompensas", contexto: "Persegue cartazes de procurado pelo Oeste — vivo ou morto" },
-  { id: "padre-errante", nome: "Padre errante", contexto: "Leva missa, batismo e enterro onde não há igreja" },
-  { id: "minerador", nome: "Minerador", contexto: "Arranca carvão e esperança das minas de Araguari" },
-  { id: "musico-de-salao", nome: "Músico de salão", contexto: "Anima festas e funerais; ouve tudo o que ninguém devia contar" },
-  { id: "ex-soldado", nome: "Ex-soldado", contexto: "Sobrou da Guerra do Carvão com cicatrizes e histórias que não conta" },
-  { id: "comerciante-de-rota", nome: "Comerciante de rota", contexto: "Cruza o Oeste com mercadorias, notícias e dívidas" },
-  { id: "rastreador", nome: "Rastreador", contexto: "Lê pegadas, vento e silêncio; acha quem não quer ser achado" },
+  { id: "pistoleiro-de-aluguel", nome: "Pistoleiro de aluguel", contexto: "Vive de escoltas, cobranças e serviços que a lei não faz", emblema: "/story/ocupacoes/pistoleiro-de-aluguel.webp" },
+  { id: "vaqueiro", nome: "Vaqueiro", contexto: "Toca boiada entre fazendas; conhece cada trilha e cada tempestade", emblema: "/story/ocupacoes/vaqueiro.webp" },
+  { id: "medico-de-fronteira", nome: "Médico de fronteira", contexto: "Único socorro em dias de viagem — de parto a bala alojada", emblema: "/story/ocupacoes/medico-de-fronteira.webp" },
+  { id: "jogador-de-cartas", nome: "Jogador de cartas", contexto: "Roda saloons vivendo do blefe e da sorte alheia", emblema: "/story/ocupacoes/jogador-de-cartas.webp" },
+  { id: "ferreiro", nome: "Ferreiro", contexto: "Ferra cavalos, conserta armas e guarda segredos da cidade", emblema: "/story/ocupacoes/ferreiro.webp" },
+  { id: "cacador-de-recompensas", nome: "Caçador de recompensas", contexto: "Persegue cartazes de procurado pelo Oeste — vivo ou morto", emblema: "/story/ocupacoes/cacador-de-recompensas.webp" },
+  { id: "padre-errante", nome: "Padre errante", contexto: "Leva missa, batismo e enterro onde não há igreja", emblema: "/story/ocupacoes/padre-errante.webp" },
+  { id: "minerador", nome: "Minerador", contexto: "Arranca carvão e esperança das minas de Araguari", emblema: "/story/ocupacoes/minerador.webp" },
+  { id: "musico-de-salao", nome: "Músico de salão", contexto: "Anima festas e funerais; ouve tudo o que ninguém devia contar", emblema: "/story/ocupacoes/musico-de-salao.webp" },
+  { id: "ex-soldado", nome: "Ex-soldado", contexto: "Sobrou da Guerra do Carvão com cicatrizes e histórias que não conta", emblema: "/story/ocupacoes/ex-soldado.webp" },
+  { id: "comerciante-de-rota", nome: "Comerciante de rota", contexto: "Cruza o Oeste com mercadorias, notícias e dívidas", emblema: "/story/ocupacoes/comerciante-de-rota.webp" },
+  { id: "rastreador", nome: "Rastreador", contexto: "Lê pegadas, vento e silêncio; acha quem não quer ser achado", emblema: "/story/ocupacoes/rastreador.webp" },
 ];
 
 /** Origens sem cidade canônica (docs/01 §2.1) — categorias abertas do livro. */

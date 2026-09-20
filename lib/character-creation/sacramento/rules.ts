@@ -63,6 +63,25 @@ export const ANTECEDENTES: AntecedenteInfo[] = [
   { id: "violencia", nome: "Violência", abrangencia: "Atirar, lutar e estratégias de combate" },
 ];
 
+/**
+ * Limites de criação impostos pela campanha (definidos pelo Juiz ao criar a
+ * campanha — nível inicial, lojas e itens acessíveis etc.). O padrão libera
+ * tudo; quando o wizard for vinculado a uma campanha, estes valores virão
+ * de sessions.campaign.
+ */
+export interface LimitesCriacao {
+  nivelMaximo: Nivel;
+  /** null = todas as lojas liberadas. */
+  lojasPermitidas: string[] | null;
+  itensBloqueados: string[];
+}
+
+export const LIMITES_PADRAO: LimitesCriacao = {
+  nivelMaximo: 6,
+  lojasPermitidas: null,
+  itensBloqueados: [],
+};
+
 /** LIVRO p. 49 — XP acumulado por marco (interpretação C09, confirmável pela mesa). */
 export const XP_POR_NIVEL: Record<Nivel, number> = { 1: 0, 2: 10, 3: 20, 4: 30, 5: 45, 6: 65 };
 

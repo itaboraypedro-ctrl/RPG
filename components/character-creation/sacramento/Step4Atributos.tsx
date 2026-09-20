@@ -5,6 +5,7 @@ import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
   ANTECEDENTES,
   ATRIBUTOS,
+  LIMITES_PADRAO,
   XP_POR_NIVEL,
   calcularDerivados,
   orcamentoAntecedentes,
@@ -129,47 +130,101 @@ export default function Step4Atributos({ data, onUpdate }: Props) {
     <div className="space-y-9 max-w-2xl">
       <HowItWorks guide={PLAYER_GUIDES.atributos} />
 
-      {/* Nível */}
-      <section className="space-y-3">
-        <div>
+      {/* Nível — barra deslizante */}
+      <section className="space-y-2.5">
+        <div className="flex items-baseline justify-between">
           <span className={LABEL}>Nível inicial</span>
-          <p className={HELPER}>
-            O padrão do livro é começar no nível 1. Níveis maiores são configuração da campanha,
-            combinada com o Juiz.
-          </p>
+          <span className="font-crimson text-sm italic text-arcana-text">
+            Nível {ficha.nivel}
+            <span className="text-arcana-text-dim"> · {XP_POR_NIVEL[ficha.nivel]} XP</span>
+          </span>
         </div>
-        <div className="grid grid-cols-6 gap-2">
+        <input
+          type="range"
+          min={1}
+          max={LIMITES_PADRAO.nivelMaximo}
+          step={1}
+          value={ficha.nivel}
+          onChange={(e) => set({ nivel: Number(e.target.value) as Nivel })}
+          aria-label="Nível inicial"
+          aria-valuetext={`Nível ${ficha.nivel}, ${XP_POR_NIVEL[ficha.nivel]} XP`}
+          className="nivel-slider w-full"
+        />
+        <div className="flex justify-between px-1.5">
           {([1, 2, 3, 4, 5, 6] as Nivel[]).map((n) => {
-            const active = ficha.nivel === n;
+            const bloqueado = n > LIMITES_PADRAO.nivelMaximo;
             return (
               <button
                 key={n}
                 type="button"
+                disabled={bloqueado}
                 onClick={() => set({ nivel: n })}
-                aria-pressed={active}
                 className={[
-                  "rounded-xl border py-2 flex flex-col items-center transition-all duration-150",
-                  active
-                    ? "border-arcana-gold/70 bg-arcana-gold/[0.1]"
-                    : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40",
+                  "font-cinzel text-[11px] tracking-[0.1em] transition-colors",
+                  bloqueado
+                    ? "text-arcana-text-muted cursor-not-allowed"
+                    : n === ficha.nivel
+                      ? "text-arcana-gold-bright"
+                      : "text-arcana-text-dim hover:text-arcana-text",
                 ].join(" ")}
-                style={active ? { boxShadow: "0 0 14px rgba(209,171,85,0.2)" } : undefined}
               >
-                <span
-                  className={[
-                    "font-cinzel text-lg leading-none",
-                    active ? "text-arcana-gold-bright" : "text-arcana-text",
-                  ].join(" ")}
-                >
-                  {n}
-                </span>
-                <span className="font-cinzel text-[10px] tracking-[0.1em] text-arcana-text-dim mt-1">
-                  {XP_POR_NIVEL[n]} XP
-                </span>
+                {n}
               </button>
             );
           })}
         </div>
+        <p className={HELPER}>
+          O padrão do livro é o nível 1. O Juiz da campanha pode fixar o nível inicial da mesa.
+        </p>
+        <style jsx>{`
+          .nivel-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 12px;
+            border-radius: 999px;
+            outline: none;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+            background:
+              repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent calc(20% - 1px),
+                rgba(11, 11, 20, 0.5) calc(20% - 1px),
+                rgba(11, 11, 20, 0.5) 20%
+              ),
+              linear-gradient(90deg, rgba(209, 171, 85, 0.3), rgba(240, 204, 106, 0.85));
+          }
+          .nivel-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #f5d478;
+            background: linear-gradient(180deg, #f0cc6a, #b87333);
+            box-shadow: 0 0 12px rgba(209, 171, 85, 0.5), 0 2px 4px rgba(0, 0, 0, 0.6);
+            cursor: grab;
+            transition: transform 120ms ease;
+          }
+          .nivel-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.12);
+          }
+          .nivel-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #f5d478;
+            background: linear-gradient(180deg, #f0cc6a, #b87333);
+            box-shadow: 0 0 12px rgba(209, 171, 85, 0.5), 0 2px 4px rgba(0, 0, 0, 0.6);
+            cursor: grab;
+          }
+          .nivel-slider:focus-visible {
+            outline: 2px solid rgba(209, 171, 85, 0.75);
+            outline-offset: 2px;
+          }
+        `}</style>
       </section>
 
       {/* Atributos */}

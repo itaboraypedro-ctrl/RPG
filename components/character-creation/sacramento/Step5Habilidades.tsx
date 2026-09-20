@@ -8,6 +8,7 @@ import {
   type HabilidadeInfo,
 } from "@/lib/character-creation/sacramento/habilidades";
 import { totalHabilidades } from "@/lib/character-creation/sacramento/rules";
+import { HabilidadeIcon } from "./HabilidadeIcon";
 import {
   FICHA_INICIAL,
   type SacramentoCreationData,
@@ -106,7 +107,28 @@ export default function Step5Habilidades({ data, onUpdate }: Props) {
         )}
         <CornerCheck active={active && !h.repetivel} />
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+          <span
+            aria-hidden
+            className={[
+              "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors",
+              active
+                ? "border-arcana-gold/60 text-arcana-gold-bright"
+                : cheio
+                  ? "border-arcana-border-dim text-arcana-text-muted"
+                  : "border-arcana-border-dim text-arcana-gold",
+            ].join(" ")}
+            style={
+              active
+                ? {
+                    background:
+                      "radial-gradient(circle at 50% 30%, rgba(209,171,85,0.22), rgba(209,171,85,0.04))",
+                  }
+                : { background: "rgba(8,8,15,0.4)" }
+            }
+          >
+            <HabilidadeIcon id={h.id} className="h-6 w-6" />
+          </span>
+          <div className="min-w-0 flex-1">
             <p
               className={[
                 "font-cinzel text-[11px] uppercase tracking-[0.14em]",

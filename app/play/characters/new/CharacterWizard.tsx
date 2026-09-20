@@ -336,11 +336,12 @@ export function CharacterWizard() {
       subtitle={previewSubtitle}
       stats={previewStats}
       ambientImage={ambientImage}
+      nivel={mostrarStats ? ficha.nivel : undefined}
     />
   );
 
   return (
-    <WizardLayout header={header} footer={footer} previewContent={previewContent}>
+    <WizardLayout header={header} footer={footer} previewContent={previewContent} scrollKey={step}>
       {step === "tracos" && (
         <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} />
       )}

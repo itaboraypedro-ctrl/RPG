@@ -9,6 +9,8 @@ type Props = {
   previewContent: React.ReactNode;
   formTabLabel?: string;
   previewTabLabel?: string;
+  /** Muda a cada etapa — o miolo rolável volta ao topo quando muda. */
+  scrollKey?: string | number;
 };
 
 export function WizardLayout({
@@ -18,6 +20,7 @@ export function WizardLayout({
   previewContent,
   formTabLabel = "Criação",
   previewTabLabel = "Retrato",
+  scrollKey,
 }: Props) {
   const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
 
@@ -64,7 +67,7 @@ export function WizardLayout({
               {header}
             </div>
             {/* Mobile scrollable content */}
-            <div className="flex-1 overflow-y-auto px-4 py-5">
+            <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-5">
               {children}
             </div>
             {/* Mobile footer */}
@@ -91,7 +94,7 @@ export function WizardLayout({
           </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-12 py-6">
+          <div key={scrollKey} className="flex-1 overflow-y-auto px-12 py-6">
             {children}
           </div>
 

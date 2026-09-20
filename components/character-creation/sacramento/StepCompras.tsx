@@ -12,6 +12,7 @@ import {
   type ItemCatalogo,
   type LojaInfo,
 } from "@/lib/character-creation/sacramento/catalogo";
+import { LIMITES_PADRAO } from "@/lib/character-creation/sacramento/rules";
 import {
   FICHA_INICIAL,
   type SacramentoCreationData,
@@ -62,7 +63,12 @@ function SellerPortrait({ loja, size }: { loja: LojaInfo; size: string }) {
 export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   const ficha = data.ficha ?? FICHA_INICIAL;
   const compras = useMemo(() => ficha.compras ?? [], [ficha.compras]);
-  const [lojaId, setLojaId] = useState<string>(LOJAS[0].id);
+  // Limites da campanha (o Juiz poderá restringir lojas/itens; padrão libera tudo).
+  const limites = LIMITES_PADRAO;
+  const lojasVisiveis = LOJAS.filter(
+    (l) => !limites.lojasPermitidas || limites.lojasPermitidas.includes(l.id),
+  );
+  const [lojaId, setLojaId] = useState<string>(lojasVisiveis[0]?.id ?? LOJAS[0].id);
   const [busca, setBusca] = useState("");
 
   const setQuantidade = (id: string, quantidade: number) => {
@@ -75,7 +81,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   const resumo = useMemo(() => resumoCompras(compras), [compras]);
   const montaria = montariaComprada(compras);
 
-  const loja = LOJAS.find((l) => l.id === lojaId) ?? LOJAS[0];
+  const loja = lojasVisiveis.find((l) => l.id === lojaId) ?? lojasVisiveis[0] ?? LOJAS[0];
 
   // A cena da loja ativa ambienta o painel do retrato.
   useEffect(() => {
@@ -85,9 +91,10 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   }, [loja.imagem]);
 
   const termo = busca.trim().toLowerCase();
+  const catalogoLiberado = CATALOGO.filter((i) => !limites.itensBloqueados.includes(i.id));
   const visiveis: ItemCatalogo[] = termo
-    ? CATALOGO.filter((i) => i.nome.toLowerCase().includes(termo))
-    : CATALOGO.filter((i) => loja.categorias.includes(i.categoria));
+    ? catalogoLiberado.filter((i) => i.nome.toLowerCase().includes(termo))
+    : catalogoLiberado.filter((i) => loja.categorias.includes(i.categoria));
 
   const carrinho = compras
     .map((c) => ({ ...c, item: itemById(c.id) }))
@@ -157,7 +164,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
       <div className="space-y-3">
         <span className={LABEL}>As lojas do vilarejo</span>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {LOJAS.map((l) => {
+          {lojasVisiveis.map((l) => {
             const active = !termo && l.id === lojaId;
             return (
               <button
@@ -179,11 +186,11 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
                 <SellerPortrait loja={l} size="w-full aspect-square text-2xl" />
                 <span
                   className={[
-                    "font-cinzel text-[10px] uppercase tracking-[0.08em] leading-tight text-center",
+                    "min-h-[2.6em] flex items-center font-cinzel text-[10px] uppercase tracking-[0.06em] leading-tight text-center px-0.5",
                     active ? "text-arcana-gold-bright" : "text-arcana-text-dim",
                   ].join(" ")}
                 >
-                  {l.nome.split(" ").slice(0, 2).join(" ")}
+                  {l.nome}
                 </span>
               </button>
             );

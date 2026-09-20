@@ -13,6 +13,8 @@ type Props = {
   stats?: StatChip[];
   /** Cena de fundo atrás do retrato (padrão: deserto; lojas trocam pela sua). */
   ambientImage?: string;
+  /** Nível do personagem — aparece num medalhão na moldura. */
+  nivel?: number;
 };
 
 type Layer = { url: string; key: number };
@@ -23,6 +25,7 @@ export function SacramentoPreview({
   subtitle,
   stats,
   ambientImage = "/story/places/deserto-de-mucuri.webp",
+  nivel,
 }: Props) {
   // Pilha de duas camadas: a nova entra por cima com crossfade + varredura de
   // luz; a anterior fica por baixo até a transição terminar (sem flash).
@@ -96,6 +99,50 @@ export function SacramentoPreview({
           className="absolute -inset-1 rounded-xl pointer-events-none"
           style={{ border: "1px solid rgba(209, 171, 85, 0.2)" }}
         />
+        {/* Cantos da moldura — ouro sobre cobre, identidade velho oeste */}
+        {(
+          [
+            ["-top-2 -left-2", "borderTop", "borderLeft", "rounded-tl-2xl"],
+            ["-top-2 -right-2", "borderTop", "borderRight", "rounded-tr-2xl"],
+            ["-bottom-2 -left-2", "borderBottom", "borderLeft", "rounded-bl-2xl"],
+            ["-bottom-2 -right-2", "borderBottom", "borderRight", "rounded-br-2xl"],
+          ] as const
+        ).map(([pos, b1, b2, round]) => (
+          <span key={pos} aria-hidden className={`absolute ${pos} w-7 h-7 pointer-events-none z-10`}>
+            <span
+              className={`absolute inset-0 ${round}`}
+              style={{ [b1]: "2px solid #d1ab55", [b2]: "2px solid #d1ab55" }}
+            />
+            <span
+              className={`absolute inset-[3px] ${round}`}
+              style={{
+                [b1]: "1.5px solid rgba(184,115,51,0.85)",
+                [b2]: "1.5px solid rgba(184,115,51,0.85)",
+              }}
+            />
+          </span>
+        ))}
+        {/* Medalhão de nível */}
+        {typeof nivel === "number" && (
+          <div className="absolute left-1/2 -bottom-4 -translate-x-1/2 z-20 pointer-events-none">
+            <div
+              className="w-9 h-9 rotate-45 rounded-[7px] flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, #f0cc6a 0%, #d1ab55 45%, #b87333 100%)",
+                border: "1.5px solid rgba(255, 235, 180, 0.75)",
+                boxShadow:
+                  "0 3px 10px rgba(0,0,0,0.65), 0 0 16px rgba(209,171,85,0.4), inset 0 1px 0 rgba(255,245,215,0.5)",
+              }}
+            >
+              <span
+                className="-rotate-45 font-cinzel text-base font-bold leading-none"
+                style={{ color: "#1c1206", textShadow: "0 1px 0 rgba(255,240,200,0.4)" }}
+              >
+                {nivel}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div
           className="relative aspect-[1/1] w-full overflow-hidden rounded-xl"

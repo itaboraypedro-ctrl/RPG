@@ -82,11 +82,12 @@ export const PLAYER_GUIDES: Record<
   revisao: {
     oQueE: "A conferência final — e onde a história do personagem ganha vida.",
     paraQueServe:
-      "Gere a biografia com IA (ou escreva você mesmo), ajuste ponto a ponto e confira os números antes de criar.",
+      "Sua lenda foi escrita enquanto você fazia as compras. Ajuste ponto a ponto e confira os números antes de aprovar.",
     naPratica: [
-      "Gere a história com IA e refaça qualquer seção quantas vezes quiser — nada vira poder ou item.",
+      "Altere os pontos-chave da lenda — mudar um fato reescreve a história inteira em torno dele.",
+      "Refaça qualquer seção quantas vezes quiser — nada vira poder ou item.",
       "Confira ficha, alforje e trilha de redenção; o saldo dos $200 vira seu dinheiro.",
-      "Clique em Criar personagem e bem-vindo ao Oeste.",
+      "Aprove a história e siga para o retrato: uma selfie vira a cara do seu personagem.",
     ],
   },
 };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProfile } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase-admin";
 import {
   faccaoById,
   trilhaById,
@@ -14,16 +15,26 @@ export const maxDuration = 120;
 
 const STORY_MODEL = process.env.OPENAI_STORY_MODEL ?? "gpt-5-mini";
 
-type Action = "gerar" | "revisar-secao" | "revisar-tudo";
+// Guardrail de custo por usuário/dia — backstop do limite por rascunho no cliente
+// (5 reescritas completas por personagem). Diário e mais alto para não punir quem
+// cria mais de um personagem legítimo no mesmo dia.
+const LIMITE_DIA_HISTORIA_COMPLETA = 12;
+const LIMITE_DIA_REVISAO_SECAO = 24;
+
+type Action = "gerar" | "revisar-secao" | "revisar-tudo" | "alterar-ponto";
 
 type RequestBody = {
   action?: Action;
   nome?: string;
   visualResumo?: string;
+  /** Resumo em markdown da ficha mecânica (atributos, antecedentes, habilidades) — só cor narrativa. */
+  fichaResumo?: string;
   elementos?: ElementosHistoria;
   historiaAtual?: HistoriaEstruturada;
   secao?: HistoriaSecao;
   feedback?: string;
+  pontoId?: string;
+  novoValor?: string;
 };
 
 const SECOES: HistoriaSecao[] = ["resumo", "capitulos", "familia", "vinculos", "redencao", "ganchos"];
@@ -92,8 +103,25 @@ const STORY_SCHEMA = {
       maxItems: 4,
       items: { type: "string", description: "Situação em aberto para o Juiz usar" },
     },
+    pontosChave: {
+      type: "array",
+      minItems: 4,
+      maxItems: 7,
+      description:
+        "As decisões dramáticas centrais que sustentam a história, para o jogador poder alterar. Cada valor deve aparecer refletido no texto. Ex.: motivo da maior raiva, quem traiu, o que foi perdido, o segredo guardado.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string", description: "slug-kebab-case estável, ex.: motivo-da-raiva" },
+          rotulo: { type: "string", description: "Rótulo curto, ex.: Motivo da raiva" },
+          valor: { type: "string", description: "O fato em 3 a 10 palavras, ex.: a emboscada que matou seu irmão" },
+        },
+        required: ["id", "rotulo", "valor"],
+      },
+    },
   },
-  required: ["resumo", "capitulos", "familia", "vinculos", "redencao", "ganchos"],
+  required: ["resumo", "capitulos", "familia", "vinculos", "redencao", "ganchos", "pontosChave"],
 } as const;
 
 function descreverElementos(nome: string, visualResumo: string, e: ElementosHistoria): string {
@@ -176,6 +204,12 @@ function historiaPlaceholder(nome: string, e: ElementosHistoria): HistoriaEstrut
       "Alguém na cidade reconhece seu rosto — de onde?",
       "Um nome do passado aparece num cartaz de recompensa.",
     ],
+    pontosChave: [
+      { id: "o-que-deixou-para-tras", rotulo: "O que deixou para trás", valor: e.origem || "um lugar sem nome" },
+      { id: "maior-ferida", rotulo: "Maior ferida", valor: e.passadoDetalhe || "um dia do qual ninguém fala" },
+      { id: "o-que-busca", rotulo: "O que busca", valor: e.redencaoPremissa || "um acerto de contas" },
+      { id: "quem-importa", rotulo: "Quem importa", valor: e.vinculos[0]?.nome || "alguém do passado" },
+    ],
   };
 }
 
@@ -195,7 +229,10 @@ export async function POST(request: Request) {
   const action: Action = body.action ?? "gerar";
   const nome = (body.nome ?? "").toString().trim().slice(0, 80);
   const visualResumo = (body.visualResumo ?? "").toString().trim().slice(0, 400);
+  const fichaResumo = (body.fichaResumo ?? "").toString().trim().slice(0, 1500);
   const feedback = (body.feedback ?? "").toString().trim().slice(0, 800);
+  const pontoId = (body.pontoId ?? "").toString().trim().slice(0, 80);
+  const novoValor = (body.novoValor ?? "").toString().trim().slice(0, 200);
   const elementos = body.elementos;
 
   if (!elementos || typeof elementos !== "object") {
@@ -208,7 +245,11 @@ export async function POST(request: Request) {
     if (action === "revisar-secao" && (!body.secao || !SECOES.includes(body.secao))) {
       return NextResponse.json({ error: "Seção inválida" }, { status: 400 });
     }
-    if (feedback.length === 0) {
+    if (action === "alterar-ponto") {
+      if (!pontoId || !novoValor) {
+        return NextResponse.json({ error: "Informe o ponto-chave e o novo valor" }, { status: 400 });
+      }
+    } else if (feedback.length === 0) {
       return NextResponse.json({ error: "Descreva o que deseja mudar" }, { status: 400 });
     }
   }
@@ -221,15 +262,68 @@ export async function POST(request: Request) {
     });
   }
 
-  const fichaTexto = descreverElementos(nome, visualResumo, elementos);
+  // ---- Guardrail de custo: conta as gerações do usuário nas últimas 24h ----
+  const reescritaCompleta = action !== "revisar-secao";
+  const grupo = reescritaCompleta ? "historia-completa" : "revisao-secao";
+  const limiteDia = reescritaCompleta ? LIMITE_DIA_HISTORIA_COMPLETA : LIMITE_DIA_REVISAO_SECAO;
+  const admin = createAdminClient();
+  const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await admin
+    .from("ai_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("requested_by", profileResult.user.id)
+    .eq("type", "character_summary")
+    .like("prompt", `${grupo}:%`)
+    .gte("created_at", desde);
+  if ((count ?? 0) >= limiteDia) {
+    return NextResponse.json(
+      {
+        error:
+          "Limite diário de gerações de história atingido. Edite manualmente ou volte amanhã.",
+      },
+      { status: 429 },
+    );
+  }
+
+  const fichaTexto = [
+    descreverElementos(nome, visualResumo, elementos),
+    fichaResumo
+      ? `\nFicha mecânica (APENAS cor narrativa — a história nunca concede nem justifica mecânica):\n${fichaResumo}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
   let userPrompt: string;
   if (action === "gerar") {
-    userPrompt = `Crie a história completa deste personagem a partir dos elementos abaixo. Use tudo que o jogador declarou; onde houver silêncio, invente com coerência e moderação.\n\n${fichaTexto}`;
+    userPrompt = `Crie a história completa deste personagem a partir dos elementos abaixo. Use tudo que o jogador declarou; onde houver silêncio, invente com coerência e moderação. Extraia também os pontos-chave: as decisões dramáticas que sustentam a história e que o jogador poderá trocar depois.\n\n${fichaTexto}`;
+  } else if (action === "alterar-ponto") {
+    const pontoAtual = body.historiaAtual?.pontosChave?.find((p) => p.id === pontoId);
+    userPrompt = `O jogador alterou um ponto-chave da história.\n\nPonto-chave: "${pontoAtual?.rotulo ?? pontoId}"\nValor anterior: ${pontoAtual?.valor ?? "(desconhecido)"}\nNovo valor escolhido pelo jogador: ${novoValor}\n\nReescreva a história ajustando TODAS as passagens afetadas por essa mudança para que o novo valor seja verdade em todo o texto — inclusive resumo, capítulos, vínculos, redenção e ganchos quando fizer sentido. Preserve palavra por palavra tudo que não é tocado pela mudança. Atualize o valor desse ponto-chave no JSON (mantenha o mesmo id) e ajuste outros pontos-chave apenas se a mudança os contradisser.\n\nElementos:\n${fichaTexto}\n\nHistória atual:\n${JSON.stringify(body.historiaAtual)}`;
   } else if (action === "revisar-tudo") {
     userPrompt = `Reescreva a história deste personagem conforme o pedido do jogador, mantendo os elementos declarados.\n\nElementos:\n${fichaTexto}\n\nHistória atual:\n${JSON.stringify(body.historiaAtual)}\n\nPedido do jogador: ${feedback}`;
   } else {
     userPrompt = `Revise APENAS a seção "${body.secao}" da história abaixo conforme o pedido do jogador. Todas as outras seções devem ser devolvidas EXATAMENTE como estão, palavra por palavra.\n\nElementos:\n${fichaTexto}\n\nHistória atual:\n${JSON.stringify(body.historiaAtual)}\n\nPedido do jogador sobre a seção "${body.secao}": ${feedback}`;
   }
+
+  // Auditoria no mesmo padrão das rotas Anthropic (tabela ai_requests).
+  const { data: aiRequest } = await admin
+    .from("ai_requests")
+    .insert({
+      requested_by: profileResult.user.id,
+      type: "character_summary",
+      prompt: `${grupo}: [${action}] ${userPrompt.slice(0, 3800)}`,
+      model: STORY_MODEL,
+      status: "pending",
+    })
+    .select("id")
+    .single<{ id: string }>();
+  const registrar = async (status: "completed" | "failed", tokens?: number) => {
+    if (!aiRequest) return;
+    await admin
+      .from("ai_requests")
+      .update({ status, tokens_used: tokens ?? null, completed_at: new Date().toISOString() })
+      .eq("id", aiRequest.id);
+  };
 
   let res: Response;
   try {
@@ -254,6 +348,7 @@ export async function POST(request: Request) {
       signal: AbortSignal.timeout(100000),
     });
   } catch (err) {
+    await registrar("failed");
     const detail = err instanceof Error ? err.message : "unknown error";
     return NextResponse.json(
       { error: "Falha na geração: timeout ou rede", detail },
@@ -262,6 +357,7 @@ export async function POST(request: Request) {
   }
 
   if (!res.ok) {
+    await registrar("failed");
     const detail = await res.text();
     return NextResponse.json(
       { error: `Falha na geração: ${res.status}`, detail },
@@ -271,9 +367,11 @@ export async function POST(request: Request) {
 
   const data = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
+    usage?: { total_tokens?: number };
   };
   const content = data.choices?.[0]?.message?.content;
   if (!content) {
+    await registrar("failed");
     return NextResponse.json({ error: "Resposta inválida da OpenAI" }, { status: 502 });
   }
 
@@ -281,11 +379,14 @@ export async function POST(request: Request) {
   try {
     historia = JSON.parse(content) as HistoriaEstruturada;
   } catch {
+    await registrar("failed");
     return NextResponse.json({ error: "História gerada em formato inválido" }, { status: 502 });
   }
   if (!Array.isArray(historia.redencao?.passos) || historia.redencao.passos.length !== 6) {
+    await registrar("failed");
     return NextResponse.json({ error: "História gerada sem os 6 passos de redenção" }, { status: 502 });
   }
 
+  await registrar("completed", data.usage?.total_tokens);
   return NextResponse.json({ historia });
 }

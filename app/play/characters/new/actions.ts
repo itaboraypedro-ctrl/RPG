@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
 import type {
@@ -9,6 +8,7 @@ import type {
   ElementosHistoria,
   FichaMecanica,
   HistoriaEstruturada,
+  ImagensGeradas,
 } from "@/lib/character-creation/sacramento/types";
 import { baseId } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath } from "@/lib/character-creation/sacramento/kits";
@@ -24,6 +24,8 @@ export type CreateSacramentoPayload = {
   historia: HistoriaEstruturada;
   historiaModo: "manual" | "ia";
   ficha: FichaMecanica;
+  /** URLs públicas geradas na forja (close/estados/banner) — ausentes se a forja falhou. */
+  imagens?: ImagensGeradas;
 };
 
 /** Compila a história estruturada num texto corrido para a coluna backstory. */
@@ -47,7 +49,7 @@ function renderBackstory(h: HistoriaEstruturada): string {
 
 export async function createSacramentoCharacter(
   payload: CreateSacramentoPayload,
-): Promise<{ ok: false; error: string }> {
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const auth = await getProfile();
   if (!auth) {
     return { ok: false, error: "Não autenticado" };
@@ -123,12 +125,14 @@ export async function createSacramentoCharacter(
     spells: [],
     backstory: renderBackstory(payload.historia),
     notes: "",
-    avatar_url: characterImagePath(payload.base, payload.kitId),
+    // O close gerado na forja é o retrato de qualidade do Hub; sem forja, cai no kit estático.
+    avatar_url: payload.imagens?.close ?? characterImagePath(payload.base, payload.kitId),
     ai_summary: "",
     // Apresentação/idade ficam em visual (as colunas da migration 004 não existem no banco).
     visual: {
       base: { ...payload.base, baseId: baseId(payload.base) },
       kitId: payload.kitId,
+      imagens: payload.imagens ?? {},
     },
     story: {
       elementos: payload.elementos,
@@ -152,5 +156,6 @@ export async function createSacramentoCharacter(
   }
 
   revalidatePath("/hub");
-  redirect("/hub");
+  // Sem redirect: o cliente ainda revela o banner de Procurado antes de ir ao Hub.
+  return { ok: true };
 }

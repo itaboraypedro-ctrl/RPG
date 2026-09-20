@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  createSacramentoCharacter,
-  type CreateSacramentoPayload,
-} from "@/app/play/characters/new/actions";
+import { useState } from "react";
 import { HowItWorks } from "@/components/campaign-creation/Explainer";
 import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
@@ -36,15 +32,19 @@ type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
   onGenerateStory: (
-    action: "gerar" | "revisar-secao" | "revisar-tudo",
-    opts?: { secao?: HistoriaSecao; feedback?: string },
+    action: "gerar" | "revisar-secao" | "revisar-tudo" | "alterar-ponto",
+    opts?: { secao?: HistoriaSecao; feedback?: string; pontoId?: string; novoValor?: string },
   ) => Promise<boolean>;
   isGenerating: boolean;
   secaoGerando: HistoriaSecao | null;
+  pontoGerando: string | null;
   aiError: string | null;
-  triggerRef: React.MutableRefObject<(() => void) | null>;
-  onSavingChange: (saving: boolean) => void;
-  onSaved: () => void;
+  /** Guardrail de custo: reescritas completas ainda disponíveis neste rascunho. */
+  reescritasRestantes: number;
+  podeReescrever: boolean;
+  podeRevisarSecao: boolean;
+  /** Elementos mudaram depois do limite — a lenda mantida não reflete as últimas escolhas. */
+  historiaDesatualizada: boolean;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -79,6 +79,7 @@ function esbocoManual(nome: string, e: ElementosHistoria): HistoriaEstruturada {
           : ["", "", "", "", "", "Encerrar a jornada"],
     },
     ganchos: [""],
+    pontosChave: [],
   };
 }
 
@@ -88,69 +89,17 @@ export default function StepRevisao({
   onGenerateStory,
   isGenerating,
   secaoGerando,
+  pontoGerando,
   aiError,
-  triggerRef,
-  onSavingChange,
-  onSaved,
+  reescritasRestantes,
+  podeReescrever,
+  podeRevisarSecao,
+  historiaDesatualizada,
 }: Props) {
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [feedbackGeral, setFeedbackGeral] = useState("");
 
   const historia = data.historia;
   const modoManual = data.historiaModo === "manual";
-
-  const handleCreate = async () => {
-    if (saving) return;
-    const { name, base } = data;
-    if (!name || !base || !data.historia) {
-      setError("Complete o retrato e a história antes de criar.");
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    onSavingChange(true);
-    try {
-      const payload: CreateSacramentoPayload = {
-        name,
-        base,
-        kitId: data.kitId ?? "base",
-        elementos: data.elementos ?? ELEMENTOS_VAZIOS,
-        historia: data.historia,
-        historiaModo: data.historiaModo ?? "manual",
-        ficha: data.ficha ?? FICHA_INICIAL,
-      };
-      const result = await createSacramentoCharacter(payload);
-      if (result && !result.ok) {
-        setError(result.error);
-      } else {
-        onSaved();
-      }
-    } catch (err) {
-      if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-        onSaved();
-        throw err;
-      }
-      setError("Não foi possível salvar o personagem. Tente novamente.");
-    } finally {
-      setSaving(false);
-      onSavingChange(false);
-    }
-  };
-
-  // Mantém o handler fresco e expõe ao footer compartilhado (padrão triggerRef).
-  const handleCreateRef = useRef(handleCreate);
-  useEffect(() => {
-    handleCreateRef.current = handleCreate;
-  });
-  useEffect(() => {
-    triggerRef.current = () => {
-      void handleCreateRef.current();
-    };
-    return () => {
-      triggerRef.current = null;
-    };
-  }, [triggerRef]);
 
   const base = data.base;
   const elementos = data.elementos ?? ELEMENTOS_VAZIOS;
@@ -323,23 +272,54 @@ export default function StepRevisao({
               {aiError}
             </p>
           )}
+          {!modoManual && !podeReescrever && (
+            <div
+              className="rounded-2xl p-4 space-y-1"
+              style={{
+                background: "rgba(224,112,95,0.08)",
+                border: "1px solid rgba(224,112,95,0.4)",
+              }}
+            >
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-danger">
+                Escritas da lenda esgotadas
+              </p>
+              <p className="font-crimson text-base text-arcana-text leading-relaxed">
+                {historiaDesatualizada
+                  ? "Suas últimas mudanças não geraram história nova — a lenda atual foi mantida. Ajuste o texto manualmente pelos botões Editar."
+                  : "Este personagem usou todas as reescritas com IA. Daqui em diante, ajuste o texto manualmente pelos botões Editar."}
+              </p>
+            </div>
+          )}
           <StoryReview
             historia={historia}
             modoManual={modoManual}
             isGenerating={isGenerating}
             secaoGerando={secaoGerando}
+            pontoGerando={pontoGerando}
             onChange={(h) => onUpdate({ historia: h })}
             onRegenSection={
-              modoManual
+              modoManual || !podeRevisarSecao
                 ? undefined
                 : (secao, feedback) => {
                     void onGenerateStory("revisar-secao", { secao, feedback });
                   }
             }
+            onAlterarPonto={
+              modoManual || !podeReescrever
+                ? undefined
+                : (pontoId, novoValor) => {
+                    void onGenerateStory("alterar-ponto", { pontoId, novoValor });
+                  }
+            }
           />
-          {!modoManual && (
+          {!modoManual && podeReescrever && (
             <div className="rounded-2xl p-4 space-y-3" style={CARD_STYLE}>
-              <span className={LABEL}>Refazer a história inteira</span>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <span className={LABEL}>Refazer a história inteira</span>
+                <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
+                  {reescritasRestantes} {reescritasRestantes === 1 ? "escrita restante" : "escritas restantes"}
+                </span>
+              </div>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -455,11 +435,6 @@ export default function StepRevisao({
         )}
       </div>
 
-      {error && (
-        <p className="font-crimson text-sm italic text-arcana-danger" role="alert">
-          {error}
-        </p>
-      )}
     </div>
   );
 }

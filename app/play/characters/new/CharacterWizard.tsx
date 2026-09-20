@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { WizardLayout } from "@/components/character-creation/WizardLayout";
 import { StepIndicator } from "@/components/character-creation/StepIndicator";
 import { SacramentoPreview } from "@/components/character-creation/sacramento/SacramentoPreview";
@@ -11,6 +12,8 @@ import Step5Habilidades from "@/components/character-creation/sacramento/Step5Ha
 import StepCompras from "@/components/character-creation/sacramento/StepCompras";
 import StepMontaria from "@/components/character-creation/sacramento/StepMontaria";
 import StepRevisao from "@/components/character-creation/sacramento/StepRevisao";
+import StepSelfie from "@/components/character-creation/sacramento/StepSelfie";
+import ForjaPersonagem from "@/components/character-creation/sacramento/ForjaPersonagem";
 import {
   APRESENTACOES,
   BASE_PADRAO,
@@ -21,15 +24,24 @@ import {
 } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath, kitAvailableForBase, kitById } from "@/lib/character-creation/sacramento/kits";
 import { montariasCompradas } from "@/lib/character-creation/sacramento/catalogo";
-import { calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
-import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
+import {
+  ANTECEDENTES,
+  ATRIBUTOS,
+  calcularDerivados,
+  validarFicha,
+} from "@/lib/character-creation/sacramento/rules";
+import { contarParrudeza, habilidadeById } from "@/lib/character-creation/sacramento/habilidades";
 import type {
   BaseVisual,
   HistoriaEstruturada,
   HistoriaSecao,
   SacramentoCreationData,
 } from "@/lib/character-creation/sacramento/types";
-import { FICHA_INICIAL } from "@/lib/character-creation/sacramento/types";
+import {
+  FICHA_INICIAL,
+  LIMITE_GERACOES_HISTORIA,
+  LIMITE_REVISOES_SECAO,
+} from "@/lib/character-creation/sacramento/types";
 
 type StepId =
   | "tracos"
@@ -38,7 +50,8 @@ type StepId =
   | "habilidades"
   | "compras"
   | "montaria"
-  | "revisao";
+  | "revisao"
+  | "selfie";
 
 const STEP_LABELS: Record<StepId, string> = {
   tracos: "Traços",
@@ -48,11 +61,13 @@ const STEP_LABELS: Record<StepId, string> = {
   compras: "Compras",
   montaria: "Montaria",
   revisao: "Revisão",
+  selfie: "Retrato",
 };
 
 const DRAFT_KEY = "sacramento-character-draft-v2";
 
 export function CharacterWizard() {
+  const router = useRouter();
   const [stepIdx, setStepIdx] = useState(0);
   const [data, setData] = useState<Partial<SacramentoCreationData>>({
     base: BASE_PADRAO,
@@ -61,11 +76,15 @@ export function CharacterWizard() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [secaoGerando, setSecaoGerando] = useState<HistoriaSecao | null>(null);
+  const [pontoGerando, setPontoGerando] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [lojaAmbient, setLojaAmbient] = useState<string | null>(null);
-  const revisaoTriggerRef = useRef<(() => void) | null>(null);
+  // Selfie fica fora do rascunho: pesada demais para o localStorage e não deve persistir.
+  const [selfie, setSelfie] = useState<string | null>(null);
+  const [forjando, setForjando] = useState(false);
+  // Fronteira entre os atos: confirmar o selo (Habilidades → Compras) ou o retorno.
+  const [modalAto, setModalAto] = useState<"selar" | "voltar" | null>(null);
   const savedRef = useRef(false);
 
   const ficha = data.ficha ?? FICHA_INICIAL;
@@ -82,6 +101,7 @@ export function CharacterWizard() {
       "compras",
       ...(temMontaria ? (["montaria"] as StepId[]) : []),
       "revisao",
+      "selfie",
     ],
      
     [temMontaria],
@@ -203,12 +223,50 @@ export function CharacterWizard() {
     return partes.filter(Boolean).join(", ");
   };
 
+  // Resumo em markdown da ficha mecânica — só cor narrativa para a IA.
+  const fichaResumo = () => {
+    const parr = contarParrudeza(ficha.habilidades);
+    const habilidades = ficha.habilidades
+      .filter((id) => id !== "parrudeza")
+      .map((id) => habilidadeById(id)?.nome ?? id);
+    if (parr > 0) habilidades.push(`Parrudeza ×${parr}`);
+    return [
+      `- Atributos: ${ATRIBUTOS.map((a) => `${a.nome} ${ficha.atributos[a.id]}`).join(", ")}`,
+      `- Antecedentes: ${
+        ANTECEDENTES.filter((a) => ficha.antecedentes[a.id] > 0)
+          .map((a) => `${a.nome} ${ficha.antecedentes[a.id]}`)
+          .join(", ") || "nenhum"
+      }`,
+      `- Habilidades: ${habilidades.join(", ") || "nenhuma"}`,
+    ].join("\n");
+  };
+
+  // ---- Guardrail de custo por rascunho ----
+  const geracoesUsadas = data.historiaGeracoes ?? 0;
+  const revisoesUsadas = data.historiaRevisoesSecao ?? 0;
+  const reescritasRestantes = Math.max(0, LIMITE_GERACOES_HISTORIA - geracoesUsadas);
+  const iaTravada = geracoesUsadas >= LIMITE_GERACOES_HISTORIA;
+
   const generateStory = async (
-    action: "gerar" | "revisar-secao" | "revisar-tudo",
-    opts?: { secao?: HistoriaSecao; feedback?: string },
+    action: "gerar" | "revisar-secao" | "revisar-tudo" | "alterar-ponto",
+    opts?: { secao?: HistoriaSecao; feedback?: string; pontoId?: string; novoValor?: string },
   ): Promise<boolean> => {
+    const reescritaCompleta = action !== "revisar-secao";
+    if (reescritaCompleta && iaTravada) {
+      setAiError(
+        `Limite de ${LIMITE_GERACOES_HISTORIA} reescritas da lenda atingido — daqui em diante, edite manualmente.`,
+      );
+      return false;
+    }
+    if (!reescritaCompleta && revisoesUsadas >= LIMITE_REVISOES_SECAO) {
+      setAiError(
+        `Limite de ${LIMITE_REVISOES_SECAO} revisões de seção atingido — edite a seção manualmente.`,
+      );
+      return false;
+    }
     setIsGenerating(true);
     setSecaoGerando(action === "revisar-secao" ? (opts?.secao ?? null) : null);
+    setPontoGerando(action === "alterar-ponto" ? (opts?.pontoId ?? null) : null);
     setAiError(null);
     try {
       const res = await fetch("/api/ai/generate-character-story", {
@@ -218,10 +276,13 @@ export function CharacterWizard() {
           action,
           nome: data.name ?? "",
           visualResumo: visualResumo(),
+          fichaResumo: fichaResumo(),
           elementos: data.elementos,
           historiaAtual: action === "gerar" ? undefined : data.historia,
           secao: opts?.secao,
           feedback: opts?.feedback,
+          pontoId: opts?.pontoId,
+          novoValor: opts?.novoValor,
         }),
       });
       const json = (await res.json()) as { historia?: HistoriaEstruturada; error?: string };
@@ -229,7 +290,13 @@ export function CharacterWizard() {
         setAiError(json.error ?? "A geração da história falhou. Tente de novo.");
         return false;
       }
-      updateData({ historia: json.historia });
+      updateData({
+        historia: json.historia,
+        ...(action === "gerar" ? { historiaBaseHash: storyFingerprint() } : {}),
+        ...(reescritaCompleta
+          ? { historiaGeracoes: geracoesUsadas + 1 }
+          : { historiaRevisoesSecao: revisoesUsadas + 1 }),
+      });
       return true;
     } catch {
       setAiError("A geração da história falhou. Verifique a conexão e tente de novo.");
@@ -237,7 +304,29 @@ export function CharacterWizard() {
     } finally {
       setIsGenerating(false);
       setSecaoGerando(null);
+      setPontoGerando(null);
     }
+  };
+
+  // Insumos que mudam a história — se nada mudou, não regera em background.
+  const storyFingerprint = () =>
+    JSON.stringify([data.name, visualResumo(), data.elementos, ficha.habilidades]);
+
+  /** A travessia para o Ato II dispararia uma (re)escrita da lenda? */
+  const precisaGerarHistoria = () =>
+    data.historiaModo !== "manual" &&
+    !!data.elementos?.conceito &&
+    !!data.elementos.redencaoTrilhaId &&
+    (!data.historia || data.historiaBaseHash !== storyFingerprint());
+
+  /**
+   * Disparada ao selar o Ato I: a lenda é escrita em segundo plano
+   * enquanto o jogador faz as compras, e chega pronta na Revisão.
+   */
+  const maybeGenerateStoryInBackground = () => {
+    if (isGenerating || iaTravada || !precisaGerarHistoria()) return;
+    updateData({ historiaModo: "ia" });
+    void generateStory("gerar");
   };
 
   // ---- Navegação/validação ----
@@ -260,27 +349,55 @@ export function CharacterWizard() {
     habilidades: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
     compras: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
     montaria: true,
-    revisao: !!data.historia && !saving && !isGenerating,
+    revisao: !!data.historia && !isGenerating,
+    selfie: !!selfie && !forjando,
   };
   const canProceed = canProceedMap[step];
 
   const handleFooterNext = () => {
-    if (step === "revisao") revisaoTriggerRef.current?.();
-    else goNext();
+    if (step === "habilidades") {
+      // Fronteira do Ato I: se a travessia dispara a escrita da lenda, o selo pede confirmação.
+      if (precisaGerarHistoria() && !iaTravada && !isGenerating) {
+        setModalAto("selar");
+      } else {
+        goNext();
+      }
+    } else if (step === "revisao") {
+      updateData({ historiaAprovada: true });
+      goNext();
+    } else if (step === "selfie") {
+      setForjando(true);
+    } else {
+      goNext();
+    }
   };
 
+  const handleBack = () => {
+    // Voltar de Compras para o Ato I mexe nos insumos da lenda — pede confirmação.
+    if (step === "compras" && (data.historia || isGenerating)) {
+      setModalAto("voltar");
+      return;
+    }
+    goBack();
+  };
+
+  // Dois atos: quem você é (até Habilidades) e a vida no Oeste (das Compras em diante).
+  const atoII = ["compras", "montaria", "revisao", "selfie"].includes(step);
   const header = (
     <StepIndicator
       currentStep={idx + 1}
       stepLabels={stepIds.map((id) => STEP_LABELS[id])}
-      title="Novo personagem"
+      title={atoII ? "Ato II · A vida no Oeste" : "Ato I · Quem você é"}
     />
   );
+
+  const footerLabel =
+    step === "revisao" ? "Aprovar história" : step === "selfie" ? "Forjar personagem" : "Continuar";
 
   const footer = (
     <div className="flex items-center justify-between gap-3">
       {idx > 0 ? (
-        <button type="button" onClick={goBack} disabled={saving} className="arcana-btn-ghost">
+        <button type="button" onClick={handleBack} disabled={forjando} className="arcana-btn-ghost">
           Voltar
         </button>
       ) : draftRestored ? (
@@ -290,13 +407,19 @@ export function CharacterWizard() {
       ) : (
         <div />
       )}
+      {/* A lenda sendo escrita em segundo plano durante as compras */}
+      {isGenerating && step !== "revisao" && (
+        <span className="hidden sm:inline font-crimson text-sm italic text-arcana-gold animate-pulse">
+          ✒ Sua lenda está sendo escrita…
+        </span>
+      )}
       <button
         type="button"
         onClick={handleFooterNext}
         disabled={!canProceed}
         className={canProceed ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
       >
-        {step === "revisao" ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
+        {footerLabel}
       </button>
     </div>
   );
@@ -365,10 +488,124 @@ export function CharacterWizard() {
           onGenerateStory={generateStory}
           isGenerating={isGenerating}
           secaoGerando={secaoGerando}
+          pontoGerando={pontoGerando}
           aiError={aiError}
-          triggerRef={revisaoTriggerRef}
-          onSavingChange={setSaving}
+          reescritasRestantes={reescritasRestantes}
+          podeReescrever={!iaTravada}
+          podeRevisarSecao={revisoesUsadas < LIMITE_REVISOES_SECAO}
+          historiaDesatualizada={
+            iaTravada && !!data.historia && data.historiaBaseHash !== storyFingerprint()
+          }
+        />
+      )}
+      {step === "selfie" && <StepSelfie selfie={selfie} onSelfie={setSelfie} />}
+      {modalAto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            aria-label="Fechar aviso"
+            onClick={() => setModalAto(null)}
+            className="absolute inset-0 cursor-default"
+            style={{ background: "rgba(5,5,10,0.65)", backdropFilter: "blur(3px)" }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="arcana-rise-in relative w-full max-w-md rounded-2xl p-6 space-y-4"
+            style={{
+              background: "rgba(15,15,26,0.97)",
+              backdropFilter: "blur(24px) saturate(1.4)",
+              border: "1px solid rgba(209,171,85,0.35)",
+              boxShadow: "0 12px 48px rgba(0,0,0,0.6)",
+            }}
+          >
+            {modalAto === "selar" ? (
+              <>
+                <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+                  Fim do Ato I
+                </p>
+                <h3 className="font-cinzel text-lg uppercase tracking-[0.15em] text-arcana-gold-bright">
+                  Selar quem você é?
+                </h3>
+                <p className="font-crimson text-base text-arcana-text leading-relaxed">
+                  Traços, elementos, atributos e habilidades formam a sua identidade. Ao seguir, o
+                  narrador começa a escrever sua lenda com essas escolhas enquanto você faz as
+                  compras.
+                </p>
+                <p className="font-crimson text-sm italic text-arcana-text-dim">
+                  Dá para voltar depois, mas mudar essas escolhas reescreve a lenda — este
+                  personagem tem {reescritasRestantes} de {LIMITE_GERACOES_HISTORIA} escritas
+                  disponíveis.
+                </p>
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setModalAto(null)}
+                    className="arcana-btn-ghost"
+                  >
+                    Revisar escolhas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalAto(null);
+                      maybeGenerateStoryInBackground();
+                      goNext();
+                    }}
+                    className="arcana-btn-primary"
+                  >
+                    Selar e seguir
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+                  De volta ao Ato I
+                </p>
+                <h3 className="font-cinzel text-lg uppercase tracking-[0.15em] text-arcana-gold-bright">
+                  Mexer no passado?
+                </h3>
+                <p className="font-crimson text-base text-arcana-text leading-relaxed">
+                  Sua lenda {isGenerating ? "está sendo escrita" : "já foi escrita"} com as escolhas
+                  seladas. Se você mudar traços, elementos, atributos ou habilidades, ela será
+                  reescrita do zero quando avançar de novo.
+                </p>
+                <p className="font-crimson text-sm italic text-arcana-text-dim">
+                  {reescritasRestantes > 0
+                    ? `Restam ${reescritasRestantes} de ${LIMITE_GERACOES_HISTORIA} escritas da lenda. Voltar sem mudar nada não gasta nenhuma.`
+                    : "As escritas da lenda deste personagem acabaram — mudanças não geram história nova; você edita manualmente."}
+                </p>
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalAto(null);
+                      goBack();
+                    }}
+                    className="arcana-btn-ghost"
+                  >
+                    Voltar assim mesmo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalAto(null)}
+                    className="arcana-btn-primary"
+                  >
+                    Ficar aqui
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {forjando && selfie && (
+        <ForjaPersonagem
+          data={data}
+          selfie={selfie}
           onSaved={clearDraft}
+          onExit={() => router.push("/hub")}
+          onCancel={() => setForjando(false)}
         />
       )}
     </WizardLayout>

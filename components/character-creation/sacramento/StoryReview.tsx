@@ -4,6 +4,7 @@ import { useState } from "react";
 import type {
   HistoriaEstruturada,
   HistoriaSecao,
+  PontoChave,
 } from "@/lib/character-creation/sacramento/types";
 
 type Props = {
@@ -12,8 +13,12 @@ type Props = {
   modoManual: boolean;
   isGenerating: boolean;
   secaoGerando: HistoriaSecao | null;
+  /** id do ponto-chave em reescrita, ou null. */
+  pontoGerando?: string | null;
   onChange: (historia: HistoriaEstruturada) => void;
   onRegenSection?: (secao: HistoriaSecao, feedback: string) => void;
+  /** Reescreve a história inteira com o novo valor do ponto-chave. */
+  onAlterarPonto?: (pontoId: string, novoValor: string) => void;
 };
 
 const CARD_STYLE = {
@@ -110,15 +115,139 @@ function SectionShell({
   );
 }
 
+/**
+ * Um ponto-chave da lenda como pílula editável: rótulo em caps douradas,
+ * valor em prosa. Tocar abre a edição; confirmar reescreve a história.
+ */
+function PontoChavePill({
+  ponto,
+  modoManual,
+  isGenerating,
+  gerandoEste,
+  onEditar,
+  onAlterar,
+}: {
+  ponto: PontoChave;
+  modoManual: boolean;
+  isGenerating: boolean;
+  gerandoEste: boolean;
+  /** Modo manual: edita o valor direto, sem IA. */
+  onEditar: (novoValor: string) => void;
+  onAlterar?: (novoValor: string) => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [valor, setValor] = useState(ponto.valor);
+
+  // Sem IA disponível (modo manual ou limite esgotado), a edição é direta no texto do ponto.
+  const usaIA = !modoManual && !!onAlterar;
+
+  const confirmar = () => {
+    const v = valor.trim();
+    if (!v || v === ponto.valor) {
+      setAberto(false);
+      setValor(ponto.valor);
+      return;
+    }
+    if (usaIA) onAlterar?.(v);
+    else onEditar(v);
+    setAberto(false);
+  };
+
+  return (
+    <div
+      className="rounded-xl px-4 py-3 transition-all"
+      style={{
+        background: gerandoEste ? "rgba(209,171,85,0.12)" : "rgba(11,11,20,0.45)",
+        border: gerandoEste
+          ? "1px solid rgba(209,171,85,0.6)"
+          : "1px solid rgba(209,171,85,0.2)",
+        boxShadow: gerandoEste ? "0 0 18px rgba(209,171,85,0.18)" : undefined,
+      }}
+    >
+      <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
+        {ponto.rotulo}
+      </p>
+      {gerandoEste ? (
+        <p className="font-crimson text-base italic text-arcana-text-dim animate-pulse mt-1">
+          Reescrevendo a lenda com este destino…
+        </p>
+      ) : aberto ? (
+        <div className="mt-2 space-y-2">
+          <input
+            type="text"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") confirmar();
+              if (e.key === "Escape") {
+                setAberto(false);
+                setValor(ponto.valor);
+              }
+            }}
+            maxLength={120}
+            autoFocus
+            className="arcana-input w-full font-crimson text-base"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={confirmar}
+              disabled={isGenerating}
+              className={
+                isGenerating ? "arcana-btn-disabled arcana-btn-sm" : "arcana-btn-primary arcana-btn-sm"
+              }
+            >
+              {usaIA ? "Reescrever a lenda" : "Salvar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAberto(false);
+                setValor(ponto.valor);
+              }}
+              className="arcana-btn-ghost arcana-btn-sm"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setValor(ponto.valor);
+            setAberto(true);
+          }}
+          disabled={isGenerating}
+          className="group mt-1 flex w-full items-start justify-between gap-2 text-left"
+        >
+          <span className="font-crimson text-base text-arcana-text leading-snug">
+            {ponto.valor}
+          </span>
+          <span
+            aria-hidden
+            className="shrink-0 font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-gold opacity-80 group-hover:opacity-100 transition-opacity mt-0.5"
+          >
+            Alterar ✎
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function StoryReview({
   historia,
   modoManual,
   isGenerating,
   secaoGerando,
+  pontoGerando,
   onChange,
   onRegenSection,
+  onAlterarPonto,
 }: Props) {
   const [editing, setEditing] = useState<HistoriaSecao | null>(null);
+  const pontosChave = historia.pontosChave ?? [];
 
   const toggle = (secao: HistoriaSecao) =>
     setEditing((cur) => (cur === secao ? null : secao));
@@ -136,6 +265,42 @@ export function StoryReview({
 
   return (
     <div className="space-y-5">
+      {/* Pontos-chave — os destinos alteráveis da lenda */}
+      {pontosChave.length > 0 && (
+        <section className="rounded-2xl p-5 space-y-4" style={CARD_STYLE}>
+          <div>
+            <h4 className="font-cinzel text-xs uppercase tracking-[0.25em] text-arcana-gold-bright">
+              Pontos-chave da sua lenda
+            </h4>
+            <p className="font-crimson text-sm italic text-arcana-text-dim mt-1">
+              {modoManual || !onAlterarPonto
+                ? "Os fatos que sustentam a história. Toque para ajustar com suas palavras."
+                : "Os fatos que sustentam a história. Altere um e a lenda inteira se reescreve em torno dele."}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {pontosChave.map((p) => (
+              <PontoChavePill
+                key={p.id}
+                ponto={p}
+                modoManual={modoManual}
+                isGenerating={isGenerating}
+                gerandoEste={pontoGerando === p.id}
+                onEditar={(novoValor) =>
+                  onChange({
+                    ...historia,
+                    pontosChave: pontosChave.map((x) =>
+                      x.id === p.id ? { ...x, valor: novoValor } : x,
+                    ),
+                  })
+                }
+                onAlterar={onAlterarPonto ? (novoValor) => onAlterarPonto(p.id, novoValor) : undefined}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Resumo */}
       <SectionShell {...shellProps("Resumo", "resumo")}>
         {editing === "resumo" ? (

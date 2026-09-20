@@ -54,6 +54,17 @@ export interface CapituloHistoria {
   texto: string;
 }
 
+/**
+ * Decisão dramática central da história que o jogador pode alterar.
+ * Ex.: { id: "motivo-da-raiva", rotulo: "Motivo da raiva", valor: "a emboscada que matou seu irmão" }.
+ * Alterar o valor dispara uma reescrita coerente da história inteira.
+ */
+export interface PontoChave {
+  id: string;
+  rotulo: string;
+  valor: string;
+}
+
 export interface HistoriaEstruturada {
   resumo: string;
   capitulos: CapituloHistoria[];
@@ -62,6 +73,15 @@ export interface HistoriaEstruturada {
   redencao: RedencaoGerada;
   /** Ganchos abertos para o Juiz — situações, nunca resultados (docs/02 §3.3). */
   ganchos: string[];
+  /** Ausente em histórias antigas/manuais — a UI trata como lista vazia. */
+  pontosChave?: PontoChave[];
+}
+
+/** URLs públicas (Storage) das imagens geradas na forja do personagem. */
+export interface ImagensGeradas {
+  close?: string;
+  estados?: string;
+  banner?: string;
 }
 
 export type HistoriaSecao = "resumo" | "capitulos" | "familia" | "vinculos" | "redencao" | "ganchos";
@@ -139,8 +159,19 @@ export interface SacramentoCreationData {
   historiaModo?: "manual" | "ia";
   historia?: HistoriaEstruturada;
   historiaAprovada?: boolean;
+  /** Fingerprint dos insumos usados na última geração — evita regerar à toa em background. */
+  historiaBaseHash?: string;
+  /** Reescritas completas da lenda já gastas neste rascunho (gerar/refazer-tudo/alterar-ponto). */
+  historiaGeracoes?: number;
+  /** Revisões de seção já gastas neste rascunho. */
+  historiaRevisoesSecao?: number;
   ficha?: FichaMecanica;
 }
+
+/** Guardrail de custo: reescritas completas da lenda por personagem. */
+export const LIMITE_GERACOES_HISTORIA = 5;
+/** Guardrail de custo: revisões de seção por personagem. */
+export const LIMITE_REVISOES_SECAO = 10;
 
 export const ELEMENTOS_VAZIOS: ElementosHistoria = {
   conceito: "",

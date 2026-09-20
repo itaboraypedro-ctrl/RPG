@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WizardLayout } from "@/components/character-creation/WizardLayout";
 import { StepIndicator } from "@/components/character-creation/StepIndicator";
-import { SacramentoPreview } from "@/components/character-creation/sacramento/SacramentoPreview";
+import { EscritorioPreview } from "@/components/character-creation/sacramento/EscritorioPreview";
 import Step1Tracos from "@/components/character-creation/sacramento/Step1Tracos";
 import Step2Elementos from "@/components/character-creation/sacramento/Step2Elementos";
 import Step4Atributos from "@/components/character-creation/sacramento/Step4Atributos";
@@ -546,7 +546,7 @@ export function CharacterWizard() {
           : undefined;
 
   const previewContent = (
-    <SacramentoPreview
+    <EscritorioPreview
       imageUrl={previewImageUrl}
       characterName={data.name}
       subtitle={previewSubtitle}

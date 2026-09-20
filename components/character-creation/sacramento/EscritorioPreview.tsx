@@ -59,9 +59,16 @@ export function EscritorioPreview({
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-[440px]">
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl"
-        style={{ boxShadow: "0 12px 56px rgba(0,0,0,0.75)" }}>
+    // container-type: size → a cena mede a coluna inteira (largura E altura)
+    // e cresce até o limite que couber, em qualquer dispositivo.
+    <div className="flex h-full w-full items-center justify-center" style={{ containerType: "size" }}>
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl"
+        style={{
+          width: "min(100cqw, 66.67cqh, 720px)",
+          boxShadow: "0 12px 56px rgba(0,0,0,0.75)",
+          // A cena também é container: os textos internos escalam com ela (cqw).
+          containerType: "size",
+        }}>
 
         {/* ── Camada 1: o mundo lá fora, atrás do vidro sujo ── */}
         <div className="absolute overflow-hidden" style={JANELA}>
@@ -154,7 +161,7 @@ export function EscritorioPreview({
               {characterName && (
                 <p className="font-cinzel uppercase leading-tight"
                   style={{
-                    fontSize: "clamp(9px, 2.6cqw, 13px)",
+                    fontSize: "clamp(9px, 2.6cqw, 17px)",
                     letterSpacing: "0.12em",
                     color: "#4a3320",
                     textShadow: "0 1px 0 rgba(255,240,210,0.35)",
@@ -168,7 +175,7 @@ export function EscritorioPreview({
               {subtitle && (
                 <p className="font-crimson italic leading-snug"
                   style={{
-                    fontSize: "clamp(9px, 2.4cqw, 12px)",
+                    fontSize: "clamp(9px, 2.4cqw, 15px)",
                     color: "#5c4229",
                     display: "-webkit-box",
                     WebkitLineClamp: 4,
@@ -196,11 +203,11 @@ export function EscritorioPreview({
                     "inset 0 1px 0 rgba(255,226,160,0.55), inset 0 -1px 2px rgba(40,24,6,0.6), 0 2px 6px rgba(0,0,0,0.55)",
                 }}>
                 <span className="font-cinzel font-bold leading-none"
-                  style={{ fontSize: "clamp(10px, 3cqw, 15px)", color: "#241505", textShadow: "0 1px 0 rgba(255,235,180,0.4)" }}>
+                  style={{ fontSize: "clamp(10px, 3cqw, 19px)", color: "#241505", textShadow: "0 1px 0 rgba(255,235,180,0.4)" }}>
                   {s.value}
                 </span>
                 <span className="font-cinzel uppercase leading-none"
-                  style={{ fontSize: "clamp(6px, 1.5cqw, 8px)", letterSpacing: "0.08em", color: "#3a2810", marginTop: "2px" }}>
+                  style={{ fontSize: "clamp(6px, 1.5cqw, 10px)", letterSpacing: "0.08em", color: "#3a2810", marginTop: "2px" }}>
                   {s.label}
                 </span>
               </div>

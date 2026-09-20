@@ -87,6 +87,8 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
 
 
   useEffect(() => {
+    // Saudação depende do relógio do cliente — no effect para não divergir do SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGreeting(periodFromHour(new Date().getHours()));
   }, []);
 
@@ -197,17 +199,33 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
         {/* ── ZONA DE PERSONAGENS — flex-1, ocupa o espaço disponível ── */}
         <div className="relative flex-1 overflow-hidden">
 
-          {/* Hero portrait de fundo */}
-          {activeChar?.avatar_url && (
-            <div key={activeChar.id} className="absolute inset-0 pointer-events-none"
-              style={{ animation: "heroFadeIn 500ms ease forwards" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={activeChar.avatar_url} alt="" className="h-full w-full object-cover object-top" />
-              <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 80% at 60% 30%, ${heroColor}18, transparent 65%)` }} />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />
-            </div>
-          )}
+          {/* Hero portrait de fundo.
+              Retrato gerado na forja (URL do Storage) é um busto recortado com fundo
+              transparente: entra inteiro (contain), ancorado embaixo, flutuando sobre a
+              cena — nunca esticado em cover, senão só o chapéu aparece. Retratos
+              estáticos antigos (quadrados com fundo pintado) mantêm o cover clássico. */}
+          {activeChar?.avatar_url && (() => {
+            const heroGerado = activeChar.avatar_url.startsWith("http");
+            return (
+              <div key={activeChar.id} className="absolute inset-0 pointer-events-none"
+                style={{ animation: "heroFadeIn 500ms ease forwards" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeChar.avatar_url}
+                  alt=""
+                  className={heroGerado
+                    ? "h-full w-full object-contain object-bottom pt-6"
+                    : "h-full w-full object-cover object-top"}
+                  style={heroGerado
+                    ? { filter: `drop-shadow(0 12px 60px rgba(0,0,0,0.7)) drop-shadow(0 0 80px ${heroColor}26)` }
+                    : undefined}
+                />
+                <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 80% at 60% 30%, ${heroColor}18, transparent 65%)` }} />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />
+              </div>
+            );
+          })()}
 
           {/* Bloco inferior: info à esquerda + carrossel grudado à direita */}
           <div className="absolute bottom-0 left-0 z-10 w-full flex items-end"

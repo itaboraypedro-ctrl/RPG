@@ -560,16 +560,14 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
               maxLength={160}
               className="arcana-input w-full font-crimson text-base"
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-1.5 sm:grid-cols-3">
               {RELACOES_FACCAO_SUGERIDAS.map((r) => (
-                <button
+                <PresetRow
                   key={r}
-                  type="button"
+                  texto={r}
+                  active={e.faccaoRelacao === r}
                   onClick={() => set({ faccaoRelacao: r })}
-                  className={e.faccaoRelacao === r ? "arcana-chip-active" : "arcana-chip"}
-                >
-                  {r}
-                </button>
+                />
               ))}
             </div>
           </div>

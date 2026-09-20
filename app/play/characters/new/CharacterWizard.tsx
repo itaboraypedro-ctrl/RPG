@@ -83,7 +83,7 @@ export function CharacterWizard() {
       ...(temMontaria ? (["montaria"] as StepId[]) : []),
       "revisao",
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [temMontaria],
   );
   const idx = Math.min(stepIdx, stepIds.length - 1);

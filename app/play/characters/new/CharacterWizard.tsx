@@ -525,12 +525,10 @@ export function CharacterWizard() {
       : data.base
         ? characterImagePath(data.base, data.kitId)
         : null;
-  const retratoAviso =
-    step === "revisao" && !closeGerado && forjaStatus.close === "gerando"
-      ? "Sua fotografia está na câmara de revelação. Entrego em breve — retrato bom não se apressa."
-      : step === "revisao" && !closeGerado && forjaStatus.close === "erro"
-        ? "Tive um contratempo com a chapa. Revelamos de novo na hora de criar o personagem."
-        : undefined;
+  const retratoPendente =
+    step === "revisao" && !closeGerado && (forjaStatus.close === "gerando" || forjaStatus.close === "erro")
+      ? (forjaStatus.close as "gerando" | "erro")
+      : undefined;
   const previewSubtitle =
     step !== "tracos"
       ? data.elementos?.conceito || data.elementos?.ocupacao || "Sacramento · 1880"
@@ -562,7 +560,7 @@ export function CharacterWizard() {
       stats={previewStats}
       ambientImage={ambientImage}
       nivel={mostrarStats ? ficha.nivel : undefined}
-      retratoAviso={retratoAviso}
+      retratoPendente={retratoPendente}
     />
   );
 

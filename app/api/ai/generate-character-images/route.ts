@@ -121,19 +121,23 @@ export async function POST(request: Request) {
   }
 
   // ---- Guardrail de custo + auditoria (mesmo padrão da rota de história) ----
+  // Mestre/Admin não têm teto diário — só jogadores.
   const admin = createAdminClient();
-  const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count } = await admin
-    .from("ai_requests")
-    .select("id", { count: "exact", head: true })
-    .eq("requested_by", auth.user.id)
-    .eq("type", "illustration")
-    .gte("created_at", desde);
-  if ((count ?? 0) >= LIMITE_DIA_IMAGENS) {
-    return NextResponse.json(
-      { error: "Limite diário de retratos gerados atingido. Tente novamente amanhã." },
-      { status: 429 },
-    );
+  const isStaff = auth.profile.role === "gm" || auth.profile.role === "admin";
+  if (!isStaff) {
+    const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await admin
+      .from("ai_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("requested_by", auth.user.id)
+      .eq("type", "illustration")
+      .gte("created_at", desde);
+    if ((count ?? 0) >= LIMITE_DIA_IMAGENS) {
+      return NextResponse.json(
+        { error: "Limite diário de retratos gerados atingido. Tente novamente amanhã." },
+        { status: 429 },
+      );
+    }
   }
 
   const { prompt, size, transparent } = promptPara(tipo, nome.toUpperCase());

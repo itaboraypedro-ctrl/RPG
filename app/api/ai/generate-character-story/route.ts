@@ -276,26 +276,30 @@ export async function POST(request: Request) {
   }
 
   // ---- Guardrail de custo: conta as gerações do usuário nas últimas 24h ----
+  // Mestre/Admin (donos da mesa) não têm teto diário — só jogadores.
   const reescritaCompleta = action !== "revisar-secao";
   const grupo = reescritaCompleta ? "historia-completa" : "revisao-secao";
-  const limiteDia = reescritaCompleta ? LIMITE_DIA_HISTORIA_COMPLETA : LIMITE_DIA_REVISAO_SECAO;
   const admin = createAdminClient();
-  const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count } = await admin
-    .from("ai_requests")
-    .select("id", { count: "exact", head: true })
-    .eq("requested_by", profileResult.user.id)
-    .eq("type", "character_summary")
-    .like("prompt", `${grupo}:%`)
-    .gte("created_at", desde);
-  if ((count ?? 0) >= limiteDia) {
-    return NextResponse.json(
-      {
-        error:
-          "Limite diário de gerações de história atingido. Edite manualmente ou volte amanhã.",
-      },
-      { status: 429 },
-    );
+  const isStaff = profileResult.profile.role === "gm" || profileResult.profile.role === "admin";
+  if (!isStaff) {
+    const limiteDia = reescritaCompleta ? LIMITE_DIA_HISTORIA_COMPLETA : LIMITE_DIA_REVISAO_SECAO;
+    const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await admin
+      .from("ai_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("requested_by", profileResult.user.id)
+      .eq("type", "character_summary")
+      .like("prompt", `${grupo}:%`)
+      .gte("created_at", desde);
+    if ((count ?? 0) >= limiteDia) {
+      return NextResponse.json(
+        {
+          error:
+            "Limite diário de gerações de história atingido. Edite manualmente ou volte amanhã.",
+        },
+        { status: 429 },
+      );
+    }
   }
 
   const fichaTexto = [

@@ -15,9 +15,22 @@ type Props = {
   ambientImage?: string;
   /** Compatibilidade com o SacramentoPreview — o nível já vem nos stats. */
   nivel?: number;
-  /** Recado do retratista dentro da moldura (retrato forjado ainda não chegou). */
-  retratoAviso?: string;
+  /** Retrato forjado ainda não chegou: bilhete do retratista na moldura. */
+  retratoPendente?: "gerando" | "erro";
 };
+
+// Desculpas de retratista atrasado, no falar de 1880 — giram enquanto revela.
+const DESCULPAS_RETRATISTA = [
+  "A diligência atrasou com meus químicos, mas o rapaz já vem chegando. Sua chapa é a próxima da bandeja.",
+  "O gado tomou a estrada e me segurou o passo. Já estou na câmara escura, pode aguardar sentado.",
+  "Sol teimoso hoje, e chapa boa pede luz de respeito. Um dedo de paciência e eu entrego.",
+  "Ando terminando o retrato do delegado — compromisso é compromisso. O seu entra em seguida.",
+  "Meu cavalo empacou na ponte do córrego. Mas fique tranquilo: retrato bom não azeda.",
+  "Retrato de respeito é que nem café no coador: apressar só estraga. Já sai o seu.",
+];
+
+const CONTRATEMPO_RETRATISTA =
+  "A chapa rachou na revelação — coisas do ofício. Na hora de criar o personagem eu bato outra, sem cobrar nada.";
 
 type Layer = { url: string; key: number };
 
@@ -40,8 +53,28 @@ export function EscritorioPreview({
   subtitle,
   stats,
   ambientImage = "/story/places/deserto-de-mucuri.webp",
-  retratoAviso,
+  retratoPendente,
 }: Props) {
+  // Desculpa da vez, com fade a cada troca.
+  const [desculpaIdx, setDesculpaIdx] = useState(() => Math.floor(Math.random() * DESCULPAS_RETRATISTA.length));
+  const [desculpaSumindo, setDesculpaSumindo] = useState(false);
+  useEffect(() => {
+    if (retratoPendente !== "gerando") return;
+    const t = setInterval(() => {
+      setDesculpaSumindo(true);
+      setTimeout(() => {
+        setDesculpaIdx((i) => (i + 1) % DESCULPAS_RETRATISTA.length);
+        setDesculpaSumindo(false);
+      }, 350);
+    }, 5200);
+    return () => clearInterval(t);
+  }, [retratoPendente]);
+  const retratoAviso =
+    retratoPendente === "erro"
+      ? CONTRATEMPO_RETRATISTA
+      : retratoPendente === "gerando"
+        ? DESCULPAS_RETRATISTA[desculpaIdx]
+        : undefined;
   // Pilha de duas camadas: a nova entra por cima com crossfade; a anterior
   // fica por baixo até a transição terminar (sem flash) — padrão do preview antigo.
   const [layers, setLayers] = useState<Layer[]>(imageUrl ? [{ url: imageUrl, key: 0 }] : []);
@@ -100,7 +133,7 @@ export function EscritorioPreview({
                   className="absolute inset-0 h-full w-full select-none" />
                 <div className="absolute flex flex-col items-center justify-center gap-[6%] text-center"
                   style={{ left: "16%", right: "14%", top: "20%", bottom: "18%", transform: "rotate(-3.5deg)" }}>
-                  <p className="font-crimson italic leading-snug"
+                  <p className={`font-crimson italic leading-snug transition-opacity duration-300 ${desculpaSumindo ? "opacity-0" : "opacity-100"}`}
                     style={{ fontSize: "clamp(9px, 2.2cqw, 14px)", color: "#5c4229" }}>
                     {retratoAviso}
                   </p>

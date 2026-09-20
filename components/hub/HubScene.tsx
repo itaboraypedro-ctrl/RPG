@@ -58,6 +58,9 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
   const [activeIdx, setActiveIdx] = useState(0);
   const activeChar = characters[activeIdx] ?? null;
 
+  /* retratos de baixa resolução viram lavagem atmosférica em vez de imagem esticada */
+  const [heroLowRes, setHeroLowRes] = useState(false);
+
   /* parallax */
   const targetP = useRef({ x: 0, y: 0 });
   const currentP = useRef({ x: 0, y: 0 });
@@ -199,10 +202,21 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
 
           {/* Hero portrait de fundo */}
           {activeChar?.avatar_url && (
-            <div key={activeChar.id} className="absolute inset-0 pointer-events-none"
+            <div key={activeChar.id} className="absolute inset-0 pointer-events-none overflow-hidden"
               style={{ animation: "heroFadeIn 500ms ease forwards" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={activeChar.avatar_url} alt="" className="h-full w-full object-cover object-top" />
+              <img
+                src={activeChar.avatar_url}
+                alt=""
+                className="h-full w-full object-cover object-top transition-[filter,opacity] duration-500"
+                onLoad={e => {
+                  const img = e.currentTarget;
+                  setHeroLowRes(img.naturalHeight < 1000 || img.naturalWidth < 700);
+                }}
+                style={heroLowRes
+                  ? { filter: "blur(32px) saturate(1.2) brightness(0.8)", transform: "scale(1.15)", opacity: 0.75 }
+                  : undefined}
+              />
               <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 80% at 60% 30%, ${heroColor}18, transparent 65%)` }} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />
@@ -391,17 +405,16 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
   }, [activeIdx]);
 
   return (
-    <div className="relative py-5">
-      {/* Fade edges */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10"
-        style={{ background: "linear-gradient(to right, rgba(7,7,13,0.98), transparent)" }} />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10"
-        style={{ background: "linear-gradient(to left, rgba(7,7,13,0.98), transparent)" }} />
-
+    <div className="relative py-2">
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto px-10"
-        style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}
+        className="flex gap-3 overflow-x-auto px-10 pt-4 pb-3"
+        style={{
+          scrollbarWidth: "none",
+          scrollSnapType: "x mandatory",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%)",
+          maskImage: "linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%)",
+        }}
       >
         {characters.map((c, i) => {
           const dist = Math.abs(i - activeIdx);
@@ -417,11 +430,14 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
               style={{
                 scrollSnapAlign: "center",
                 animation: `cardSlideIn ${180 + i * 60}ms ease both`,
-                opacity: isActive ? 1 : Math.max(0.28, 1 - dist * 0.28),
-                filter: isActive ? "none" : `blur(${Math.min(dist * 1.8, 4)}px)`,
+                opacity: isActive ? 1 : Math.max(0.55, 1 - dist * 0.15),
+                filter: isActive ? "none" : "saturate(0.65) brightness(0.85)",
                 transform: isActive
                   ? "scale(1) translateY(-6px)"
-                  : `scale(${Math.max(0.8, 1 - dist * 0.09)}) translateY(0px)`,
+                  : `scale(${Math.max(0.88, 1 - dist * 0.05)}) translateY(0px)`,
+                boxShadow: isActive
+                  ? `0 0 0 1px ${color}dd, 0 0 22px ${color}40, 0 12px 32px rgba(0,0,0,0.55)`
+                  : "0 0 0 1px rgba(255,255,255,0.08)",
                 transition: "opacity 350ms ease, filter 350ms ease, transform 350ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 350ms ease",
               }}
               className="relative flex-shrink-0 w-[110px] rounded-xl overflow-hidden focus-visible:outline-none"
@@ -438,33 +454,6 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
                     <span className="font-cinzel text-4xl" style={{ color }}>{c.name.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
-
-                {/* Corner ornaments on active */}
-                {isActive && (
-                  <>
-                    {[{ top: 0, left: 0 }, { top: 0, right: 0 }, { bottom: 0, left: 0 }, { bottom: 0, right: 0 }].map((pos, k) => (
-                      <div key={k} className="absolute pointer-events-none"
-                        style={{
-                          ...pos,
-                          width: 14, height: 14,
-                          borderColor: color,
-                          borderTopWidth: (pos.top === 0) ? 2 : 0,
-                          borderBottomWidth: (pos.bottom === 0) ? 2 : 0,
-                          borderLeftWidth: (pos.left === 0) ? 2 : 0,
-                          borderRightWidth: (pos.right === 0) ? 2 : 0,
-                          borderStyle: "solid",
-                        }} />
-                    ))}
-                  </>
-                )}
-
-                {/* Border glow when active */}
-                <div className="absolute inset-0 rounded-xl transition-all duration-350 pointer-events-none"
-                  style={{
-                    boxShadow: isActive
-                      ? `0 0 0 1.5px ${color}, 0 0 24px ${color}55, inset 0 0 20px rgba(0,0,0,0.3)`
-                      : "0 0 0 1px rgba(255,255,255,0.06)",
-                  }} />
 
                 {/* Bottom name/class overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-2.5"

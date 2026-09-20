@@ -1,0 +1,1755 @@
+{
+ "fonte": "Sacramento_Recuperado_Parte_1-3.zip (249 pranchas) + classificação visual em 2 passadas (20/09/2026)",
+ "descartada_duplicata_semantica": "file_00000000b6f8820ea26db68b699ac7e9 (indigena/masculino/muito-claro/jovem-adulto, versão careca)",
+ "faltantes_22": [
+  "feminino_escuro_jovem-adulto em TODOS os 9 kits",
+  "feminino_escuro_adulto em 8 kits (indigena tem)",
+  "feminino_medio_adulto em bandido, cacador, indigena",
+  "feminino_medio_idoso em cacador, indigena"
+ ],
+ "pranchas": [
+  {
+   "prancha": "file_0000000057d8820e9caaba50ee3218fd",
+   "kit": "bandido",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000c740820eb99e8097885d5cdd",
+   "kit": "bandido",
+   "base": "feminino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000006340820eb97865d874799b28",
+   "kit": "bandido",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez claro"
+  },
+  {
+   "prancha": "bandido__feminino_escuro_idoso",
+   "kit": "bandido",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000e15c820ea3afc5dacdb64741",
+   "kit": "bandido",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_00000000d044820ebd71d0e5d1ab1b86",
+   "kit": "bandido",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000ab64820e960ea98469377ffb",
+   "kit": "bandido",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000003310820e92ff465f2d33bdd2",
+   "kit": "bandido",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_0000000086d4820eb91c3e20f94772d3",
+   "kit": "bandido",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "cinto com balas e coldre visiveis"
+  },
+  {
+   "prancha": "bandido__feminino_muito-escuro_adulto",
+   "kit": "bandido",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "bandido__feminino_muito-escuro_idoso",
+   "kit": "bandido",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "bandido__feminino_muito-escuro_jovem-adulto",
+   "kit": "bandido",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000f99c820e9c26a0ce894c01b3",
+   "kit": "bandido",
+   "base": "masculino_claro_adulto",
+   "confianca": "baixa",
+   "obs": "talvez jovem-adulto; rosto magro com vincos sugere ~40"
+  },
+  {
+   "prancha": "file_00000000c198820ebf749383a951c35d",
+   "kit": "bandido",
+   "base": "masculino_claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d520820e9a53414488c0c2e1",
+   "kit": "bandido",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d598820e8f6b53596aeafed7",
+   "kit": "bandido",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": "titulo generico 'folha de trajes'; cartucheira com balas, coldre e lenco vermelho indicam bandido"
+  },
+  {
+   "prancha": "file_00000000aeec820e8b37037f3b270017",
+   "kit": "bandido",
+   "base": "masculino_escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000b780820eb129eb1ad298c188",
+   "kit": "bandido",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "media",
+   "obs": "tom talvez medio (iluminacao quente)"
+  },
+  {
+   "prancha": "file_00000000d8c0820eb0af36b6ee34a0a6",
+   "kit": "bandido",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000014820eba0c878704b9c171",
+   "kit": "bandido",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000063bc820eb5159196e8dab171",
+   "kit": "bandido",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000096d4820e81e6b19cd45d350a",
+   "kit": "bandido",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "baixa",
+   "obs": "faixa talvez idoso: cabelo bem grisalho, mas rugas apenas moderadas"
+  },
+  {
+   "prancha": "file_000000009f7c820e8449b365dfddb615",
+   "kit": "bandido",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": "titulo 'bandoleiros' condiz com kit bandido (cartucheira, coldre, lenco vermelho solto)"
+  },
+  {
+   "prancha": "file_00000000be4c820e919c0c05bbd52a61",
+   "kit": "bandido",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez claro"
+  },
+  {
+   "prancha": "file_0000000086d4820ea160c44b5e092e5f",
+   "kit": "bandido",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_00000000d8f4820e886d62364a440d73",
+   "kit": "bandido",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-escuro"
+  },
+  {
+   "prancha": "file_0000000083f0820e8109d3704bb3e3e5",
+   "kit": "bandido",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000001280820eb60fb7de26a890e5",
+   "kit": "cacador",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f560820e996ca7d16423c7d5",
+   "kit": "cacador",
+   "base": "feminino_claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d08c820e80919c050c129d97",
+   "kit": "cacador",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-claro"
+  },
+  {
+   "prancha": "cacador-de-recompensas__feminino_escuro_idoso",
+   "kit": "cacador",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000009434820ea29a8c43341dea82",
+   "kit": "cacador",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000028820ea0abdb273169d5be",
+   "kit": "cacador",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d444820e8b63f9cc9223fe89",
+   "kit": "cacador",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez claro"
+  },
+  {
+   "prancha": "file_00000000eecc820e9d237c37082b27aa",
+   "kit": "cacador",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "cacador-de-recompensas__feminino_muito-escuro_adulto",
+   "kit": "cacador",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "cacador-de-recompensas__feminino_muito-escuro_idoso",
+   "kit": "cacador",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "cacador-de-recompensas__feminino_muito-escuro_jovem-adulto",
+   "kit": "cacador",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000002374820e8b0021160f9c8958",
+   "kit": "cacador",
+   "base": "masculino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000e364820e862a6d7ca2e188d8",
+   "kit": "cacador",
+   "base": "masculino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez muito-claro"
+  },
+  {
+   "prancha": "file_00000000d180820eb2516215c566deb1",
+   "kit": "cacador",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000005924820eaa0b6fdf8e72cbba",
+   "kit": "cacador",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000005748820e8b07c3755dd15287",
+   "kit": "cacador",
+   "base": "masculino_escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000b12c820e9ca7e99c0c2685af",
+   "kit": "cacador",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez medio; bandoleira de balas no peito confirma cacador"
+  },
+  {
+   "prancha": "file_000000005614820e8a8e57fc266cb4bf",
+   "kit": "cacador",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f45c820ea169aa7944fef952",
+   "kit": "cacador",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000e394820ea38e203595a71e33",
+   "kit": "cacador",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000008410820ebe9117493d97ad95",
+   "kit": "cacador",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000009624820ea3f55941e78409a9",
+   "kit": "cacador",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": "bandoleira de balas atravessada no peito + sobretudo"
+  },
+  {
+   "prancha": "file_000000002648820e99aac37117786094",
+   "kit": "cacador",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000dc24820e8bcb8dca5760738d",
+   "kit": "cacador",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez muito-escuro"
+  },
+  {
+   "prancha": "file_00000000bff4820e9a0e2a4b4667d5ef",
+   "kit": "cacador",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez escuro"
+  },
+  {
+   "prancha": "file_0000000013f4820ea8dde80ce5e5a6ac",
+   "kit": "cacador",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000008f3c820eb38c677ae367a845",
+   "kit": "elegante",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f7cc820e8e3be66fc892eef0",
+   "kit": "elegante",
+   "base": "feminino_claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000001fa4820ea6c00fede815740f",
+   "kit": "elegante",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "elegante__feminino_escuro_idoso",
+   "kit": "elegante",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000005018820e8505a9bb255bcf22",
+   "kit": "elegante",
+   "base": "feminino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000006dcc820eb9f1d29458062d1b",
+   "kit": "elegante",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_00000000d654820ea252428c3de2dd09",
+   "kit": "elegante",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": "titulo generico; casaca, colete vinho, corrente e chapeu com pena confirmam elegante"
+  },
+  {
+   "prancha": "file_00000000aa64820ebdaebd1f1769c0c4",
+   "kit": "elegante",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez claro"
+  },
+  {
+   "prancha": "file_00000000872c820ebcac7d618b67d1c5",
+   "kit": "elegante",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000204820e9947fffb9d80fed6",
+   "kit": "elegante",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "elegante__feminino_muito-escuro_adulto",
+   "kit": "elegante",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "elegante__feminino_muito-escuro_idoso",
+   "kit": "elegante",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "elegante__feminino_muito-escuro_jovem-adulto",
+   "kit": "elegante",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000004d50820e88b9d0d508e28f7c",
+   "kit": "elegante",
+   "base": "masculino_claro_adulto",
+   "confianca": "alta",
+   "obs": "titulo generico; casaca, colete vinho, corrente e chapeu com pena confirmam elegante"
+  },
+  {
+   "prancha": "file_00000000be70820e911949112b4c29af",
+   "kit": "elegante",
+   "base": "masculino_claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000054fc820eb2be738e4c4159b4",
+   "kit": "elegante",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez claro"
+  },
+  {
+   "prancha": "file_00000000ab54820e8ce85b1e32de31df",
+   "kit": "elegante",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": "título genérico (homens de 1880); visual claramente elegante"
+  },
+  {
+   "prancha": "file_00000000fce8820e97c1b7abfc32b1cc",
+   "kit": "elegante",
+   "base": "masculino_escuro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez muito-escuro"
+  },
+  {
+   "prancha": "file_00000000ea24820e95aeedea0024be7c",
+   "kit": "elegante",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000003ad0820eb835667d543a1027",
+   "kit": "elegante",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007800820ea26848e9d7a1db93",
+   "kit": "elegante",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": "titulo generico; traje elegante com colete vinho e chapeu com pena"
+  },
+  {
+   "prancha": "file_00000000da60820eb2e9224aed0f3e15",
+   "kit": "elegante",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000004ae8820ebbf4f4a8a62278c0",
+   "kit": "elegante",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d2bc820ea33ff5f06387cd7c",
+   "kit": "elegante",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000bfc0820ea9a45f88fa192b84",
+   "kit": "elegante",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000e790820e86aad76b4314eed2",
+   "kit": "elegante",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_00000000a8e0820ea098fd26c6068815",
+   "kit": "elegante",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000020fc820e9e3a2d572c96d2cc",
+   "kit": "elegante",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "titulo generico; casaca, colete vinho e chapeu com pena confirmam elegante"
+  },
+  {
+   "prancha": "file_0000000050f8820e8df718e7ed266542",
+   "kit": "forasteiro",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": "sobretudo comprido aberto, sem bandoleira"
+  },
+  {
+   "prancha": "file_000000004b2c820e9934cb3f9f9b9ed4",
+   "kit": "forasteiro",
+   "base": "feminino_claro_idoso",
+   "confianca": "media",
+   "obs": "sobretudo comprido de couro com lenço vermelho; elementos lembram tropeiro, mas comprimento do casaco indica forasteiro"
+  },
+  {
+   "prancha": "file_000000001954820e9a68c0516e985477",
+   "kit": "forasteiro",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "forasteiro__feminino_escuro_idoso",
+   "kit": "forasteiro",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000008e64820ea06743a4957c1e95",
+   "kit": "forasteiro",
+   "base": "feminino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000008364820e9951f7b4accb9e73",
+   "kit": "forasteiro",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_000000001b34820e8c94f1746fd865c8",
+   "kit": "forasteiro",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "media",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_00000000fd34820ea4d5e2e27b99b6a6",
+   "kit": "forasteiro",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000092b4820ea520fcb81e4c0e43",
+   "kit": "forasteiro",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez claro"
+  },
+  {
+   "prancha": "file_00000000e224820e89df14bd3a5cec18",
+   "kit": "forasteiro",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "forasteiro__feminino_muito-escuro_adulto",
+   "kit": "forasteiro",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "forasteiro__feminino_muito-escuro_idoso",
+   "kit": "forasteiro",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "forasteiro__feminino_muito-escuro_jovem-adulto",
+   "kit": "forasteiro",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000008344820e99584efac5193eed",
+   "kit": "forasteiro",
+   "base": "masculino_claro_adulto",
+   "confianca": "media",
+   "obs": "faixa talvez jovem-adulto (cabelo escuro, poucas rugas)"
+  },
+  {
+   "prancha": "file_000000008aa0820eb78f0d890405a69e",
+   "kit": "forasteiro",
+   "base": "masculino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-claro"
+  },
+  {
+   "prancha": "file_0000000075f8820eb1d0852600aa3649",
+   "kit": "forasteiro",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d264820e80f1ff7bd524b1dd",
+   "kit": "forasteiro",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000fa7c820e9548924bef2c3692",
+   "kit": "forasteiro",
+   "base": "masculino_escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez muito-escuro"
+  },
+  {
+   "prancha": "file_0000000050c0820e88e103e646800481",
+   "kit": "forasteiro",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez escuro"
+  },
+  {
+   "prancha": "file_00000000f23c820ebdf42220b82eec95",
+   "kit": "forasteiro",
+   "base": "masculino_medio_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez medio (pele bronzeada, iluminacao quente)"
+  },
+  {
+   "prancha": "file_000000001324820e8965acdc2dcf2782",
+   "kit": "forasteiro",
+   "base": "masculino_medio_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_00000000da58820eb955d3184ff6f75f",
+   "kit": "forasteiro",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007928820eb11b3b25b5323be4",
+   "kit": "forasteiro",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro; grisalho comecando nas temporas"
+  },
+  {
+   "prancha": "file_00000000c990820e8c43188e0033c37a",
+   "kit": "forasteiro",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez claro"
+  },
+  {
+   "prancha": "file_0000000065e4820e82f76bd8bed66d18",
+   "kit": "forasteiro",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "sobretudo comprido aberto, sem bandoleira"
+  },
+  {
+   "prancha": "file_0000000079b0820e9d1dd459c6b1f76b",
+   "kit": "forasteiro",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-escuro"
+  },
+  {
+   "prancha": "file_00000000a9b4820eb73b2da8103a6233",
+   "kit": "forasteiro",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_000000006958820e993b751f68de61d2",
+   "kit": "forasteiro",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f108820ea09b264df21b1cdd",
+   "kit": "indigena",
+   "base": "feminino_claro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro; sem chapeu de palha, mas faixa e bolsa de tecido do kit sertanejo"
+  },
+  {
+   "prancha": "file_00000000e130820e84ddb9ce1835fb6f",
+   "kit": "indigena",
+   "base": "feminino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez medio; sem chapeu de palha, mas faixa vermelha e bolsa de tecido do kit sertanejo"
+  },
+  {
+   "prancha": "file_000000006210820e9de5c758a80a61c5",
+   "kit": "indigena",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "titulo generico 'traje de fronteira'; traje indigena (sandalias, faixa vermelha, sem chapeu)"
+  },
+  {
+   "prancha": "indigena__feminino_escuro_adulto",
+   "kit": "indigena",
+   "base": "feminino_escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "indigena__feminino_escuro_idoso",
+   "kit": "indigena",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000a6e8820e85fdbc0cd9777267",
+   "kit": "indigena",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; roupa leve com faixa e bolsa de tecido; título fala em fronteira"
+  },
+  {
+   "prancha": "file_000000000be0820eb3474c641af2a777",
+   "kit": "indigena",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "media",
+   "obs": "faixa talvez jovem-adulto; titulo generico, traje indigena (sem chapeu, sandalias, faixa vermelha)"
+  },
+  {
+   "prancha": "file_000000006038820eb8f6d67f040ace1a",
+   "kit": "indigena",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez claro; sem chapeu de palha, mas faixa e bolsa de tecido do kit sertanejo"
+  },
+  {
+   "prancha": "file_000000002f40820e837812c6fbf8eabf",
+   "kit": "indigena",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; roupa leve, faixa vermelha, bolsa de tecido e sandálias"
+  },
+  {
+   "prancha": "indigena__feminino_muito-escuro_adulto",
+   "kit": "indigena",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "indigena__feminino_muito-escuro_idoso",
+   "kit": "indigena",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "indigena__feminino_muito-escuro_jovem-adulto",
+   "kit": "indigena",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000e774820e911b62da0f71433c",
+   "kit": "indigena",
+   "base": "masculino_claro_adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez medio; sem chapéu de palha (cabelo comprido preso), roupa leve com faixa e bolsa de tecido"
+  },
+  {
+   "prancha": "file_000000009410820e8714ec0b669959d5",
+   "kit": "indigena",
+   "base": "masculino_claro_idoso",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; cabelo grisalho comprido, roupa leve com faixa e sandálias"
+  },
+  {
+   "prancha": "file_00000000eec0820ea87c0294e0ec06f1",
+   "kit": "indigena",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; roupa leve, faixa vermelha, bolsa de tecido e sandálias indicam sertanejo"
+  },
+  {
+   "prancha": "file_000000004d6c820eb41edada6c5d1061",
+   "kit": "indigena",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": "titulo generico; traje indigena (sem chapeu, sandalias, faixa); grisalho comecando nas temporas"
+  },
+  {
+   "prancha": "file_000000002980820ebfa9e4208d7b576b",
+   "kit": "indigena",
+   "base": "masculino_escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez muito-escuro; titulo dizia 'trajes indigenas' mas imagem mostra camisa, faixa vermelha e bolsa de tecido com franjas (kit sertanejo), sem vestes tradicionais; cabelo comprido preso, sem chapeu"
+  },
+  {
+   "prancha": "file_00000000d00c820e97df32c5ba2a6caa",
+   "kit": "indigena",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "talvez medio; sem chapéu de palha, roupa leve com faixa e sandálias"
+  },
+  {
+   "prancha": "file_00000000b35c820e8b289d9a79ef8186",
+   "kit": "indigena",
+   "base": "masculino_medio_adulto",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; cabelo comprido com mechas grisalhas, roupa leve com faixa e sandálias"
+  },
+  {
+   "prancha": "file_00000000573c820e801d53dd7f5a65ca",
+   "kit": "indigena",
+   "base": "masculino_medio_idoso",
+   "confianca": "media",
+   "obs": "sem chapéu de palha (cabelo grisalho comprido); roupa leve com faixa e bolsa de tecido; título confirma sertão"
+  },
+  {
+   "prancha": "file_00000000f57c820e9a93b4bb0df9454a",
+   "kit": "indigena",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": "titulo generico 'traje de fronteira'; sem chapeu, sandalias e faixa vermelha indicam kit indigena"
+  },
+  {
+   "prancha": "file_00000000e788820eb8c146942767514e",
+   "kit": "indigena",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_00000000db9c820e89d5c163477b99f8",
+   "kit": "indigena",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "media",
+   "obs": "roupa leve com faixa e bolsa de tecido, mas sem chapéu de palha (cabelo branco em rabo de cavalo)"
+  },
+  {
+   "prancha": "file_0000000021a0820ebe6b65db38e5e471",
+   "kit": "indigena",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "sem chapéu de palha; roupa leve com faixa vermelha, bolsa de tecido e sandálias | SEM_ENCAIXE revisar"
+  },
+  {
+   "prancha": "file_00000000b6f8820ea26db68b699ac7e9",
+   "kit": "indigena",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "base careca; sem chapeu ocidental, sandalias, faixa vermelha e bandoleira trancada (kit indigena do conjunto)"
+  },
+  {
+   "prancha": "file_00000000c914820eb3b79f00d075dd1c",
+   "kit": "indigena",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez escuro; faixa talvez idoso (cabelo comprido com mechas grisalhas); tracos indigenas e sem chapeu, mas roupa leve com faixa e bolsa de tecido do kit sertanejo"
+  },
+  {
+   "prancha": "file_000000008b60820eac574de0914ba116",
+   "kit": "indigena",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-escuro; sem chapéu de palha, roupa leve com faixa e bolsa de tecido"
+  },
+  {
+   "prancha": "file_000000000c98820e93010dbd6c878b55",
+   "kit": "indigena",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez escuro; sem chapéu de palha, roupa leve com faixa e bolsa de tecido"
+  },
+  {
+   "prancha": "file_00000000a060820e961abfe85478a582",
+   "kit": "sertanejo",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": "chapéu de palha presente"
+  },
+  {
+   "prancha": "file_00000000ab3c820ea80effb45d4df69c",
+   "kit": "sertanejo",
+   "base": "feminino_claro_idoso",
+   "confianca": "media",
+   "obs": "faixa talvez adulto; rugas marcadas mas sem cabelo visivel sob o chapeu"
+  },
+  {
+   "prancha": "file_000000006a70820ea0c434735c1e84fb",
+   "kit": "sertanejo",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "sertanejo__feminino_escuro_idoso",
+   "kit": "sertanejo",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000db94820eaad7be866dd14064",
+   "kit": "sertanejo",
+   "base": "feminino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000004290820e8723e94eb8e4cb36",
+   "kit": "sertanejo",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_000000007368820e808fbbbc3fbd9534",
+   "kit": "sertanejo",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007e24820ebb5e4e2d157b0335",
+   "kit": "sertanejo",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "baixa",
+   "obs": "talvez claro"
+  },
+  {
+   "prancha": "file_000000001444820e99cbf8f72b6ae160",
+   "kit": "sertanejo",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002a68820ea957254313a9eef1",
+   "kit": "sertanejo",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "sertanejo__feminino_muito-escuro_adulto",
+   "kit": "sertanejo",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "sertanejo__feminino_muito-escuro_idoso",
+   "kit": "sertanejo",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "sertanejo__feminino_muito-escuro_jovem-adulto",
+   "kit": "sertanejo",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000161c820ea735552b1c57379a",
+   "kit": "sertanejo",
+   "base": "masculino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000009f0820eb225add1284cbaf3",
+   "kit": "sertanejo",
+   "base": "masculino_claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000009648820eba66a52ed0399dea",
+   "kit": "sertanejo",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_00000000c9cc820eaf04db3db4183a4b",
+   "kit": "sertanejo",
+   "base": "masculino_escuro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez medio"
+  },
+  {
+   "prancha": "file_00000000a810820e92cf7f43d32f83ee",
+   "kit": "sertanejo",
+   "base": "masculino_escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002794820eb1ba0b325f17f485",
+   "kit": "sertanejo",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000c014820e985184ce1f318f82",
+   "kit": "sertanejo",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000980c820e8d03aed495d8d1fa",
+   "kit": "sertanejo",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000200820e9804b37e443a1fa8",
+   "kit": "sertanejo",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000003534820ebcf6b4fb4468b468",
+   "kit": "sertanejo",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000080c820eb2afa760df0ab6fc",
+   "kit": "sertanejo",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000045a0820e97d194112d83e5ea",
+   "kit": "sertanejo",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000004438820eb40adfc9d90da44c",
+   "kit": "sertanejo",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007c10820eacdbcd962db052d8",
+   "kit": "sertanejo",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-escuro; chapéu de palha presente"
+  },
+  {
+   "prancha": "file_000000002e14820e85511c479c76c701",
+   "kit": "sertanejo",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000b5c820e83f071cc20c01f90",
+   "kit": "trabalhador",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002e2c820e9853ac2c6cd0d486",
+   "kit": "trabalhador",
+   "base": "feminino_claro_idoso",
+   "confianca": "media",
+   "obs": "talvez claro"
+  },
+  {
+   "prancha": "file_0000000071f0820e98b507de0e463d51",
+   "kit": "trabalhador",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "trabalhador__feminino_escuro_idoso",
+   "kit": "trabalhador",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000008cd4820ebda6c4540b4301da",
+   "kit": "trabalhador",
+   "base": "feminino_medio_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez claro"
+  },
+  {
+   "prancha": "file_0000000065a0820ea901307e36054bef",
+   "kit": "trabalhador",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_000000006c74820e9a47eb0239b6ea9e",
+   "kit": "trabalhador",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000db58820ea80ffbde93a782f9",
+   "kit": "trabalhador",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "media",
+   "obs": "faixa talvez jovem-adulto; linhas leves e olheiras"
+  },
+  {
+   "prancha": "file_000000004074820ea064c4f6d821709f",
+   "kit": "trabalhador",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000006e28820e836bbe8df5e3c809",
+   "kit": "trabalhador",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "trabalhador__feminino_muito-escuro_adulto",
+   "kit": "trabalhador",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "trabalhador__feminino_muito-escuro_idoso",
+   "kit": "trabalhador",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "trabalhador__feminino_muito-escuro_jovem-adulto",
+   "kit": "trabalhador",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000e8cc820ebd2c324cc93d952d",
+   "kit": "trabalhador",
+   "base": "masculino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f610820eabf01e1692088ba7",
+   "kit": "trabalhador",
+   "base": "masculino_claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro (pele curtida por sol)"
+  },
+  {
+   "prancha": "file_0000000008bc820e8a6472856436a484",
+   "kit": "trabalhador",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d3e4820ea4078395d045f2c1",
+   "kit": "trabalhador",
+   "base": "masculino_escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez medio"
+  },
+  {
+   "prancha": "file_000000007bc4820e884e8306401a860e",
+   "kit": "trabalhador",
+   "base": "masculino_escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002148820ea11c751205119ed3",
+   "kit": "trabalhador",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f678820ea5d53c84544d7ea1",
+   "kit": "trabalhador",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000004f68820eaaa79894f45c1371",
+   "kit": "trabalhador",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000000620820e91beac93ccac7823",
+   "kit": "trabalhador",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d6bc820ea98230a16108c38c",
+   "kit": "trabalhador",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000b4b0820e8720d2aded0047a0",
+   "kit": "trabalhador",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-claro"
+  },
+  {
+   "prancha": "file_00000000fed4820e821d0acdcee745ac",
+   "kit": "trabalhador",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000a188820e812dc0cb3a0e257d",
+   "kit": "trabalhador",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-escuro"
+  },
+  {
+   "prancha": "file_00000000e780820e859d51397faf8966",
+   "kit": "trabalhador",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez escuro"
+  },
+  {
+   "prancha": "file_000000003ab0820eb3fdf1a3e0211e5d",
+   "kit": "trabalhador",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000006ff0820ebcdc07161010e4e4",
+   "kit": "tropeiro",
+   "base": "feminino_claro_adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000008f40820eadb71127df51b099",
+   "kit": "tropeiro",
+   "base": "feminino_claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000007ee0820ebcbc67cb76ef4d43",
+   "kit": "tropeiro",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "tropeiro__feminino_escuro_idoso",
+   "kit": "tropeiro",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000128c820e816a0baff4a80b0f",
+   "kit": "tropeiro",
+   "base": "feminino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000aeb0820eacd1cbc8ed3caa22",
+   "kit": "tropeiro",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_000000008510820e8037ed8f65298628",
+   "kit": "tropeiro",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000048dc820eb891952b21854428",
+   "kit": "tropeiro",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002b8c820e962bdd25953d6008",
+   "kit": "tropeiro",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d450820ebb5e26065c803731",
+   "kit": "tropeiro",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "tropeiro__feminino_muito-escuro_adulto",
+   "kit": "tropeiro",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "tropeiro__feminino_muito-escuro_idoso",
+   "kit": "tropeiro",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "tropeiro__feminino_muito-escuro_jovem-adulto",
+   "kit": "tropeiro",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000002538820e81eff50e66b5a92d",
+   "kit": "tropeiro",
+   "base": "masculino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000077c820e89d55c9435f1f216",
+   "kit": "tropeiro",
+   "base": "masculino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000000f9c820ebfc0cb9ebd95d353",
+   "kit": "tropeiro",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007940820e8671a09f4881cc7b",
+   "kit": "tropeiro",
+   "base": "masculino_escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez medio"
+  },
+  {
+   "prancha": "file_00000000fa34820e9bab2fa57a186ce4",
+   "kit": "tropeiro",
+   "base": "masculino_escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000e058820ea91bd17b2f870d45",
+   "kit": "tropeiro",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "talvez escuro"
+  },
+  {
+   "prancha": "file_000000006cc4820e912ec88f20c12ea6",
+   "kit": "tropeiro",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000d2c4820e9590396ce421b10c",
+   "kit": "tropeiro",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007c30820ebeb7313091c7704a",
+   "kit": "tropeiro",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000f628820eb81f22e25df268f0",
+   "kit": "tropeiro",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007b58820ea4753e5f3428ae38",
+   "kit": "tropeiro",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000005e94820eb7c4e201cb625820",
+   "kit": "tropeiro",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000004724820ebd2dba07d5614255",
+   "kit": "tropeiro",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "talvez escuro"
+  },
+  {
+   "prancha": "file_00000000bc4c820e978dc6b3d45c66b6",
+   "kit": "tropeiro",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000001ce4820e853e709d511f9a90",
+   "kit": "tropeiro",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez escuro"
+  },
+  {
+   "prancha": "file_00000000827c820e9f96465ca2dd4963",
+   "kit": "viajante",
+   "base": "feminino_claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000009f4c820ea9baa3e6a00b2e4f",
+   "kit": "viajante",
+   "base": "feminino_claro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000001094820e8ce00fc4bd09c45d",
+   "kit": "viajante",
+   "base": "feminino_claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "viajante__feminino_escuro_idoso",
+   "kit": "viajante",
+   "base": "feminino_escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_000000008d2c820e9fd9be0955127636",
+   "kit": "viajante",
+   "base": "feminino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000ce30820ebe1a2c874ff63926",
+   "kit": "viajante",
+   "base": "feminino_medio_idoso",
+   "confianca": "alta",
+   "obs": "match pixel com lote anterior"
+  },
+  {
+   "prancha": "file_000000006dc0820eba2c0c2d779b4576",
+   "kit": "viajante",
+   "base": "feminino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007760820eb677df3d34bc6365",
+   "kit": "viajante",
+   "base": "feminino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000002dd4820e830ac5880f2891db",
+   "kit": "viajante",
+   "base": "feminino_muito-claro_idoso",
+   "confianca": "baixa",
+   "obs": "tom: talvez claro"
+  },
+  {
+   "prancha": "file_000000002a40820ebdaf685c338297c4",
+   "kit": "viajante",
+   "base": "feminino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "viajante__feminino_muito-escuro_adulto",
+   "kit": "viajante",
+   "base": "feminino_muito-escuro_adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "viajante__feminino_muito-escuro_idoso",
+   "kit": "viajante",
+   "base": "feminino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "viajante__feminino_muito-escuro_jovem-adulto",
+   "kit": "viajante",
+   "base": "feminino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": "complemento confirmado"
+  },
+  {
+   "prancha": "file_00000000f4f0820e8b862501fc5fb3cd",
+   "kit": "viajante",
+   "base": "masculino_claro_adulto",
+   "confianca": "baixa",
+   "obs": "tom talvez medio (pele bronzeada)"
+  },
+  {
+   "prancha": "file_000000000f80820e9f18a359c42c5158",
+   "kit": "viajante",
+   "base": "masculino_claro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000c4b4820ebf35e65ce325f279",
+   "kit": "viajante",
+   "base": "masculino_claro_jovem-adulto",
+   "confianca": "media",
+   "obs": "tom talvez muito-claro"
+  },
+  {
+   "prancha": "file_0000000095dc820e9275f58d39a1c43d",
+   "kit": "viajante",
+   "base": "masculino_escuro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000003ddc820eab1c8d59b6febe56",
+   "kit": "viajante",
+   "base": "masculino_escuro_idoso",
+   "confianca": "baixa",
+   "obs": "tom talvez escuro"
+  },
+  {
+   "prancha": "file_000000003eb8820e8b60ef02e42e13a5",
+   "kit": "viajante",
+   "base": "masculino_escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000424c820e8fe4c70d8962407d",
+   "kit": "viajante",
+   "base": "masculino_medio_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000009e18820e9041e4a957945504",
+   "kit": "viajante",
+   "base": "masculino_medio_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000c0c0820e82607c330a6c84df",
+   "kit": "viajante",
+   "base": "masculino_medio_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000bd74820e8fdb061116421a85",
+   "kit": "viajante",
+   "base": "masculino_muito-claro_adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_000000007708820eb4220c9734459177",
+   "kit": "viajante",
+   "base": "masculino_muito-claro_idoso",
+   "confianca": "baixa",
+   "obs": "talvez muito-claro"
+  },
+  {
+   "prancha": "file_000000009390820e9fc249aa85a814ac",
+   "kit": "viajante",
+   "base": "masculino_muito-claro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_0000000018a4820ebd80c2433f57f9e5",
+   "kit": "viajante",
+   "base": "masculino_muito-escuro_adulto",
+   "confianca": "baixa",
+   "obs": "tom: talvez muito-escuro"
+  },
+  {
+   "prancha": "file_00000000686c820e818310d0ebb66cbc",
+   "kit": "viajante",
+   "base": "masculino_muito-escuro_idoso",
+   "confianca": "alta",
+   "obs": ""
+  },
+  {
+   "prancha": "file_00000000cc70820e96d55025383e8e05",
+   "kit": "viajante",
+   "base": "masculino_muito-escuro_jovem-adulto",
+   "confianca": "alta",
+   "obs": ""
+  }
+ ]
+}

@@ -61,6 +61,48 @@ function SellerPortrait({ loja, size }: { loja: LojaInfo; size: string }) {
   );
 }
 
+function Stepper({
+  q,
+  nome,
+  onChange,
+}: {
+  q: number;
+  nome: string;
+  onChange: (q: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 shrink-0">
+      <button
+        type="button"
+        onClick={() => onChange(q - 1)}
+        disabled={q === 0}
+        aria-label={`Devolver ${nome}`}
+        className="w-7 h-7 rounded-full font-cinzel text-sm text-arcana-text-dim hover:text-arcana-gold-bright disabled:opacity-25 transition-colors"
+        style={{ border: "1px solid var(--color-arcana-border)", background: "rgba(8,8,15,0.5)" }}
+      >
+        −
+      </button>
+      <span
+        className={[
+          "w-6 text-center font-cinzel text-base",
+          q > 0 ? "text-arcana-gold-bright" : "text-arcana-text-dim",
+        ].join(" ")}
+      >
+        {q}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(q + 1)}
+        aria-label={`Comprar ${nome}`}
+        className="w-7 h-7 rounded-full font-cinzel text-sm text-arcana-text-dim hover:text-arcana-gold-bright transition-colors"
+        style={{ border: "1px solid var(--color-arcana-border)", background: "rgba(8,8,15,0.5)" }}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   const ficha = data.ficha ?? FICHA_INICIAL;
   const compras = useMemo(() => ficha.compras ?? [], [ficha.compras]);
@@ -71,6 +113,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   );
   const [lojaId, setLojaId] = useState<string>(lojasVisiveis[0]?.id ?? LOJAS[0].id);
   const [busca, setBusca] = useState("");
+  const [carrinhoAberto, setCarrinhoAberto] = useState(false);
 
   const setQuantidade = (id: string, quantidade: number) => {
     const outras = compras.filter((c) => c.id !== id);
@@ -81,8 +124,16 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   const qty = (id: string) => compras.find((c) => c.id === id)?.quantidade ?? 0;
   const resumo = useMemo(() => resumoCompras(compras), [compras]);
   const montaria = montariaComprada(compras);
+  const totalItens = compras.reduce((n, c) => n + c.quantidade, 0);
 
   const loja = lojasVisiveis.find((l) => l.id === lojaId) ?? lojasVisiveis[0] ?? LOJAS[0];
+
+  // Quantos itens do alforje saíram de cada loja (badge nas fachadas).
+  const itensPorLoja = (l: LojaInfo) =>
+    compras.reduce((n, c) => {
+      const item = itemById(c.id);
+      return item && l.categorias.includes(item.categoria) ? n + c.quantidade : n;
+    }, 0);
 
   // A cena da loja ativa ambienta o painel do retrato.
   useEffect(() => {
@@ -90,6 +141,14 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
     return () => onAmbient?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loja.imagem]);
+
+  // Esc fecha o carrinho.
+  useEffect(() => {
+    if (!carrinhoAberto) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setCarrinhoAberto(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [carrinhoAberto]);
 
   const termo = busca.trim().toLowerCase();
   const catalogoLiberado = CATALOGO.filter((i) => !limites.itensBloqueados.includes(i.id));
@@ -109,46 +168,62 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
     <div className="space-y-6 max-w-2xl">
       <HowItWorks guide={PLAYER_GUIDES.compras} />
 
-      {/* Painel de orçamento e espaço */}
+      {/* Painel fixo: orçamento, espaço e acesso ao alforje */}
       <div
-        className="rounded-2xl p-4 grid grid-cols-3 gap-3 text-center"
-        style={{ background: "rgba(27,27,42,0.72)", border: "1px solid rgba(209,171,85,0.25)" }}
+        className="sticky top-0 z-30 rounded-2xl px-4 py-3 flex items-center gap-4"
+        style={{
+          background: "rgba(15,15,26,0.9)",
+          backdropFilter: "blur(20px) saturate(1.4)",
+          border: "1px solid rgba(209,171,85,0.3)",
+          boxShadow: "0 6px 24px rgba(0,0,0,0.45)",
+        }}
       >
-        <div>
-          <p
-            className={[
-              "font-cinzel text-2xl leading-none",
-              estourou ? "text-arcana-danger" : "text-arcana-gold-bright",
-            ].join(" ")}
-          >
-            {fmt(resumo.saldo)}
-          </p>
-          <p className="font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim mt-1.5">
-            Saldo de $200
-          </p>
+        <div className="flex-1 grid grid-cols-3 gap-3 text-center">
+          <div>
+            <p
+              className={[
+                "font-cinzel text-xl leading-none",
+                estourou ? "text-arcana-danger" : "text-arcana-gold-bright",
+              ].join(" ")}
+            >
+              {fmt(resumo.saldo)}
+            </p>
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text-dim mt-1">
+              Saldo
+            </p>
+          </div>
+          <div>
+            <p
+              className={[
+                "font-cinzel text-xl leading-none",
+                semEspaco ? "text-arcana-danger" : "text-arcana-gold-bright",
+              ].join(" ")}
+            >
+              {resumo.espacoUsado} / {resumo.capacidade}
+            </p>
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text-dim mt-1">
+              Espaços
+            </p>
+          </div>
+          <div>
+            <p className="font-cinzel text-xl leading-none text-arcana-gold-bright">
+              {resumo.armasProntas} / {resumo.limiteArmasProntas}
+            </p>
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text-dim mt-1">
+              Armas prontas
+            </p>
+          </div>
         </div>
-        <div>
-          <p
-            className={[
-              "font-cinzel text-2xl leading-none",
-              semEspaco ? "text-arcana-danger" : "text-arcana-gold-bright",
-            ].join(" ")}
-          >
-            {resumo.espacoUsado} / {resumo.capacidade}
-          </p>
-          <p className="font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim mt-1.5">
-            Espaços {resumo.temMontaria ? "(mochila + montaria)" : "da mochila"}
-          </p>
-        </div>
-        <div>
-          <p className="font-cinzel text-2xl leading-none text-arcana-gold-bright">
-            {resumo.armasProntas} / {resumo.limiteArmasProntas}
-          </p>
-          <p className="font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim mt-1.5">
-            Armas prontas
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => setCarrinhoAberto(true)}
+          disabled={totalItens === 0}
+          className={totalItens > 0 ? "arcana-btn-primary arcana-btn-sm" : "arcana-btn-disabled arcana-btn-sm"}
+        >
+          Alforje{totalItens > 0 ? ` · ${totalItens}` : ""}
+        </button>
       </div>
+
       {montaria && (
         <p className="font-crimson text-sm italic text-arcana-gold-bright">
           {montaria === "cavalo" ? "Cavalo" : "Mula"} no alforje — a próxima etapa é batizar e
@@ -167,6 +242,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {lojasVisiveis.map((l) => {
             const active = !termo && l.id === lojaId;
+            const naLoja = itensPorLoja(l);
             return (
               <button
                 key={l.id}
@@ -180,10 +256,26 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
                   "relative rounded-xl border p-1.5 flex flex-col items-center gap-1.5 transition-all duration-150",
                   active
                     ? "border-arcana-gold/70 bg-arcana-gold/[0.08]"
-                    : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40",
+                    : naLoja > 0
+                      ? "border-arcana-gold/40 bg-arcana-gold/[0.04] hover:border-arcana-gold/60"
+                      : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40",
                 ].join(" ")}
                 style={active ? { boxShadow: "0 0 16px rgba(209,171,85,0.2)" } : undefined}
               >
+                {naLoja > 0 && (
+                  <span
+                    className="absolute -top-1.5 -right-1.5 z-10 min-w-5 h-5 px-1 rounded-full flex items-center justify-center font-cinzel text-[10px] font-bold"
+                    style={{
+                      background: "linear-gradient(180deg, #f0cc6a, #bd9540)",
+                      color: "#1c1206",
+                      border: "1px solid rgba(255,235,180,0.7)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.6), 0 0 10px rgba(209,171,85,0.35)",
+                    }}
+                    aria-label={`${naLoja} itens comprados nesta loja`}
+                  >
+                    {naLoja}
+                  </span>
+                )}
                 <SellerPortrait loja={l} size="w-full aspect-square text-2xl" />
                 <span
                   className={[
@@ -277,145 +369,192 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
         className="arcana-input w-full font-crimson text-base"
       />
 
-      {/* Prateleira */}
-      <div className="space-y-1.5">
+      {/* Vitrine — cards com a arte em destaque */}
+      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {visiveis.map((item) => {
           const q = qty(item.id);
           return (
             <div
               key={item.id}
               className={[
-                "flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors",
+                "relative rounded-xl border overflow-hidden transition-colors flex flex-col",
                 q > 0
-                  ? "border-arcana-gold/50 bg-arcana-gold/[0.06]"
-                  : "border-arcana-border bg-arcana-surface/60",
+                  ? "border-arcana-gold/60 bg-arcana-gold/[0.05]"
+                  : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/35",
               ].join(" ")}
+              style={q > 0 ? { boxShadow: "0 0 16px rgba(209,171,85,0.12)" } : undefined}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={itemImagem(item.id)}
-                alt=""
-                width={48}
-                height={48}
-                loading="lazy"
-                className="h-12 w-12 shrink-0 rounded-xl object-contain"
-                style={{
-                  background: "#0b0b14",
-                  border: q > 0
-                    ? "1px solid rgba(209,171,85,0.5)"
-                    : "1px solid var(--color-arcana-border-dim)",
-                }}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-crimson text-base text-arcana-text leading-tight">
+              <div
+                className="relative flex items-center justify-center py-3"
+                style={{ background: "#0b0b14" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={itemImagem(item.id)}
+                  alt=""
+                  width={112}
+                  height={112}
+                  loading="lazy"
+                  className="h-28 w-28 object-contain"
+                />
+                {q > 0 && (
+                  <span
+                    className="absolute top-2 right-2 min-w-5 h-5 px-1 rounded-full flex items-center justify-center font-cinzel text-[10px] font-bold"
+                    style={{
+                      background: "linear-gradient(180deg, #f0cc6a, #bd9540)",
+                      color: "#1c1206",
+                      border: "1px solid rgba(255,235,180,0.7)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {q}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col flex-1 px-3 pt-2 pb-2.5 gap-1">
+                <p className="font-cinzel text-[11px] uppercase tracking-[0.1em] text-arcana-text leading-snug">
                   {item.nome}
-                  {item.nota && (
-                    <span className="ml-2 font-cinzel text-[10px] uppercase tracking-[0.08em] text-arcana-gold">
-                      {item.nota}
-                    </span>
-                  )}
                 </p>
-                <p className="font-crimson text-[13px] italic text-arcana-text-dim leading-snug mt-0.5">
+                {item.nota && (
+                  <p className="font-cinzel text-[10px] uppercase tracking-[0.06em] text-arcana-gold leading-snug">
+                    {item.nota}
+                  </p>
+                )}
+                <p
+                  className="font-crimson text-[13px] italic text-arcana-text-dim leading-snug line-clamp-2"
+                  title={item.descricao}
+                >
                   {item.descricao}
                 </p>
-              </div>
-              <span className="font-cinzel text-sm text-arcana-gold-bright shrink-0 w-14 text-right">
-                {fmt(item.preco)}
-              </span>
-              <span className="font-cinzel text-[10px] uppercase tracking-[0.1em] text-arcana-text-dim shrink-0 w-10 text-right">
-                {item.espaco === null ? "—" : item.espaco} esp
-              </span>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setQuantidade(item.id, q - 1)}
-                  disabled={q === 0}
-                  aria-label={`Devolver ${item.nome}`}
-                  className="w-7 h-7 rounded-full font-cinzel text-sm text-arcana-text-dim hover:text-arcana-gold-bright disabled:opacity-25 transition-colors"
-                  style={{ border: "1px solid var(--color-arcana-border)", background: "rgba(8,8,15,0.5)" }}
-                >
-                  −
-                </button>
-                <span
-                  className={[
-                    "w-7 text-center font-cinzel text-base",
-                    q > 0 ? "text-arcana-gold-bright" : "text-arcana-text-dim",
-                  ].join(" ")}
-                >
-                  {q}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantidade(item.id, q + 1)}
-                  aria-label={`Comprar ${item.nome}`}
-                  className="w-7 h-7 rounded-full font-cinzel text-sm text-arcana-text-dim hover:text-arcana-gold-bright transition-colors"
-                  style={{ border: "1px solid var(--color-arcana-border)", background: "rgba(8,8,15,0.5)" }}
-                >
-                  +
-                </button>
+                <div className="mt-auto pt-1.5 flex items-center justify-between gap-2">
+                  <span className="font-cinzel text-sm text-arcana-gold-bright">
+                    {fmt(item.preco)}
+                    <span className="ml-1.5 font-cinzel text-[10px] uppercase tracking-[0.08em] text-arcana-text-dim">
+                      {item.espaco === null ? "—" : item.espaco} esp
+                    </span>
+                  </span>
+                  <Stepper q={q} nome={item.nome} onChange={(n) => setQuantidade(item.id, n)} />
+                </div>
               </div>
             </div>
           );
         })}
         {visiveis.length === 0 && (
-          <p className="font-crimson text-sm italic text-arcana-text-dim py-4 text-center">
+          <p className="font-crimson text-sm italic text-arcana-text-dim py-4 text-center sm:col-span-2 lg:col-span-3">
             Nada encontrado com esse nome.
           </p>
         )}
       </div>
 
-      {/* Alforje */}
-      {carrinho.length > 0 && (
-        <div
-          className="rounded-2xl p-4 space-y-2"
-          style={{ background: "rgba(27,27,42,0.72)", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <div className="flex items-baseline justify-between">
-            <span className={LABEL}>Alforje</span>
-            <span className="font-cinzel text-sm text-arcana-gold-bright">
-              {fmt(resumo.custoTotal)}
-            </span>
-          </div>
-          <ul className="space-y-1">
-            {carrinho.map((c) => (
-              <li key={c.id} className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 min-w-0">
+      {/* Carrinho — gaveta lateral */}
+      {carrinhoAberto && (
+        <>
+          <button
+            type="button"
+            aria-label="Fechar alforje"
+            onClick={() => setCarrinhoAberto(false)}
+            className="fixed inset-0 z-40 cursor-default"
+            style={{ background: "rgba(5,5,10,0.6)", backdropFilter: "blur(2px)" }}
+          />
+          <aside
+            className="alforje-drawer fixed inset-y-0 right-0 z-50 w-[380px] max-w-[92vw] flex flex-col"
+            role="dialog"
+            aria-label="Alforje"
+            style={{
+              background: "rgba(15,15,26,0.97)",
+              backdropFilter: "blur(24px) saturate(1.4)",
+              borderLeft: "1px solid rgba(209,171,85,0.35)",
+              boxShadow: "-12px 0 48px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div
+              className="shrink-0 px-5 py-4 flex items-center justify-between gap-3"
+              style={{ borderBottom: "1px solid rgba(209,171,85,0.25)" }}
+            >
+              <div>
+                <h4 className="font-cinzel text-sm uppercase tracking-[0.25em] text-arcana-gold-bright">
+                  Alforje
+                </h4>
+                <p className="font-crimson text-sm italic text-arcana-text-dim mt-0.5">
+                  {totalItens} {totalItens === 1 ? "item" : "itens"} · {fmt(resumo.custoTotal)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCarrinhoAberto(false)}
+                className="arcana-btn-ghost arcana-btn-sm"
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+              {carrinho.length === 0 && (
+                <p className="font-crimson text-sm italic text-arcana-text-dim py-6 text-center">
+                  O alforje está vazio.
+                </p>
+              )}
+              {carrinho.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-3 rounded-xl border border-arcana-border bg-arcana-surface/60 px-3 py-2"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={itemImagem(c.id)}
                     alt=""
-                    width={28}
-                    height={28}
+                    width={44}
+                    height={44}
                     loading="lazy"
-                    className="h-7 w-7 shrink-0 rounded-lg object-contain"
+                    className="h-11 w-11 shrink-0 rounded-lg object-contain"
                     style={{ background: "#0b0b14", border: "1px solid var(--color-arcana-border-dim)" }}
                   />
-                  <span className="font-crimson text-sm text-arcana-text truncate">
-                    {c.quantidade > 1 ? `${c.quantidade}× ` : ""}
-                    {c.item!.nome}
-                  </span>
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="font-crimson text-sm text-arcana-text-dim">
-                    {fmt(c.item!.preco * c.quantidade)}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-crimson text-sm text-arcana-text leading-tight truncate">
+                      {c.item!.nome}
+                    </p>
+                    <p className="font-cinzel text-[10px] uppercase tracking-[0.08em] text-arcana-text-dim mt-0.5">
+                      {fmt(c.item!.preco)} cada · {fmt(c.item!.preco * c.quantidade)}
+                    </p>
+                  </div>
+                  <Stepper
+                    q={c.quantidade}
+                    nome={c.item!.nome}
+                    onChange={(n) => setQuantidade(c.id, n)}
+                  />
                   <button
                     type="button"
                     onClick={() => setQuantidade(c.id, 0)}
                     aria-label={`Tirar ${c.item!.nome} do alforje`}
-                    className="font-cinzel text-[10px] text-arcana-text-dim hover:text-arcana-danger transition-colors"
+                    className="shrink-0 font-cinzel text-[11px] text-arcana-text-dim hover:text-arcana-danger transition-colors"
                   >
                     ✕
                   </button>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="shrink-0 px-5 py-4 space-y-1"
+              style={{ borderTop: "1px solid rgba(209,171,85,0.25)" }}
+            >
+              <div className="flex justify-between font-crimson text-sm text-arcana-text-dim">
+                <span>Gasto</span>
+                <span>{fmt(resumo.custoTotal)}</span>
+              </div>
+              <div className="flex justify-between font-cinzel text-base">
+                <span className="uppercase tracking-[0.15em] text-arcana-text">Saldo</span>
+                <span className={estourou ? "text-arcana-danger" : "text-arcana-gold-bright"}>
+                  {fmt(resumo.saldo)}
                 </span>
-              </li>
-            ))}
-          </ul>
-          <p className="font-crimson text-xs italic text-arcana-text-dim pt-1">
-            Preços de primeira compra: máximo da tabela, sem barganha (p. 52). O saldo vira seu
-            dinheiro na campanha.
-          </p>
-        </div>
+              </div>
+              <p className="font-crimson text-xs italic text-arcana-text-dim pt-1">
+                Preço máximo da tabela, sem barganha (p. 52). O saldo vira seu dinheiro na
+                campanha.
+              </p>
+            </div>
+          </aside>
+        </>
       )}
 
       <style jsx>{`
@@ -444,9 +583,23 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
             transform: scale(1.08) translateY(-2%);
           }
         }
+        .alforje-drawer {
+          animation: drawerIn 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes drawerIn {
+          from {
+            transform: translateX(40px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .balcao,
-          .balcao-img {
+          .balcao-img,
+          .alforje-drawer {
             animation: none;
           }
         }

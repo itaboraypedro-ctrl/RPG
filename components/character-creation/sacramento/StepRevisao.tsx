@@ -37,7 +37,7 @@ const CARD_STYLE = {
   border: "1px solid rgba(255,255,255,0.08)",
 } as const;
 
-export default function Step8Revisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
+export default function StepRevisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -101,7 +101,7 @@ export default function Step8Revisao({ data, triggerRef, onSavingChange, onSaved
   const kit = kitById(data.kitId ?? "base");
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const validacao = validarFicha(ficha);
-  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
+  const compras = resumoCompras(ficha.compras ?? []);
 
   const tracos = base
     ? [

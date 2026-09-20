@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { WizardLayout } from "@/components/character-creation/WizardLayout";
 import { StepIndicator } from "@/components/character-creation/StepIndicator";
 import { SacramentoPreview } from "@/components/character-creation/sacramento/SacramentoPreview";
 import Step1Tracos from "@/components/character-creation/sacramento/Step1Tracos";
 import Step2Elementos from "@/components/character-creation/sacramento/Step2Elementos";
-import Step3Historia from "@/components/character-creation/sacramento/Step5Historia";
+import StepHistoria from "@/components/character-creation/sacramento/Step5Historia";
 import Step4Atributos from "@/components/character-creation/sacramento/Step4Atributos";
 import Step5Habilidades from "@/components/character-creation/sacramento/Step5Habilidades";
-import Step6Montaria from "@/components/character-creation/sacramento/Step6Montaria";
-import Step7Compras from "@/components/character-creation/sacramento/Step7Compras";
-import Step8Revisao from "@/components/character-creation/sacramento/Step8Revisao";
+import StepCompras from "@/components/character-creation/sacramento/StepCompras";
+import StepMontaria from "@/components/character-creation/sacramento/StepMontaria";
+import StepRevisao from "@/components/character-creation/sacramento/StepRevisao";
 import {
   APRESENTACOES,
   BASE_PADRAO,
@@ -21,6 +21,7 @@ import {
   baseImagePath,
 } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath, kitById } from "@/lib/character-creation/sacramento/kits";
+import { montariaComprada } from "@/lib/character-creation/sacramento/catalogo";
 import { calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
 import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import type {
@@ -28,24 +29,34 @@ import type {
   HistoriaEstruturada,
   HistoriaSecao,
   SacramentoCreationData,
-  WizardStep,
 } from "@/lib/character-creation/sacramento/types";
 import { FICHA_INICIAL } from "@/lib/character-creation/sacramento/types";
 
-const STEP_LABELS = [
-  "Traços",
-  "Elementos",
-  "História",
-  "Atributos",
-  "Habilidades",
-  "Montaria",
-  "Compras",
-  "Revisão",
-];
+type StepId =
+  | "tracos"
+  | "elementos"
+  | "historia"
+  | "atributos"
+  | "habilidades"
+  | "compras"
+  | "montaria"
+  | "revisao";
+
+const STEP_LABELS: Record<StepId, string> = {
+  tracos: "Traços",
+  elementos: "Elementos",
+  historia: "História",
+  atributos: "Atributos",
+  habilidades: "Habilidades",
+  compras: "Compras",
+  montaria: "Montaria",
+  revisao: "Revisão",
+};
+
 const DRAFT_KEY = "sacramento-character-draft-v2";
 
 export function CharacterWizard() {
-  const [step, setStep] = useState<WizardStep>(1);
+  const [stepIdx, setStepIdx] = useState(0);
   const [data, setData] = useState<Partial<SacramentoCreationData>>({
     base: BASE_PADRAO,
     kitId: "base",
@@ -56,15 +67,46 @@ export function CharacterWizard() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
-  const step8TriggerRef = useRef<(() => void) | null>(null);
+  const revisaoTriggerRef = useRef<(() => void) | null>(null);
   const savedRef = useRef(false);
+
+  const ficha = data.ficha ?? FICHA_INICIAL;
+  const animalComprado = montariaComprada(ficha.compras ?? []);
+
+  // A etapa de montaria só existe se um cavalo/mula saiu da loja.
+  const stepIds: StepId[] = useMemo(
+    () => [
+      "tracos",
+      "elementos",
+      "historia",
+      "atributos",
+      "habilidades",
+      "compras",
+      ...(animalComprado ? (["montaria"] as StepId[]) : []),
+      "revisao",
+    ],
+    [animalComprado],
+  );
+  const idx = Math.min(stepIdx, stepIds.length - 1);
+  const step = stepIds[idx];
+
+  // Devolveu o animal na loja → a ficha da montaria vai junto.
+  useEffect(() => {
+    if (!animalComprado && ficha.montaria) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setData((prev) => ({
+        ...prev,
+        ficha: { ...(prev.ficha ?? FICHA_INICIAL), montaria: null },
+      }));
+    }
+  }, [animalComprado, ficha.montaria]);
 
   // ---- Rascunho: restaura no mount, salva a cada mudança ----
   useEffect(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const draft = JSON.parse(raw) as { step?: WizardStep; data?: Partial<SacramentoCreationData> };
+      const draft = JSON.parse(raw) as { stepIdx?: number; data?: Partial<SacramentoCreationData> };
       if (draft?.data?.base) {
         // Restaurar no effect evita mismatch de hidratação (localStorage não existe no SSR).
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -73,7 +115,7 @@ export function CharacterWizard() {
           ...draft.data,
           ficha: { ...FICHA_INICIAL, ...draft.data.ficha },
         });
-        setStep(draft.step && draft.step >= 1 && draft.step <= 8 ? draft.step : 1);
+        setStepIdx(typeof draft.stepIdx === "number" && draft.stepIdx >= 0 ? draft.stepIdx : 0);
         setDraftRestored(true);
       }
     } catch {
@@ -84,11 +126,11 @@ export function CharacterWizard() {
   useEffect(() => {
     if (savedRef.current) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, data }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ stepIdx, data }));
     } catch {
       // storage cheio/bloqueado — segue sem rascunho
     }
-  }, [step, data]);
+  }, [stepIdx, data]);
 
   // ---- Pré-carrega as 120 bases: troca de traço vira transição instantânea ----
   useEffect(() => {
@@ -125,7 +167,7 @@ export function CharacterWizard() {
     clearDraft();
     savedRef.current = false;
     setData({ base: BASE_PADRAO, kitId: "base", ficha: FICHA_INICIAL });
-    setStep(1);
+    setStepIdx(0);
     setAiError(null);
     setDraftRestored(false);
   };
@@ -134,8 +176,8 @@ export function CharacterWizard() {
     setData((prev) => ({ ...prev, ...partial }));
   };
 
-  const goNext = () => setStep((s) => Math.min(8, s + 1) as WizardStep);
-  const goBack = () => setStep((s) => Math.max(1, s - 1) as WizardStep);
+  const goNext = () => setStepIdx((i) => Math.min(stepIds.length - 1, i + 1));
+  const goBack = () => setStepIdx((i) => Math.max(0, i - 1));
 
   const handleChangeBase = (base: BaseVisual) => {
     setData((prev) => ({ ...prev, base }));
@@ -151,7 +193,9 @@ export function CharacterWizard() {
       `pele ${TONS_DE_PELE.find((t) => t.id === b.tomDePele)?.label?.toLowerCase()}`,
       FAIXAS_ETARIAS.find((f) => f.id === b.faixaEtaria)?.hint,
       TIPOS_FISICOS.find((t) => t.id === b.tipoFisico)?.label?.toLowerCase(),
-      kit && kit.id !== "base" ? `veste como ${kit.nome.toLowerCase()} (${kit.descricao.toLowerCase()})` : null,
+      kit && kit.id !== "base"
+        ? `veste como ${kit.nome.toLowerCase()} (${kit.descricao.toLowerCase()})`
+        : null,
     ];
     return partes.filter(Boolean).join(", ");
   };
@@ -194,40 +238,46 @@ export function CharacterWizard() {
   };
 
   // ---- Navegação/validação ----
-  const ficha = data.ficha ?? FICHA_INICIAL;
   const validacao = validarFicha(ficha);
   const atributosOk =
     validacao.atributosGastos === validacao.atributosOrcamento &&
     validacao.antecedentesGastos === validacao.antecedentesOrcamento &&
-    !validacao.erros.some((e) => e.includes("antecedente comporta") || e.includes("passar de 3") || e.includes("progressão"));
+    !validacao.erros.some(
+      (e) =>
+        e.includes("antecedente comporta") || e.includes("passar de 3") || e.includes("progressão"),
+    );
 
-  const canProceedMap: Record<WizardStep, boolean> = {
-    1: !!data.name && data.name.trim().length >= 2 && !!data.base,
-    2:
+  const canProceedMap: Record<StepId, boolean> = {
+    tracos: !!data.name && data.name.trim().length >= 2 && !!data.base,
+    elementos:
       !!data.elementos &&
       data.elementos.conceito.trim().length > 0 &&
       data.elementos.redencaoTrilhaId.length > 0,
-    3: !!data.historia && data.historiaAprovada === true && !isGenerating,
-    4: atributosOk,
-    5: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
-    6: !ficha.montaria || ficha.montaria.origem !== "",
-    7: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
-    8: !saving,
+    historia: !!data.historia && data.historiaAprovada === true && !isGenerating,
+    atributos: atributosOk,
+    habilidades: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
+    compras: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
+    montaria: true,
+    revisao: !saving,
   };
   const canProceed = canProceedMap[step];
 
   const handleFooterNext = () => {
-    if (step === 8) step8TriggerRef.current?.();
+    if (step === "revisao") revisaoTriggerRef.current?.();
     else goNext();
   };
 
   const header = (
-    <StepIndicator currentStep={step} stepLabels={STEP_LABELS} title="Novo personagem" />
+    <StepIndicator
+      currentStep={idx + 1}
+      stepLabels={stepIds.map((id) => STEP_LABELS[id])}
+      title="Novo personagem"
+    />
   );
 
   const footer = (
     <div className="flex items-center justify-between gap-3">
-      {step > 1 ? (
+      {idx > 0 ? (
         <button type="button" onClick={goBack} disabled={saving} className="arcana-btn-ghost">
           Voltar
         </button>
@@ -244,27 +294,27 @@ export function CharacterWizard() {
         disabled={!canProceed}
         className={canProceed ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
       >
-        {step === 8 ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
+        {step === "revisao" ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
       </button>
     </div>
   );
 
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
-  const previewStats =
-    step >= 4
-      ? [
-          { label: "Vida", value: String(derivados.vidaMaxima) },
-          { label: "Dor", value: String(derivados.capacidadeDor) },
-          { label: "Defesa", value: String(derivados.defesa) },
-          { label: "Movim.", value: String(derivados.movimentos) },
-          { label: "Ações", value: String(derivados.acoesCombate) },
-          { label: "Nível", value: String(ficha.nivel) },
-        ]
-      : undefined;
+  const mostrarStats = ["atributos", "habilidades", "compras", "montaria", "revisao"].includes(step);
+  const previewStats = mostrarStats
+    ? [
+        { label: "Vida", value: String(derivados.vidaMaxima) },
+        { label: "Dor", value: String(derivados.capacidadeDor) },
+        { label: "Defesa", value: String(derivados.defesa) },
+        { label: "Movim.", value: String(derivados.movimentos) },
+        { label: "Ações", value: String(derivados.acoesCombate) },
+        { label: "Nível", value: String(ficha.nivel) },
+      ]
+    : undefined;
 
   const previewImageUrl = data.base ? characterImagePath(data.base, data.kitId) : null;
   const previewSubtitle =
-    step >= 2
+    step !== "tracos"
       ? data.elementos?.conceito || data.elementos?.ocupacao || "Sacramento · 1880"
       : data.base
         ? [
@@ -286,12 +336,12 @@ export function CharacterWizard() {
 
   return (
     <WizardLayout header={header} footer={footer} previewContent={previewContent}>
-      {step === 1 && (
+      {step === "tracos" && (
         <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} />
       )}
-      {step === 2 && <Step2Elementos data={data} onUpdate={updateData} />}
-      {step === 3 && (
-        <Step3Historia
+      {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} />}
+      {step === "historia" && (
+        <StepHistoria
           data={data}
           onUpdate={updateData}
           onGenerateStory={generateStory}
@@ -300,14 +350,14 @@ export function CharacterWizard() {
           error={aiError}
         />
       )}
-      {step === 4 && <Step4Atributos data={data} onUpdate={updateData} />}
-      {step === 5 && <Step5Habilidades data={data} onUpdate={updateData} />}
-      {step === 6 && <Step6Montaria data={data} onUpdate={updateData} />}
-      {step === 7 && <Step7Compras data={data} onUpdate={updateData} />}
-      {step === 8 && (
-        <Step8Revisao
+      {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} />}
+      {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} />}
+      {step === "compras" && <StepCompras data={data} onUpdate={updateData} />}
+      {step === "montaria" && <StepMontaria data={data} onUpdate={updateData} />}
+      {step === "revisao" && (
+        <StepRevisao
           data={data}
-          triggerRef={step8TriggerRef}
+          triggerRef={revisaoTriggerRef}
           onSavingChange={setSaving}
           onSaved={clearDraft}
         />

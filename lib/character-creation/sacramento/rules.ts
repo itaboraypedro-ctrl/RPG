@@ -168,7 +168,7 @@ export function validarFicha(ficha: FichaMecanica): ValidacaoFicha {
     if (soma !== 3) erros.push("A montaria distribui exatamente 3 pontos entre Potência e Resistência.");
   }
 
-  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
+  const compras = resumoCompras(ficha.compras ?? []);
   if (compras.saldo < 0) {
     erros.push(`Compras acima do orçamento: os $200 iniciais não cobrem $${compras.custoTotal}.`);
   }

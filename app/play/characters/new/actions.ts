@@ -69,7 +69,7 @@ export async function createSacramentoCharacter(
 
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const proximoNivel = Math.min(6, ficha.nivel + 1) as keyof typeof XP_POR_NIVEL;
-  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
+  const compras = resumoCompras(ficha.compras ?? []);
   const inventario = (ficha.compras ?? [])
     .map((c) => {
       const item = itemById(c.id);

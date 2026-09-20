@@ -68,13 +68,13 @@ export const PLAYER_GUIDES: Record<
     paginas: "34–40",
   },
   montaria: {
-    oQueE: "O cavalo (ou mula) do personagem, com ficha própria.",
+    oQueE: "O animal que você acabou de comprar no estábulo, com ficha própria.",
     paraQueServe:
-      "Transporte, carga e corridas. A Fidelidade cresce com o cuidado ao longo da campanha.",
+      "Transporte, carga (+15 espaços) e corridas. A Fidelidade cresce com o cuidado ao longo da campanha.",
     naPratica: [
+      "Dê um nome e uma aparência — montaria com nome dura mais, dizem os tropeiros.",
       "Distribua 3 pontos entre Potência (corrida) e Resistência (vida do animal).",
-      "O livro não dá cavalo de graça: marque se vai comprar com seus $200 ou combinar com o Juiz.",
-      "Sem pressa — dá para pular e resolver a montaria na mesa.",
+      "Esta etapa só aparece porque há um animal no alforje; sem compra, resolve-se na mesa.",
     ],
     paginas: "50–51, 55",
   },
@@ -85,6 +85,7 @@ export const PLAYER_GUIDES: Record<
     naPratica: [
       "A primeira compra usa o preço máximo da tabela, sem barganha — regra do livro.",
       "Roupa vestida e arma no coldre não ocupam mochila; o resto gasta os 10 espaços.",
+      "Comprou cavalo ou mula no estábulo? A etapa de montaria abre na sequência.",
       "Não precisa comprar tudo agora: sobrar dinheiro é estratégia, não erro.",
     ],
     paginas: "52–65",
@@ -94,7 +95,7 @@ export const PLAYER_GUIDES: Record<
     paraQueServe: "Última conferência antes de criar. Depois, ajustes finos acontecem com o Juiz na campanha.",
     naPratica: [
       "Confira nome, números e a trilha de redenção.",
-      "Os $200 iniciais e as compras acontecem na mesa, com o catálogo do livro.",
+      "O que sobrou dos $200 vira seu dinheiro; o alforje vira seu inventário.",
       "Clique em Criar personagem e bem-vindo ao Oeste.",
     ],
   },

@@ -5,10 +5,12 @@ import { HowItWorks } from "@/components/campaign-creation/Explainer";
 import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
   CATALOGO,
-  CATEGORIAS,
+  LOJAS,
   itemById,
+  montariaComprada,
   resumoCompras,
-  type CategoriaItem,
+  type ItemCatalogo,
+  type LojaInfo,
 } from "@/lib/character-creation/sacramento/catalogo";
 import {
   FICHA_INICIAL,
@@ -25,10 +27,40 @@ const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-te
 const fmt = (v: number) =>
   `$${Number.isInteger(v) ? v : v.toFixed(2).replace(".", ",")}`;
 
-export default function Step7Compras({ data, onUpdate }: Props) {
+/** Retrato do vendedor com fallback de monograma enquanto a arte não chega. */
+function SellerPortrait({ loja, size }: { loja: LojaInfo; size: string }) {
+  const [failed, setFailed] = useState(false);
+  if (loja.imagem && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={loja.imagem}
+        alt={loja.vendedor}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={`${size} shrink-0 rounded-xl object-cover object-top`}
+        style={{ background: "#090a11", border: "1px solid rgba(209,171,85,0.3)" }}
+      />
+    );
+  }
+  return (
+    <span
+      aria-hidden
+      className={`${size} shrink-0 rounded-xl flex items-center justify-center font-cinzel text-arcana-gold`}
+      style={{
+        background: "radial-gradient(circle at 50% 30%, rgba(209,171,85,0.18), rgba(9,10,17,0.9))",
+        border: "1px solid rgba(209,171,85,0.3)",
+      }}
+    >
+      {loja.nome.charAt(0)}
+    </span>
+  );
+}
+
+export default function StepCompras({ data, onUpdate }: Props) {
   const ficha = data.ficha ?? FICHA_INICIAL;
   const compras = useMemo(() => ficha.compras ?? [], [ficha.compras]);
-  const [categoria, setCategoria] = useState<CategoriaItem>("armas");
+  const [lojaId, setLojaId] = useState<string>(LOJAS[0].id);
   const [busca, setBusca] = useState("");
 
   const setQuantidade = (id: string, quantidade: number) => {
@@ -38,15 +70,14 @@ export default function Step7Compras({ data, onUpdate }: Props) {
   };
 
   const qty = (id: string) => compras.find((c) => c.id === id)?.quantidade ?? 0;
-  const resumo = useMemo(
-    () => resumoCompras(compras, ficha.montaria !== null),
-    [compras, ficha.montaria],
-  );
+  const resumo = useMemo(() => resumoCompras(compras), [compras]);
+  const montaria = montariaComprada(compras);
 
+  const loja = LOJAS.find((l) => l.id === lojaId) ?? LOJAS[0];
   const termo = busca.trim().toLowerCase();
-  const visiveis = termo
+  const visiveis: ItemCatalogo[] = termo
     ? CATALOGO.filter((i) => i.nome.toLowerCase().includes(termo))
-    : CATALOGO.filter((i) => i.categoria === categoria);
+    : CATALOGO.filter((i) => loja.categorias.includes(i.categoria));
 
   const carrinho = compras
     .map((c) => ({ ...c, item: itemById(c.id) }))
@@ -88,7 +119,7 @@ export default function Step7Compras({ data, onUpdate }: Props) {
             {resumo.espacoUsado} / {resumo.capacidade}
           </p>
           <p className="font-cinzel text-[10px] uppercase tracking-[0.15em] text-arcana-text-dim mt-1.5">
-            Espaços {ficha.montaria ? "(mochila + montaria)" : "da mochila"}
+            Espaços {resumo.temMontaria ? "(mochila + montaria)" : "da mochila"}
           </p>
         </div>
         <div>
@@ -100,10 +131,10 @@ export default function Step7Compras({ data, onUpdate }: Props) {
           </p>
         </div>
       </div>
-      {ficha.montaria?.origem === "comprar" && !compras.some((c) => c.id === "cavalo" || c.id === "mula") && (
-        <p className="font-crimson text-sm italic text-arcana-text-dim">
-          Sua montaria sai destas compras: um cavalo custa $250 (acima do orçamento — negocie
-          com o Juiz) e a mula ou burrico sai por $100.
+      {montaria && (
+        <p className="font-crimson text-sm italic text-arcana-gold-bright">
+          {montaria === "cavalo" ? "Cavalo" : "Mula"} no alforje — a próxima etapa é batizar e
+          configurar sua montaria.
         </p>
       )}
       {resumo.avisos.map((a) => (
@@ -112,32 +143,78 @@ export default function Step7Compras({ data, onUpdate }: Props) {
         </p>
       ))}
 
-      {/* Busca + categorias */}
+      {/* Rua das lojas */}
       <div className="space-y-3">
-        <input
-          type="text"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar no catálogo…"
-          className="arcana-input w-full font-crimson text-base"
-        />
-        {!termo && (
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIAS.map((c) => (
+        <span className={LABEL}>As lojas do vilarejo</span>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {LOJAS.map((l) => {
+            const active = !termo && l.id === lojaId;
+            return (
               <button
-                key={c.id}
+                key={l.id}
                 type="button"
-                onClick={() => setCategoria(c.id)}
-                className={categoria === c.id ? "arcana-chip-active" : "arcana-chip"}
+                onClick={() => {
+                  setLojaId(l.id);
+                  setBusca("");
+                }}
+                aria-pressed={active}
+                className={[
+                  "relative rounded-xl border p-1.5 flex flex-col items-center gap-1.5 transition-all duration-150",
+                  active
+                    ? "border-arcana-gold/70 bg-arcana-gold/[0.08]"
+                    : "border-arcana-border bg-arcana-surface/60 hover:border-arcana-gold/40",
+                ].join(" ")}
+                style={active ? { boxShadow: "0 0 16px rgba(209,171,85,0.2)" } : undefined}
               >
-                {c.nome}
+                <SellerPortrait loja={l} size="w-full aspect-square text-2xl" />
+                <span
+                  className={[
+                    "font-cinzel text-[10px] uppercase tracking-[0.08em] leading-tight text-center",
+                    active ? "text-arcana-gold-bright" : "text-arcana-text-dim",
+                  ].join(" ")}
+                >
+                  {l.nome.split(" ").slice(0, 2).join(" ")}
+                </span>
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Itens */}
+      {/* Balcão da loja ativa */}
+      {!termo && (
+        <div
+          className="rounded-2xl p-4 flex items-center gap-4"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(38,19,24,0.85), rgba(27,27,42,0.72) 70%)",
+            border: "1px solid rgba(209,171,85,0.3)",
+          }}
+        >
+          <SellerPortrait loja={loja} size="w-20 h-20 text-3xl" />
+          <div className="min-w-0">
+            <h4 className="font-cinzel text-sm uppercase tracking-[0.2em] text-arcana-gold-bright">
+              {loja.nome}
+            </h4>
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim mt-0.5">
+              {loja.vendedor}
+            </p>
+            <p className="font-crimson text-base italic text-arcana-text leading-snug mt-1.5">
+              “{loja.fala}”
+            </p>
+          </div>
+        </div>
+      )}
+
+      <input
+        type="text"
+        value={busca}
+        onChange={(e) => setBusca(e.target.value)}
+        placeholder="Buscar em todas as lojas…"
+        className="arcana-input w-full font-crimson text-base"
+      />
+
+      {/* Prateleira */}
       <div className="space-y-1.5">
         {visiveis.map((item) => {
           const q = qty(item.id);
@@ -154,12 +231,15 @@ export default function Step7Compras({ data, onUpdate }: Props) {
               <div className="min-w-0 flex-1">
                 <p className="font-crimson text-base text-arcana-text leading-tight">
                   {item.nome}
+                  {item.nota && (
+                    <span className="ml-2 font-cinzel text-[10px] uppercase tracking-[0.08em] text-arcana-gold">
+                      {item.nota}
+                    </span>
+                  )}
                 </p>
-                {item.nota && (
-                  <p className="font-crimson text-xs italic text-arcana-text-dim leading-snug">
-                    {item.nota}
-                  </p>
-                )}
+                <p className="font-crimson text-[13px] italic text-arcana-text-dim leading-snug mt-0.5">
+                  {item.descricao}
+                </p>
               </div>
               <span className="font-cinzel text-sm text-arcana-gold-bright shrink-0 w-14 text-right">
                 {fmt(item.preco)}
@@ -172,7 +252,7 @@ export default function Step7Compras({ data, onUpdate }: Props) {
                   type="button"
                   onClick={() => setQuantidade(item.id, q - 1)}
                   disabled={q === 0}
-                  aria-label={`Remover ${item.nome}`}
+                  aria-label={`Devolver ${item.nome}`}
                   className="w-7 h-7 rounded-full font-cinzel text-sm text-arcana-text-dim hover:text-arcana-gold-bright disabled:opacity-25 transition-colors"
                   style={{ border: "1px solid var(--color-arcana-border)", background: "rgba(8,8,15,0.5)" }}
                 >
@@ -206,7 +286,7 @@ export default function Step7Compras({ data, onUpdate }: Props) {
         )}
       </div>
 
-      {/* Carrinho */}
+      {/* Alforje */}
       {carrinho.length > 0 && (
         <div
           className="rounded-2xl p-4 space-y-2"

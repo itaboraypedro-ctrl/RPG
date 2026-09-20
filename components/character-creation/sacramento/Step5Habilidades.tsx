@@ -194,7 +194,9 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
 
   return (
     <div className="space-y-8 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.habilidades} />
+      <div className="hidden lg:block">
+        <HowItWorks guide={PLAYER_GUIDES.habilidades} />
+      </div>
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="font-crimson text-sm italic text-arcana-text-dim">
@@ -216,14 +218,28 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
 
       <section className={mostra("combate") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Combate</span>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={
+            foco === "combate"
+              ? "grid grid-flow-col grid-rows-2 auto-cols-[84%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid gap-2 sm:grid-cols-2"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           {HABILIDADES.filter((h) => h.categoria === "combate").map(renderCard)}
         </div>
       </section>
 
       <section className={mostra("profissao") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Profissão</span>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={
+            foco === "profissao"
+              ? "grid grid-flow-col grid-rows-2 auto-cols-[84%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid gap-2 sm:grid-cols-2"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           {HABILIDADES.filter((h) => h.categoria === "profissao").map(renderCard)}
         </div>
       </section>

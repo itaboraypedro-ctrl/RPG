@@ -9,6 +9,8 @@ type Props = {
   mobileHeader?: React.ReactNode;
   /** Mobile minimalista: cena quase cheia, controles flutuando por cima. */
   mobileOverlay?: boolean;
+  /** Botão de ajuda ("?") flutuando no topo da cena, quando a etapa tem guia. */
+  mobileHelp?: React.ReactNode;
   /** Muda a cada etapa — o miolo rolável volta ao topo quando muda. */
   scrollKey?: string | number;
 };
@@ -20,6 +22,7 @@ export function WizardLayout({
   previewContent,
   mobileHeader,
   mobileOverlay = false,
+  mobileHelp,
   scrollKey,
 }: Props) {
   return (
@@ -30,9 +33,10 @@ export function WizardLayout({
         {mobileOverlay ? (
           <div className="relative flex-1 min-h-0">
             {/* Cena quase cheia — o miolo reserva o rodapé do cartão flutuante */}
-            <div className="absolute inset-x-0 top-0 bottom-0 flex items-start justify-center px-3 pt-2 pb-44">
+            <div className="absolute inset-x-0 top-0 bottom-0 flex items-start justify-center px-3 pt-2 pb-36">
               {previewContent}
             </div>
+            {mobileHelp && <div className="absolute right-3 top-2 z-20">{mobileHelp}</div>}
             {/* Controles flutuando sobre a imagem */}
             <div
               key={scrollKey}
@@ -53,6 +57,7 @@ export function WizardLayout({
             <div className="relative shrink-0 flex items-center justify-center px-3 pt-2 pb-1"
               style={{ height: "42dvh" }}>
               {previewContent}
+              {mobileHelp && <div className="absolute right-3 top-2 z-20">{mobileHelp}</div>}
             </div>
             <div
               className="relative z-10 flex-1 min-h-0 flex flex-col rounded-t-2xl border-t border-arcana-border-dim"

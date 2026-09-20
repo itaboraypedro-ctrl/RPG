@@ -111,7 +111,9 @@ export default function StepRevisao({
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.revisao} />
+      <div className="hidden lg:block">
+        <HowItWorks guide={PLAYER_GUIDES.revisao} />
+      </div>
 
       {/* Quem é — só nome e conceito; o resto a cena ao lado mostra melhor */}
       <div>

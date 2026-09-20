@@ -131,7 +131,7 @@ export default function Step4Atributos({ data, onUpdate, foco }: Props) {
 
   return (
     <div className="space-y-9 max-w-2xl">
-      <div className={mostra("nivel") ? "" : "hidden"}>
+      <div className={mostra("nivel") ? "hidden lg:block" : "hidden"}>
         <HowItWorks guide={PLAYER_GUIDES.atributos} />
       </div>
 

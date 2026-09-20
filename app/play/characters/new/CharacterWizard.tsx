@@ -45,6 +45,7 @@ import {
   LIMITE_REVISOES_SECAO,
 } from "@/lib/character-creation/sacramento/types";
 import { WIZARD_PANES } from "@/lib/character-creation/sacramento/wizard-panes";
+import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 
 type StepId =
   | "tracos"
@@ -106,6 +107,8 @@ export function CharacterWizard() {
   const [forjando, setForjando] = useState(false);
   // Fronteira entre os atos: confirmar o selo (Habilidades → Selfie) ou o retorno.
   const [modalAto, setModalAto] = useState<"selar" | "voltar" | null>(null);
+  // Mobile: guia da etapa sob o botão "?" no topo da cena.
+  const [ajudaAberta, setAjudaAberta] = useState(false);
   // Forja de retratos: dispara ao confirmar a selfie e roda durante as compras.
   const [forjaStatus, setForjaStatus] = useState<Record<TipoImagem, StatusForja>>({
     close: "idle",
@@ -644,12 +647,31 @@ export function CharacterWizard() {
   );
 
   const foco = paneAtual?.id;
+  const guiaDaEtapa =
+    step in PLAYER_GUIDES ? PLAYER_GUIDES[step as keyof typeof PLAYER_GUIDES] : null;
 
   return (
     <WizardLayout
       header={header}
       mobileHeader={mobileHeader}
-      mobileOverlay={!!paneAtual?.overlay}
+      mobileOverlay={!!paneAtual}
+      mobileHelp={
+        guiaDaEtapa ? (
+          <button
+            type="button"
+            onClick={() => setAjudaAberta(true)}
+            aria-label="Como funciona esta etapa"
+            className="flex h-9 w-9 items-center justify-center rounded-full font-crimson text-base italic text-arcana-gold transition-colors hover:text-arcana-gold-bright"
+            style={{
+              background: "rgba(13,13,22,0.72)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(209,171,85,0.4)",
+            }}
+          >
+            ?
+          </button>
+        ) : null
+      }
       footer={footer}
       previewContent={previewContent}
       scrollKey={`${step}-${paneIdx}`}
@@ -779,6 +801,47 @@ export function CharacterWizard() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {ajudaAberta && guiaDaEtapa && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center lg:hidden">
+          <button
+            aria-label="Fechar ajuda"
+            onClick={() => setAjudaAberta(false)}
+            className="absolute inset-0 cursor-default"
+            style={{ background: "rgba(5,5,10,0.6)", backdropFilter: "blur(3px)" }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="arcana-rise-in relative w-full max-w-md rounded-t-2xl px-5 pt-5 pb-7 space-y-3"
+            style={{
+              background: "rgba(15,15,26,0.97)",
+              backdropFilter: "blur(24px) saturate(1.4)",
+              borderTop: "1px solid rgba(209,171,85,0.35)",
+            }}
+          >
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+              Como funciona · {STEP_LABELS[step]}
+            </p>
+            <p className="font-crimson text-base text-arcana-text leading-relaxed">
+              {guiaDaEtapa.oQueE}
+            </p>
+            <p className="font-crimson text-sm italic text-arcana-text-dim leading-relaxed">
+              {guiaDaEtapa.paraQueServe}
+            </p>
+            <ul className="space-y-1.5">
+              {guiaDaEtapa.naPratica.map((item) => (
+                <li key={item} className="flex items-start gap-2">
+                  <span aria-hidden className="text-arcana-gold mt-0.5 text-xs">◆</span>
+                  <span className="font-crimson text-sm text-arcana-text-dim leading-snug">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={() => setAjudaAberta(false)} className="arcana-btn-primary w-full">
+              Entendi
+            </button>
           </div>
         </div>
       )}

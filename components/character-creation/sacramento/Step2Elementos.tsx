@@ -169,7 +169,7 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
 
   return (
     <div className="space-y-10 max-w-2xl">
-      <div className={mostra("conceito") ? "" : "hidden"}>
+      <div className={mostra("conceito") ? "hidden lg:block" : "hidden"}>
         <HowItWorks guide={PLAYER_GUIDES.elementos} />
       </div>
 
@@ -219,7 +219,14 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
           <span className={LABEL}>Origem</span>
           <p className={HELPER}>De onde seu personagem veio. Escolha um lugar do Oeste ou escreva outro.</p>
         </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <div
+          className={
+            foco === "origem"
+              ? "grid grid-flow-col grid-rows-2 auto-cols-[46%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           {SACRAMENTO_PLACES.map((p) => {
             const active = e.origem === p.nome;
             return (
@@ -315,7 +322,14 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
             Do que seu personagem vive. Não muda números da ficha — mas diz muito sobre a história.
           </p>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={
+            foco === "ocupacao"
+              ? "grid grid-flow-col grid-rows-2 auto-cols-[82%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid gap-2 sm:grid-cols-2"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           {OCUPACOES_SUGERIDAS.map((o) => {
             const nomeExibido = ap === "feminino" ? o.nomeF : o.nome;
             const active = e.ocupacao === o.nome || e.ocupacao === o.nomeF;
@@ -479,7 +493,14 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
             deve ou odeia.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6">
+        <div
+          className={
+            foco === "faccao"
+              ? "grid grid-flow-col grid-rows-2 auto-cols-[31%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           <button
             type="button"
             onClick={() => set({ faccaoId: "nenhuma", faccaoRelacao: "" })}
@@ -654,7 +675,14 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
             São 6 passos; o último encerra a jornada.
           </p>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={
+            foco === "redencao"
+              ? "grid grid-flow-col auto-cols-[82%] gap-2 overflow-x-auto snap-x pb-1"
+              : "grid gap-2 sm:grid-cols-2"
+          }
+          style={{ scrollbarWidth: "none" }}
+        >
           {TRILHAS_REDENCAO.map((t) => {
             const active = e.redencaoTrilhaId === t.id;
             return (

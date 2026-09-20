@@ -292,7 +292,9 @@ export default function StepMontaria({ data, onUpdate }: Props) {
 
   return (
     <div className="space-y-5 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.montaria} />
+      <div className="hidden lg:block">
+        <HowItWorks guide={PLAYER_GUIDES.montaria} />
+      </div>
       {montarias.length > 1 && (
         <p className="font-crimson text-sm italic text-arcana-text-dim">
           {montarias.length} animais saíram do estábulo — cada um com nome e temperamento

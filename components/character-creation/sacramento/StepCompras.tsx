@@ -166,7 +166,9 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.compras} />
+      <div className="hidden lg:block">
+        <HowItWorks guide={PLAYER_GUIDES.compras} />
+      </div>
 
       {/* Painel fixo: orçamento, espaço e acesso ao alforje */}
       <div

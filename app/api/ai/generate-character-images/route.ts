@@ -27,31 +27,38 @@ type RequestBody = {
   nome?: string;
 };
 
-const ESTILO =
-  "Estilo de ilustração pintada de faroeste, realista e dramática, paleta terrosa quente, " +
-  "coerente com um RPG de velho oeste em 1880. Sem elementos modernos, sem fantasia, sem magia.";
+// Regra de ouro dos retratos: a arte do personagem NÃO muda — só o rosto entra.
+const IDENTIDADE =
+  "A primeira imagem é a fotografia real do jogador. A segunda imagem é o personagem escolhido. " +
+  "NÃO reinterprete, NÃO repinte e NÃO redesenhe o personagem: pose, roupa, chapéu, acessórios, " +
+  "cores, iluminação, estilo de pintura e fundo da segunda imagem permanecem EXATAMENTE como estão. " +
+  "A ÚNICA alteração permitida é o rosto: substitua-o pelo rosto da pessoa da primeira imagem, " +
+  "com semelhança clara e reconhecível, integrado ao mesmo estilo de pintura, mesma direção de luz " +
+  "e mesmo tom de acabamento da segunda imagem — nunca colagem fotográfica.";
 
 function promptPara(tipo: TipoImagem, nome: string): { prompt: string; size: string; transparent: boolean } {
-  const identidade =
-    "A primeira imagem é a fotografia real do jogador: use o ROSTO dela como o rosto do personagem, " +
-    "com semelhança clara e reconhecível, traduzida para pintura (nunca colagem fotográfica). " +
-    "A segunda imagem é o personagem escolhido: mantenha fielmente a roupa, chapéu, acessórios e postura dela.";
   switch (tipo) {
     case "close":
       return {
-        prompt: `${identidade} Crie UM retrato de busto (peito para cima) do personagem com expressão séria e olhar firme, levemente de frente, iluminação lateral dramática de fim de tarde. ${ESTILO} Fundo TOTALMENTE transparente — apenas o personagem recortado.`,
+        prompt: `${IDENTIDADE} Entregue um recorte em busto (do peito para cima) desse personagem com o rosto trocado, expressão séria e olhar firme. Todo o resto — roupa, estilo, cores, acabamento — idêntico à segunda imagem. Fundo TOTALMENTE transparente: apenas o personagem recortado.`,
         size: "1024x1536",
         transparent: true,
       };
     case "estados":
       return {
-        prompt: `${identidade} Crie UMA prancha única com 6 retratos de meio corpo do MESMO personagem, organizados em grade de 3 colunas por 2 linhas, todos com o mesmo enquadramento. Da esquerda para a direita, de cima para baixo: 1) saudável e confiante; 2) levemente cansado, suor e poeira; 3) machucado, curativo improvisado e sujeira de sangue discreta; 4) fraco, pálido, ombros caídos; 5) quase morto, gravemente ferido, olhar vidrado; 6) morto, olhos fechados, pele acinzentada. SEM textos, números ou molduras. Fundo escuro uniforme em todas as células. ${ESTILO}`,
+        prompt: `${IDENTIDADE} Entregue UMA prancha única em grade de 3 colunas por 2 linhas com 6 retratos de meio corpo desse MESMO personagem (com o rosto trocado), no MESMO estilo, roupa e acabamento da segunda imagem em todas as células. A única variação entre as células é a condição física, da esquerda para a direita, de cima para baixo: 1) saudável e confiante; 2) levemente cansado, suor e poeira; 3) machucado, curativo improvisado, sujeira discreta de sangue; 4) fraco, pálido, ombros caídos; 5) quase morto, gravemente ferido, olhar vidrado; 6) morto, olhos fechados, pele acinzentada. SEM textos, números ou molduras. Fundo escuro uniforme em todas as células.`,
         size: "1536x1024",
         transparent: false,
       };
     case "banner":
       return {
-        prompt: `${identidade} Crie um cartaz de PROCURADO do velho oeste: folha de papel envelhecida, amarelada, com bordas rasgadas e marcas de pregos. No topo, a palavra "PROCURADO" em tipografia clássica de western. Ao centro, o retrato do personagem como gravura desenhada à mão. Abaixo do retrato, o nome "${nome}" em letras grandes e a linha "VIVO OU MORTO". NÃO escreva nenhum valor de recompensa. Fora da folha de papel, o fundo é TOTALMENTE transparente. ${ESTILO}`,
+        prompt:
+          `Fotografia frontal e realista de um cartaz de procurado AUTÊNTICO de 1880, como um objeto físico de época — nada com cara de arte digital ou de IA. ` +
+          `Folha de papel envelhecida e amarelada pelo sol, fibras visíveis, manchas de umidade, vincos, bordas gastas e furos de prego nos cantos. ` +
+          `Impressão tipográfica (letterpress) em tinta preta desbotada e levemente falhada, como prensa manual da época. TODO o cartaz é monocromático — tinta preta sobre papel sépia, nenhuma cor além do tom do papel. ` +
+          `No topo, em letras grandes de madeira tipo western: "PROCURADO". Ao centro, retrato do personagem em gravura de traço preto-e-branco (estilo xilogravura de jornal antigo): o rosto é o da pessoa na primeira imagem e a roupa e o chapéu são os do personagem da segunda imagem, tudo traduzido para o traço da gravura. ` +
+          `Abaixo do retrato: o nome "${nome}" em destaque, a linha "VIVO OU MORTO" e, embaixo, "RECOMPENSA: $500". ` +
+          `Fora da folha de papel, o fundo é TOTALMENTE transparente.`,
         size: "1024x1536",
         transparent: true,
       };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   createSacramentoCharacter,
   type CreateSacramentoPayload,
@@ -12,19 +12,23 @@ import {
   type SacramentoCreationData,
 } from "@/lib/character-creation/sacramento/types";
 
+type TipoImagem = "close" | "estados" | "banner";
+type StatusImagem = "idle" | "gerando" | "ok" | "erro";
+
 type Props = {
   data: Partial<SacramentoCreationData>;
-  selfie: string;
+  /** A forja roda no wizard (começa na selfie, durante as compras); aqui só se exibe e conclui. */
+  status: Record<TipoImagem, StatusImagem>;
+  erros: Partial<Record<TipoImagem, string>>;
+  imagens: ImagensGeradas;
+  onRetry: (tipo: TipoImagem) => void;
   /** Personagem salvo com sucesso — hora de limpar o rascunho. */
   onSaved: () => void;
   /** Jogador fechou a revelação — navegar para o Hub. */
   onExit: () => void;
-  /** Voltar para a selfie (falha irrecuperável ou desistência). */
+  /** Fechar o overlay e voltar à revisão. */
   onCancel: () => void;
 };
-
-type TipoImagem = "close" | "estados" | "banner";
-type StatusImagem = "gerando" | "ok" | "erro";
 
 const TRABALHOS: { tipo: TipoImagem; rotulo: string }[] = [
   { tipo: "close", rotulo: "Retrato oficial" },
@@ -41,19 +45,20 @@ const MENSAGENS = [
   "Sacramento vai conhecer seu nome…",
 ];
 
-export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCancel }: Props) {
-  const [status, setStatus] = useState<Record<TipoImagem, StatusImagem>>({
-    close: "gerando",
-    estados: "gerando",
-    banner: "gerando",
-  });
-  const [erros, setErros] = useState<Partial<Record<TipoImagem, string>>>({});
+export default function ForjaPersonagem({
+  data,
+  status,
+  erros,
+  imagens,
+  onRetry,
+  onSaved,
+  onExit,
+  onCancel,
+}: Props) {
   const [fase, setFase] = useState<"forja" | "salvando" | "revelacao" | "erro-salvar">("forja");
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [msgIdx, setMsgIdx] = useState(0);
   const [mostrarFechar, setMostrarFechar] = useState(false);
-  const imagensRef = useRef<ImagensGeradas>({});
-  const iniciouRef = useRef(false);
 
   // Mensagens rotativas estilo tela de carregamento de console.
   useEffect(() => {
@@ -61,43 +66,6 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
     const t = setInterval(() => setMsgIdx((i) => (i + 1) % MENSAGENS.length), 3200);
     return () => clearInterval(t);
   }, [fase]);
-
-  const gerar = useCallback(
-    async (tipo: TipoImagem) => {
-      setStatus((s) => ({ ...s, [tipo]: "gerando" }));
-      setErros((e) => ({ ...e, [tipo]: undefined }));
-      try {
-        const res = await fetch("/api/ai/generate-character-images", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tipo,
-            selfie,
-            base: data.base,
-            kitId: data.kitId ?? "base",
-            nome: data.name ?? "",
-          }),
-        });
-        const json = (await res.json()) as { url?: string; placeholder?: boolean; error?: string };
-        if (!res.ok || !json.url) {
-          throw new Error(json.error ?? "Falha na geração");
-        }
-        // Placeholder (dev sem chave) não vira imagem oficial — o kit estático já cobre.
-        if (!json.placeholder) imagensRef.current[tipo] = json.url;
-        setStatus((s) => ({ ...s, [tipo]: "ok" }));
-      } catch (err) {
-        setErros((e) => ({ ...e, [tipo]: err instanceof Error ? err.message : "Falha na geração" }));
-        setStatus((s) => ({ ...s, [tipo]: "erro" }));
-      }
-    },
-    [data.base, data.kitId, data.name, selfie],
-  );
-
-  useEffect(() => {
-    if (iniciouRef.current) return;
-    iniciouRef.current = true;
-    TRABALHOS.forEach(({ tipo }) => void gerar(tipo));
-  }, [gerar]);
 
   const salvar = useCallback(async () => {
     const { name, base, historia } = data;
@@ -116,7 +84,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
         historia,
         historiaModo: data.historiaModo ?? "manual",
         ficha: data.ficha ?? FICHA_INICIAL,
-        imagens: imagensRef.current,
+        imagens,
       };
       const result = await createSacramentoCharacter(payload);
       if (!result.ok) {
@@ -125,7 +93,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
         return;
       }
       onSaved();
-      if (imagensRef.current.banner) {
+      if (imagens.banner) {
         setFase("revelacao");
       } else {
         onExit();
@@ -134,14 +102,19 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
       setErroSalvar("Não foi possível salvar o personagem. Tente novamente.");
       setFase("erro-salvar");
     }
-  }, [data, onCancel, onSaved, onExit]);
+  }, [data, imagens, onCancel, onSaved, onExit]);
 
   // Todas as imagens resolvidas com sucesso → salva sozinho.
   const todasOk = TRABALHOS.every(({ tipo }) => status[tipo] === "ok");
   const algumaErro = TRABALHOS.some(({ tipo }) => status[tipo] === "erro");
-  const aindaGerando = TRABALHOS.some(({ tipo }) => status[tipo] === "gerando");
+  const aindaGerando = TRABALHOS.some(
+    ({ tipo }) => status[tipo] === "gerando" || status[tipo] === "idle",
+  );
   useEffect(() => {
-    if (fase === "forja" && todasOk) void salvar();
+    if (fase !== "forja" || !todasOk) return;
+    // Pequena pausa dramática antes de cravar o registro (e mantém o setState fora do corpo do effect).
+    const t = setTimeout(() => void salvar(), 400);
+    return () => clearTimeout(t);
   }, [fase, todasOk, salvar]);
 
   // Botão de fechar só aparece depois de 2s de banner na tela.
@@ -157,7 +130,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
         <div className="relative flex h-full w-full flex-col items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={imagensRef.current.banner}
+            src={imagens.banner}
             alt={`Cartaz de procurado de ${data.name}`}
             className="forja-banner-reveal max-h-[80dvh] w-auto max-w-[92vw] object-contain"
           />
@@ -232,7 +205,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
                       {rotulo}
                     </p>
                     <p className="font-crimson text-sm italic text-arcana-text-dim truncate">
-                      {st === "gerando" && "Em criação…"}
+                      {(st === "gerando" || st === "idle") && "Em criação…"}
                       {st === "ok" && "Pronto"}
                       {st === "erro" && (erros[tipo] ?? "Falhou")}
                     </p>
@@ -240,7 +213,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
                   {st === "erro" && (
                     <button
                       type="button"
-                      onClick={() => void gerar(tipo)}
+                      onClick={() => onRetry(tipo)}
                       className="arcana-btn-ghost arcana-btn-sm shrink-0"
                     >
                       Tentar de novo
@@ -268,7 +241,7 @@ export default function ForjaPersonagem({ data, selfie, onSaved, onExit, onCance
                 Seguir com o que deu certo
               </button>
               <button type="button" onClick={onCancel} className="arcana-btn-ghost">
-                Voltar à selfie
+                Voltar à revisão
               </button>
             </div>
           )}

@@ -20,6 +20,7 @@ import {
   FAIXAS_ETARIAS,
   TIPOS_FISICOS,
   TONS_DE_PELE,
+  baseId,
   baseImagePath,
 } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath, kitAvailableForBase, kitById } from "@/lib/character-creation/sacramento/kits";
@@ -35,6 +36,7 @@ import type {
   BaseVisual,
   HistoriaEstruturada,
   HistoriaSecao,
+  ImagensGeradas,
   SacramentoCreationData,
 } from "@/lib/character-creation/sacramento/types";
 import {
@@ -66,6 +68,12 @@ const STEP_LABELS: Record<StepId, string> = {
 
 const DRAFT_KEY = "sacramento-character-draft-v2";
 
+type TipoImagem = "close" | "estados" | "banner";
+type StatusForja = "idle" | "gerando" | "ok" | "erro";
+
+/** Índice fixo da etapa de selfie — o rascunho restaurado nunca pula além dela (a selfie não persiste). */
+const SELFIE_IDX = 4;
+
 export function CharacterWizard() {
   const router = useRouter();
   const [stepIdx, setStepIdx] = useState(0);
@@ -83,8 +91,17 @@ export function CharacterWizard() {
   // Selfie fica fora do rascunho: pesada demais para o localStorage e não deve persistir.
   const [selfie, setSelfie] = useState<string | null>(null);
   const [forjando, setForjando] = useState(false);
-  // Fronteira entre os atos: confirmar o selo (Habilidades → Compras) ou o retorno.
+  // Fronteira entre os atos: confirmar o selo (Habilidades → Selfie) ou o retorno.
   const [modalAto, setModalAto] = useState<"selar" | "voltar" | null>(null);
+  // Forja de retratos: dispara ao confirmar a selfie e roda durante as compras.
+  const [forjaStatus, setForjaStatus] = useState<Record<TipoImagem, StatusForja>>({
+    close: "idle",
+    estados: "idle",
+    banner: "idle",
+  });
+  const [forjaErros, setForjaErros] = useState<Partial<Record<TipoImagem, string>>>({});
+  const forjaImagensRef = useRef<ImagensGeradas>({});
+  const forjaHashRef = useRef<string | null>(null);
   const savedRef = useRef(false);
 
   const ficha = data.ficha ?? FICHA_INICIAL;
@@ -98,10 +115,10 @@ export function CharacterWizard() {
       "elementos",
       "atributos",
       "habilidades",
+      "selfie",
       "compras",
       ...(temMontaria ? (["montaria"] as StepId[]) : []),
       "revisao",
-      "selfie",
     ],
      
     [temMontaria],
@@ -112,7 +129,6 @@ export function CharacterWizard() {
   // Devolveu os animais na loja → as fichas de montaria vão junto.
   useEffect(() => {
     if (!temMontaria && (ficha.montarias?.length ?? 0) > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData((prev) => ({
         ...prev,
         ficha: { ...(prev.ficha ?? FICHA_INICIAL), montarias: [] },
@@ -128,13 +144,17 @@ export function CharacterWizard() {
       const draft = JSON.parse(raw) as { stepIdx?: number; data?: Partial<SacramentoCreationData> };
       if (draft?.data?.base) {
         // Restaurar no effect evita mismatch de hidratação (localStorage não existe no SSR).
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setData({
           kitId: "base",
           ...draft.data,
           ficha: { ...FICHA_INICIAL, ...draft.data.ficha },
         });
-        setStepIdx(typeof draft.stepIdx === "number" && draft.stepIdx >= 0 ? draft.stepIdx : 0);
+        // A selfie não persiste — quem recarregou depois dela volta para a etapa da foto.
+        setStepIdx(
+          typeof draft.stepIdx === "number" && draft.stepIdx >= 0
+            ? Math.min(draft.stepIdx, SELFIE_IDX)
+            : 0,
+        );
         setDraftRestored(true);
       }
     } catch {
@@ -312,6 +332,52 @@ export function CharacterWizard() {
   const storyFingerprint = () =>
     JSON.stringify([data.name, visualResumo(), data.elementos, ficha.habilidades]);
 
+  // ---- Forja de retratos (gpt-image-1) ----
+  const gerarImagem = async (tipo: TipoImagem, foto?: string) => {
+    const selfieAtual = foto ?? selfie;
+    if (!selfieAtual) return;
+    setForjaStatus((s) => ({ ...s, [tipo]: "gerando" }));
+    setForjaErros((e) => ({ ...e, [tipo]: undefined }));
+    try {
+      const res = await fetch("/api/ai/generate-character-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo,
+          selfie: selfieAtual,
+          base: data.base,
+          kitId: data.kitId ?? "base",
+          nome: data.name ?? "",
+        }),
+      });
+      const json = (await res.json()) as { url?: string; placeholder?: boolean; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? "Falha na geração");
+      // Placeholder (dev sem chave) não vira imagem oficial — o kit estático já cobre.
+      if (!json.placeholder) forjaImagensRef.current[tipo] = json.url;
+      setForjaStatus((s) => ({ ...s, [tipo]: "ok" }));
+    } catch (err) {
+      setForjaErros((e) => ({
+        ...e,
+        [tipo]: err instanceof Error ? err.message : "Falha na geração",
+      }));
+      setForjaStatus((s) => ({ ...s, [tipo]: "erro" }));
+    }
+  };
+
+  const forjaFingerprint = () =>
+    selfie && data.base
+      ? `${selfie.length}:${selfie.slice(-48)}|${baseId(data.base)}|${data.kitId}|${data.name}`
+      : null;
+
+  /** Idempotente: só (re)forja se a selfie ou o visual mudaram desde a última forja. */
+  const iniciarForja = () => {
+    const hash = forjaFingerprint();
+    if (!hash || forjaHashRef.current === hash) return;
+    forjaHashRef.current = hash;
+    forjaImagensRef.current = {};
+    (["close", "estados", "banner"] as TipoImagem[]).forEach((t) => void gerarImagem(t));
+  };
+
   /** A travessia para o Ato II dispararia uma (re)escrita da lenda? */
   const precisaGerarHistoria = () =>
     data.historiaModo !== "manual" &&
@@ -349,8 +415,8 @@ export function CharacterWizard() {
     habilidades: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
     compras: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
     montaria: true,
-    revisao: !!data.historia && !isGenerating,
-    selfie: !!selfie && !forjando,
+    revisao: !!data.historia && !isGenerating && !forjando,
+    selfie: !!selfie,
   };
   const canProceed = canProceedMap[step];
 
@@ -362,10 +428,18 @@ export function CharacterWizard() {
       } else {
         goNext();
       }
+    } else if (step === "selfie") {
+      // A forja começa aqui e roda em segundo plano durante as compras.
+      iniciarForja();
+      goNext();
     } else if (step === "revisao") {
       updateData({ historiaAprovada: true });
-      goNext();
-    } else if (step === "selfie") {
+      if (!selfie) {
+        // Rascunho restaurado sem selfie — volta para a foto antes de criar.
+        setStepIdx(SELFIE_IDX);
+        return;
+      }
+      iniciarForja();
       setForjando(true);
     } else {
       goNext();
@@ -373,16 +447,16 @@ export function CharacterWizard() {
   };
 
   const handleBack = () => {
-    // Voltar de Compras para o Ato I mexe nos insumos da lenda — pede confirmação.
-    if (step === "compras" && (data.historia || isGenerating)) {
+    // Voltar da Selfie para o Ato I mexe nos insumos da lenda — pede confirmação.
+    if (step === "selfie" && (data.historia || isGenerating)) {
       setModalAto("voltar");
       return;
     }
     goBack();
   };
 
-  // Dois atos: quem você é (até Habilidades) e a vida no Oeste (das Compras em diante).
-  const atoII = ["compras", "montaria", "revisao", "selfie"].includes(step);
+  // Dois atos: quem você é (até a Selfie) e a vida no Oeste (das Compras em diante).
+  const atoII = ["compras", "montaria", "revisao"].includes(step);
   const header = (
     <StepIndicator
       currentStep={idx + 1}
@@ -392,7 +466,11 @@ export function CharacterWizard() {
   );
 
   const footerLabel =
-    step === "revisao" ? "Aprovar história" : step === "selfie" ? "Forjar personagem" : "Continuar";
+    step === "revisao"
+      ? forjando
+        ? "Forjando…"
+        : "Criar personagem"
+      : "Continuar";
 
   const footer = (
     <div className="flex items-center justify-between gap-3">
@@ -450,13 +528,16 @@ export function CharacterWizard() {
             .join(" · ")
         : undefined;
 
-  // Nas lojas (e no estábulo da montaria), a cena do vendedor ambienta o retrato.
+  // Nas lojas (e no estábulo da montaria), a cena do vendedor ambienta o retrato;
+  // na selfie, o estúdio do retratista.
   const ambientImage =
     step === "compras" && lojaAmbient
       ? lojaAmbient
       : step === "montaria"
         ? "/story/vendedores/estabulo.webp"
-        : undefined;
+        : step === "selfie"
+          ? "/story/fotografo/estudio.webp"
+          : undefined;
 
   const previewContent = (
     <SacramentoPreview
@@ -528,8 +609,8 @@ export function CharacterWizard() {
                 </h3>
                 <p className="font-crimson text-base text-arcana-text leading-relaxed">
                   Traços, elementos, atributos e habilidades formam a sua identidade. Ao seguir, o
-                  narrador começa a escrever sua lenda com essas escolhas enquanto você faz as
-                  compras.
+                  narrador começa a escrever sua lenda com essas escolhas — enquanto você tira o
+                  retrato e faz as compras, tudo vai sendo preparado.
                 </p>
                 <p className="font-crimson text-sm italic text-arcana-text-dim">
                   Dá para voltar depois, mas mudar essas escolhas reescreve a lenda — este
@@ -599,10 +680,13 @@ export function CharacterWizard() {
           </div>
         </div>
       )}
-      {forjando && selfie && (
+      {forjando && (
         <ForjaPersonagem
           data={data}
-          selfie={selfie}
+          status={forjaStatus}
+          erros={forjaErros}
+          imagens={forjaImagensRef.current}
+          onRetry={(tipo) => void gerarImagem(tipo)}
           onSaved={clearDraft}
           onExit={() => router.push("/hub")}
           onCancel={() => setForjando(false)}

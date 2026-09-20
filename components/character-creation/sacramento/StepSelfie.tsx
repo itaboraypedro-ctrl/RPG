@@ -16,11 +16,21 @@ const CARD_STYLE = {
 /** Lado do quadrado capturado — suficiente para o gpt-image-1 ler o rosto. */
 const CAPTURE_SIZE = 768;
 
+// Assets do estúdio do retratista — a tela degrada com elegância se ainda não existirem.
+const FOTOGRAFO_IMG = "/story/fotografo/fotografo.webp";
+const ESTUDIO_IMG = "/story/fotografo/estudio.webp";
+const IRIS_IMG = "/story/fotografo/iris.png";
+
 export default function StepSelfie({ selfie, onSelfie }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const flashTimerRef = useRef<number | null>(null);
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [cameraErro, setCameraErro] = useState<string | null>(null);
+  const [disparando, setDisparando] = useState(false);
+  const [temFotografo, setTemFotografo] = useState(true);
+  const [temEstudio, setTemEstudio] = useState(true);
+  const [temIris, setTemIris] = useState(true);
 
   const pararCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -56,9 +66,26 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
     return pararCamera;
   }, [selfie, ligarCamera, pararCamera]);
 
+  useEffect(
+    () => () => {
+      if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current);
+    },
+    [],
+  );
+
+  const entregarFoto = (dataUrl: string) => {
+    // O disparo cênico (íris + flash) fecha antes da foto aparecer.
+    setDisparando(true);
+    flashTimerRef.current = window.setTimeout(() => {
+      pararCamera();
+      onSelfie(dataUrl);
+      setDisparando(false);
+    }, 650);
+  };
+
   const capturar = () => {
     const video = videoRef.current;
-    if (!video || video.videoWidth === 0) return;
+    if (!video || video.videoWidth === 0 || disparando) return;
     const lado = Math.min(video.videoWidth, video.videoHeight);
     const canvas = document.createElement("canvas");
     canvas.width = CAPTURE_SIZE;
@@ -79,8 +106,7 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
       CAPTURE_SIZE,
       CAPTURE_SIZE,
     );
-    pararCamera();
-    onSelfie(canvas.toDataURL("image/jpeg", 0.88));
+    entregarFoto(canvas.toDataURL("image/jpeg", 0.88));
   };
 
   const receberArquivo = (file: File | undefined) => {
@@ -116,28 +142,84 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div className="rounded-2xl p-5 space-y-2" style={CARD_STYLE}>
-        <h3 className="font-cinzel text-xs uppercase tracking-[0.25em] text-arcana-gold-bright">
-          Seu rosto entra na lenda
-        </h3>
-        <p className="font-crimson text-base text-arcana-text-dim leading-relaxed">
-          Vamos forjar o retrato oficial do seu personagem com o seu próprio rosto. Centralize o
-          rosto no círculo, procure boa iluminação de frente e faça uma cara séria de faroeste.
-        </p>
-        <p className="font-crimson text-sm italic text-arcana-text-dim">
-          A selfie é usada apenas para gerar as artes do personagem — ela não fica salva.
-        </p>
+      {/* O retratista recebe o forasteiro */}
+      <div className="rounded-2xl p-5 flex items-start gap-4" style={CARD_STYLE}>
+        <div
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl"
+          style={{ border: "1px solid rgba(209,171,85,0.45)" }}
+        >
+          {temFotografo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={FOTOGRAFO_IMG}
+              alt="O retratista de Sacramento"
+              className="h-full w-full object-cover"
+              onError={() => setTemFotografo(false)}
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center font-cinzel text-2xl text-arcana-gold-bright"
+              style={{ background: "var(--color-arcana-surface-3)" }}
+              aria-hidden
+            >
+              R
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 space-y-1">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
+            O retratista
+          </p>
+          <p className="font-crimson text-lg text-arcana-text leading-snug">
+            &ldquo;Firme aí, forasteiro. Olho na lente, queixo erguido — e nada de sorrir. Retrato
+            de respeito se tira com cara de poucos amigos.&rdquo;
+          </p>
+          <p className="font-crimson text-sm italic text-arcana-text-dim">
+            Centralize o rosto no círculo, com boa luz de frente. A foto serve só para pintar seus
+            retratos — ela não fica salva.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-2xl p-5 space-y-5" style={CARD_STYLE}>
+      {/* O estúdio: cenário + câmera de círculo */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
+        style={{ border: "1px solid rgba(209,171,85,0.25)" }}
+      >
+        {/* Cenário do estúdio ao fundo */}
+        {temEstudio ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={ESTUDIO_IMG}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={() => setTemEstudio(false)}
+          />
+        ) : (
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 30%, rgba(209,171,85,0.12), transparent 60%), linear-gradient(180deg, #14141f 0%, #0b0b14 100%)",
+            }}
+          />
+        )}
+        {/* Escurece o cenário para o círculo dominar a cena */}
+        <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.62)" }} />
+
         <div className="relative mx-auto w-full max-w-sm aspect-square">
           {selfie ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={selfie}
               alt="Sua selfie capturada"
-              className="h-full w-full rounded-full object-cover"
-              style={{ border: "2px solid var(--color-arcana-gold)", boxShadow: "0 0 32px rgba(209,171,85,0.25)" }}
+              className="selfie-revelada h-full w-full rounded-full object-cover"
+              style={{
+                border: "2px solid var(--color-arcana-gold)",
+                boxShadow: "0 0 40px rgba(209,171,85,0.3)",
+              }}
             />
           ) : (
             <>
@@ -147,31 +229,66 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
                 playsInline
                 muted
                 className="h-full w-full rounded-full object-cover -scale-x-100"
-                style={{ background: "rgba(11,11,20,0.8)" }}
+                style={{ background: "rgba(11,11,20,0.85)" }}
               />
-              {/* Máscara: escurece fora do círculo e desenha o guia dourado */}
+              {/* Aro da lente + máscara fora do círculo */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 rounded-full"
                 style={{
-                  border: "2px dashed rgba(209,171,85,0.75)",
-                  boxShadow: "0 0 0 9999px rgba(11,11,20,0.55)",
+                  border: "3px solid rgba(209,171,85,0.8)",
+                  boxShadow:
+                    "0 0 0 6px rgba(28,18,6,0.85), 0 0 0 8px rgba(209,171,85,0.35), 0 0 0 9999px rgba(11,11,20,0.45), inset 0 0 60px rgba(11,11,20,0.55)",
+                }}
+              />
+              {/* Marcações de lente antiga */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "linear-gradient(0deg, transparent 48.8%, rgba(209,171,85,0.4) 49.2%, rgba(209,171,85,0.4) 50.8%, transparent 51.2%) no-repeat 50% 0/2px 14px, linear-gradient(0deg, transparent 48.8%, rgba(209,171,85,0.4) 49.2%, rgba(209,171,85,0.4) 50.8%, transparent 51.2%) no-repeat 50% 100%/2px 14px",
                 }}
               />
               <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold-bright drop-shadow">
                 Centralize o rosto no círculo
               </p>
+              {/* Disparo: íris fecha + flash de magnésio */}
+              {disparando && (
+                <>
+                  {temIris ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={IRIS_IMG}
+                      alt=""
+                      aria-hidden
+                      className="iris-fechando pointer-events-none absolute inset-0 h-full w-full rounded-full object-cover"
+                      onError={() => setTemIris(false)}
+                    />
+                  ) : (
+                    <div
+                      aria-hidden
+                      className="iris-fechando pointer-events-none absolute inset-0 rounded-full"
+                      style={{ boxShadow: "inset 0 0 0 200px rgba(11,11,20,0.95)" }}
+                    />
+                  )}
+                  <div aria-hidden className="flash-magnesio pointer-events-none fixed inset-0 z-40" />
+                </>
+              )}
             </>
           )}
         </div>
 
         {cameraErro && !selfie && (
-          <p className="font-crimson text-sm italic text-arcana-danger text-center" role="alert">
+          <p
+            className="relative mt-4 text-center font-crimson text-sm italic text-arcana-danger"
+            role="alert"
+          >
             {cameraErro}
           </p>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
           {selfie ? (
             <button type="button" onClick={() => onSelfie(null)} className="arcana-btn-ghost">
               Tirar outra
@@ -180,10 +297,12 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
             <button
               type="button"
               onClick={capturar}
-              disabled={cameraOk !== true}
-              className={cameraOk === true ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
+              disabled={cameraOk !== true || disparando}
+              className={
+                cameraOk === true && !disparando ? "arcana-btn-primary" : "arcana-btn-primary-disabled"
+              }
             >
-              Capturar
+              {disparando ? "…" : "Tirar o retrato"}
             </button>
           )}
           <label className="arcana-btn-ghost arcana-btn-sm cursor-pointer">
@@ -199,11 +318,75 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
         </div>
 
         {selfie && (
-          <p className="font-crimson text-base text-arcana-text text-center">
-            Boa. Agora é só forjar o retrato no botão abaixo.
+          <p className="relative mt-4 text-center font-crimson text-base text-arcana-text">
+            &ldquo;Boa pose. Agora siga — seus retratos ficam prontos enquanto você faz as
+            compras.&rdquo;
           </p>
         )}
       </div>
+
+      <style jsx>{`
+        .iris-fechando {
+          animation: irisFecha 0.55s cubic-bezier(0.7, 0, 0.84, 0) both;
+          transform-origin: center;
+        }
+        .flash-magnesio {
+          background: radial-gradient(ellipse at center, #fff8e7 0%, rgba(255, 248, 231, 0.85) 45%, transparent 100%);
+          animation: flashPop 0.65s ease-out both;
+        }
+        .selfie-revelada {
+          animation: selfieRevela 0.6s ease-out both;
+        }
+        @keyframes irisFecha {
+          0% {
+            transform: scale(2.6) rotate(0deg);
+            opacity: 0;
+          }
+          35% {
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1) rotate(35deg);
+            opacity: 1;
+          }
+        }
+        @keyframes flashPop {
+          0% {
+            opacity: 0;
+          }
+          55% {
+            opacity: 0;
+          }
+          65% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+        @keyframes selfieRevela {
+          0% {
+            opacity: 0;
+            transform: scale(1.06);
+            filter: sepia(0.6) brightness(1.4);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+            filter: none;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .iris-fechando,
+          .flash-magnesio,
+          .selfie-revelada {
+            animation: none;
+          }
+          .flash-magnesio {
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

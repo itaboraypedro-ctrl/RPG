@@ -26,10 +26,10 @@ type Layer = { url: string; key: number };
  * a lamparina ganha chama viva e o papel pregado recebe nome e conceito.
  * Coordenadas em % da cena de 1024×1536 (medidas por varredura de alpha).
  */
-const MOLDURA = { left: "28.9%", top: "22.7%", width: "44.4%", height: "44.7%" } as const;
-const JANELA = { left: "61.4%", top: "3.7%", width: "36.8%", height: "26.8%" } as const;
-const LAMPARINA = { left: "71%", width: "27%", bottom: "17.5%" } as const;
-const PAPEL = { left: "72.5%", top: "31.5%", width: "26.5%" } as const;
+const MOLDURA = { left: "34.4%", top: "28.8%", width: "34.2%", height: "40.8%" } as const;
+const JANELA = { left: "67.6%", top: "0%", width: "32.4%", height: "32.6%" } as const;
+const LAMPARINA = { left: "71%", width: "24%", bottom: "11%" } as const;
+const PAPEL = { left: "2.5%", top: "42.5%", width: "22.5%" } as const;
 
 export function EscritorioPreview({
   imageUrl,
@@ -146,7 +146,7 @@ export function EscritorioPreview({
         <div aria-hidden className="luz-lamparina pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(42% 30% at 84% 68%, rgba(255,184,90,0.28), rgba(255,160,64,0.1) 45%, transparent 72%)",
+              "radial-gradient(42% 30% at 83% 80%, rgba(255,184,90,0.28), rgba(255,160,64,0.1) 45%, transparent 72%)",
             mixBlendMode: "screen",
           }} />
 
@@ -192,7 +192,7 @@ export function EscritorioPreview({
         {/* ── Camada 6: placas de latão com a ficha ── */}
         {stats && stats.length > 0 && (
           <div className="absolute flex items-stretch justify-center gap-[1.5%] px-[6%]"
-            style={{ left: 0, right: 0, bottom: "3.2%", height: "6.8%" }}>
+            style={{ left: 0, right: 0, bottom: "0.9%", height: "5.4%" }}>
             {stats.map((s) => (
               <div key={s.label}
                 className="flex min-w-0 flex-1 flex-col items-center justify-center rounded-[3px]"

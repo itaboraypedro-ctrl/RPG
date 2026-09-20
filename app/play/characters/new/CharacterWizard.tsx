@@ -19,7 +19,7 @@ import {
   TONS_DE_PELE,
   baseImagePath,
 } from "@/lib/character-creation/sacramento/bases";
-import { characterImagePath, kitById } from "@/lib/character-creation/sacramento/kits";
+import { characterImagePath, kitAvailableForBase, kitById } from "@/lib/character-creation/sacramento/kits";
 import { montariasCompradas } from "@/lib/character-creation/sacramento/catalogo";
 import { calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
 import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
@@ -179,7 +179,11 @@ export function CharacterWizard() {
   const goBack = () => setStepIdx((i) => Math.max(0, i - 1));
 
   const handleChangeBase = (base: BaseVisual) => {
-    setData((prev) => ({ ...prev, base }));
+    setData((prev) => {
+      // Kit sem asset para a nova base volta ao básico (nunca mostrar imagem quebrada/errada).
+      const kitId = prev.kitId && kitAvailableForBase(prev.kitId, base) ? prev.kitId : "base";
+      return { ...prev, base, kitId };
+    });
   };
 
   // ---- IA: história ----

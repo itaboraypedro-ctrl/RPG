@@ -8,7 +8,7 @@ import {
   TIPOS_FISICOS,
   TONS_DE_PELE,
 } from "@/lib/character-creation/sacramento/bases";
-import { KITS } from "@/lib/character-creation/sacramento/kits";
+import { KITS, kitAvailableForBase } from "@/lib/character-creation/sacramento/kits";
 import type {
   Apresentacao,
   BaseVisual,
@@ -312,7 +312,9 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
           {KITS.map((k) => {
             const active = kitId === k.id;
-            const locked = !k.disponivel;
+            const forBase = kitAvailableForBase(k.id, base);
+            const locked = !k.disponivel || !forBase;
+            const lockedLabel = !k.disponivel ? "Em breve" : "Indisponível p/ esta aparência";
             return (
               <button
                 key={k.id}
@@ -350,7 +352,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
                     locked ? "text-arcana-text-muted" : "text-arcana-text-dim",
                   ].join(" ")}
                 >
-                  {locked ? "Em breve" : k.descricao}
+                  {locked ? lockedLabel : k.descricao}
                 </span>
               </button>
             );

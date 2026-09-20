@@ -146,8 +146,6 @@ export function CampaignWizard() {
       header={header}
       footer={footer}
       previewContent={<CampaignPoster data={data} />}
-      formTabLabel="Configuração"
-      previewTabLabel="Cartaz"
     >
       {step === 1 && <Step1Preset data={data} onUpdate={updateData} />}
       {step === 2 && <Step2Identity data={data} onUpdate={updateData} />}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { WizardLayout } from "@/components/character-creation/WizardLayout";
 import { StepIndicator } from "@/components/character-creation/StepIndicator";
@@ -44,6 +44,7 @@ import {
   LIMITE_GERACOES_HISTORIA,
   LIMITE_REVISOES_SECAO,
 } from "@/lib/character-creation/sacramento/types";
+import { WIZARD_PANES } from "@/lib/character-creation/sacramento/wizard-panes";
 
 type StepId =
   | "tracos"
@@ -74,9 +75,21 @@ type StatusForja = "idle" | "gerando" | "ok" | "erro";
 /** Índice fixo da etapa de selfie — o rascunho restaurado nunca pula além dela (a selfie não persiste). */
 const SELFIE_IDX = 4;
 
+// Mobile = abaixo do breakpoint lg (o layout de gaveta + micro-etapas).
+const MOBILE_QUERY = "(max-width: 1023px)";
+const subscribeMobile = (cb: () => void) => {
+  const mq = window.matchMedia(MOBILE_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+const isMobileNow = () => window.matchMedia(MOBILE_QUERY).matches;
+
 export function CharacterWizard() {
   const router = useRouter();
+  const isMobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
   const [stepIdx, setStepIdx] = useState(0);
+  // Micro-etapa dentro do step (só no mobile; 0 sempre no desktop).
+  const [paneIdx, setPaneIdx] = useState(0);
   const [data, setData] = useState<Partial<SacramentoCreationData>>({
     base: BASE_PADRAO,
     kitId: "base",
@@ -207,6 +220,7 @@ export function CharacterWizard() {
     savedRef.current = false;
     setData({ base: BASE_PADRAO, kitId: "base", ficha: FICHA_INICIAL });
     setStepIdx(0);
+    setPaneIdx(0);
     setAiError(null);
     setDraftRestored(false);
   };
@@ -215,8 +229,28 @@ export function CharacterWizard() {
     setData((prev) => ({ ...prev, ...partial }));
   };
 
-  const goNext = () => setStepIdx((i) => Math.min(stepIds.length - 1, i + 1));
-  const goBack = () => setStepIdx((i) => Math.max(0, i - 1));
+  const goNext = () => {
+    setPaneIdx(0);
+    setStepIdx((i) => Math.min(stepIds.length - 1, i + 1));
+  };
+  const goBack = () => {
+    setPaneIdx(0);
+    setStepIdx((i) => Math.max(0, i - 1));
+  };
+
+  // Micro-etapas do mobile: o personagem fica em cena e cada fatia é curta.
+  const panes = isMobile ? (WIZARD_PANES[step] ?? null) : null;
+  const paneAtual = panes?.[paneIdx] ?? null;
+  const ultimaPane = !panes || paneIdx >= panes.length - 1;
+
+  /** Travas leves por micro-etapa (a validação forte segue no fim do step). */
+  const paneCanProceed = (() => {
+    if (!paneAtual) return true;
+    if (paneAtual.id === "nome") return !!data.name && data.name.trim().length >= 2;
+    if (paneAtual.id === "conceito") return !!data.elementos?.conceito?.trim();
+    if (paneAtual.id === "redencao") return !!data.elementos?.redencaoTrilhaId;
+    return true;
+  })();
 
   const handleChangeBase = (base: BaseVisual) => {
     setData((prev) => {
@@ -418,9 +452,14 @@ export function CharacterWizard() {
     revisao: !!data.historia && !isGenerating && !forjando,
     selfie: !!selfie,
   };
-  const canProceed = canProceedMap[step];
+  const canProceed = (!panes || ultimaPane ? canProceedMap[step] : true) && paneCanProceed;
 
   const handleFooterNext = () => {
+    // Mobile: avança a micro-etapa antes de mudar de step.
+    if (panes && !ultimaPane) {
+      setPaneIdx((i) => i + 1);
+      return;
+    }
     if (step === "habilidades") {
       // Fronteira do Ato I: se a travessia dispara a escrita da lenda, o selo pede confirmação.
       if (precisaGerarHistoria() && !iaTravada && !isGenerating) {
@@ -447,6 +486,11 @@ export function CharacterWizard() {
   };
 
   const handleBack = () => {
+    // Mobile: recua a micro-etapa antes de mudar de step.
+    if (panes && paneIdx > 0) {
+      setPaneIdx((i) => i - 1);
+      return;
+    }
     // Voltar da Selfie para o Ato I mexe nos insumos da lenda — pede confirmação.
     if (step === "selfie" && (data.historia || isGenerating)) {
       setModalAto("voltar");
@@ -457,12 +501,47 @@ export function CharacterWizard() {
 
   // Dois atos: quem você é (até a Selfie) e a vida no Oeste (das Compras em diante).
   const atoII = ["compras", "montaria", "revisao"].includes(step);
+  const tituloAto = atoII ? "Ato II · A vida no Oeste" : "Ato I · Quem você é";
   const header = (
     <StepIndicator
       currentStep={idx + 1}
       stepLabels={stepIds.map((id) => STEP_LABELS[id])}
-      title={atoII ? "Ato II · A vida no Oeste" : "Ato I · Quem você é"}
+      title={tituloAto}
     />
+  );
+
+  // Mobile: cabeçalho compacto da gaveta — etapa, micro-etapa e progresso.
+  const mobileHeader = (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-gold truncate">
+          {tituloAto} · {STEP_LABELS[step]} {idx + 1}/{stepIds.length}
+        </p>
+        <p className="font-cinzel text-sm uppercase tracking-[0.15em] text-arcana-text truncate">
+          {paneAtual?.titulo ?? STEP_LABELS[step]}
+        </p>
+      </div>
+      {panes && (
+        <div className="flex shrink-0 items-center gap-1.5" aria-label={`Parte ${paneIdx + 1} de ${panes.length}`}>
+          {panes.map((p, i) => (
+            <span
+              key={p.id}
+              aria-hidden
+              className="h-1.5 rounded-full transition-all duration-200"
+              style={{
+                width: i === paneIdx ? 16 : 6,
+                background:
+                  i < paneIdx
+                    ? "rgba(209,171,85,0.9)"
+                    : i === paneIdx
+                      ? "linear-gradient(90deg, #f5d478, #d1ab55)"
+                      : "rgba(209,171,85,0.25)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 
   const footerLabel =
@@ -474,7 +553,7 @@ export function CharacterWizard() {
 
   const footer = (
     <div className="flex items-center justify-between gap-3">
-      {idx > 0 ? (
+      {idx > 0 || (panes && paneIdx > 0) ? (
         <button type="button" onClick={handleBack} disabled={forjando} className="arcana-btn-ghost">
           Voltar
         </button>
@@ -564,14 +643,22 @@ export function CharacterWizard() {
     />
   );
 
+  const foco = paneAtual?.id;
+
   return (
-    <WizardLayout header={header} footer={footer} previewContent={previewContent} scrollKey={step}>
+    <WizardLayout
+      header={header}
+      mobileHeader={mobileHeader}
+      footer={footer}
+      previewContent={previewContent}
+      scrollKey={`${step}-${paneIdx}`}
+    >
       {step === "tracos" && (
-        <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} />
+        <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} foco={foco} />
       )}
-      {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} />}
-      {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} />}
-      {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} />}
+      {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} foco={foco} />}
+      {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} foco={foco} />}
+      {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} foco={foco} />}
       {step === "compras" && (
         <StepCompras data={data} onUpdate={updateData} onAmbient={setLojaAmbient} />
       )}

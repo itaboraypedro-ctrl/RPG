@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 type Props = {
   header: React.ReactNode;
   footer: React.ReactNode;
   children: React.ReactNode;
   previewContent: React.ReactNode;
-  formTabLabel?: string;
-  previewTabLabel?: string;
+  /** Cabeçalho compacto do mobile (padrão: o mesmo header do desktop). */
+  mobileHeader?: React.ReactNode;
   /** Muda a cada etapa — o miolo rolável volta ao topo quando muda. */
   scrollKey?: string | number;
 };
@@ -18,70 +16,36 @@ export function WizardLayout({
   footer,
   children,
   previewContent,
-  formTabLabel = "Criação",
-  previewTabLabel = "Retrato",
+  mobileHeader,
   scrollKey,
 }: Props) {
-  const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
-
   return (
     <div className="arcana-scene h-dvh text-arcana-text overflow-hidden">
-      {/* Mobile layout */}
+      {/* Mobile: o personagem SEMPRE em cena; os controles vivem numa gaveta
+          inferior que mostra uma micro-etapa curta por vez. */}
       <div className="lg:hidden h-full flex flex-col">
-        {/* Mobile tab toggle */}
+        <div className="relative shrink-0 flex items-center justify-center px-3 pt-2 pb-1"
+          style={{ height: "42dvh" }}>
+          {previewContent}
+        </div>
         <div
-          className="arcana-glass-edge shrink-0 z-20 border-b border-arcana-border-dim px-4 py-3"
+          className="relative z-10 flex-1 min-h-0 flex flex-col rounded-t-2xl border-t border-arcana-border-dim"
+          style={{
+            background: "rgba(13,13,22,0.92)",
+            backdropFilter: "blur(20px) saturate(1.3)",
+            boxShadow: "0 -14px 40px rgba(0,0,0,0.55)",
+          }}
         >
-          <div className="flex rounded-xl overflow-hidden border border-arcana-border-dim">
-            <button
-              type="button"
-              onClick={() => setMobileTab("form")}
-              className={[
-                "flex-1 py-2.5 font-cinzel text-[10px] uppercase tracking-[0.25em] transition-all",
-                mobileTab === "form"
-                  ? "bg-arcana-gold text-arcana-bg"
-                  : "text-arcana-text-dim hover:text-arcana-text",
-              ].join(" ")}
-            >
-              {formTabLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileTab("preview")}
-              className={[
-                "flex-1 py-2.5 font-cinzel text-[10px] uppercase tracking-[0.25em] transition-all border-l border-arcana-border-dim",
-                mobileTab === "preview"
-                  ? "bg-arcana-gold text-arcana-bg"
-                  : "text-arcana-text-dim hover:text-arcana-text",
-              ].join(" ")}
-            >
-              {previewTabLabel}
-            </button>
+          <div className="shrink-0 px-4 pt-3 pb-2 border-b border-arcana-border-dim">
+            {mobileHeader ?? header}
+          </div>
+          <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-4">
+            {children}
+          </div>
+          <div className="shrink-0 px-4 py-3 border-t border-arcana-border-dim">
+            {footer}
           </div>
         </div>
-
-        {mobileTab === "form" ? (
-          <>
-            {/* Mobile header */}
-            <div className="shrink-0 px-4 pt-5 pb-4 border-b border-arcana-border-dim">
-              {header}
-            </div>
-            {/* Mobile scrollable content */}
-            <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-5">
-              {children}
-            </div>
-            {/* Mobile footer */}
-            <div
-              className="arcana-glass-edge shrink-0 px-4 py-4 border-t border-arcana-border-dim"
-            >
-              {footer}
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 overflow-y-auto px-4 py-8 flex items-center justify-center">
-            {previewContent}
-          </div>
-        )}
       </div>
 
       {/* Desktop: 60/40 */}

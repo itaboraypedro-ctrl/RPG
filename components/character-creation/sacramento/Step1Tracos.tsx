@@ -19,6 +19,8 @@ type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
   onChangeBase: (base: BaseVisual) => void;
+  /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
+  foco?: string;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -163,10 +165,11 @@ function AgeDial({
   );
 }
 
-export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
+export default function Step1Tracos({ data, onUpdate, onChangeBase, foco }: Props) {
   const base = data.base ?? BASE_PADRAO;
   const kitId = data.kitId ?? "base";
   const setBase = (partial: Partial<BaseVisual>) => onChangeBase({ ...base, ...partial });
+  const mostra = (secao: string) => !foco || foco === secao;
 
   const tomIdx = Math.max(0, TONS_DE_PELE.findIndex((t) => t.id === base.tomDePele));
   const idadeIdx = Math.max(0, FAIXAS_ETARIAS.findIndex((f) => f.id === base.faixaEtaria));
@@ -175,10 +178,12 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
 
   return (
     <div className="space-y-7 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.tracos} />
+      <div className={mostra("nome") ? "" : "hidden"}>
+        <HowItWorks guide={PLAYER_GUIDES.tracos} />
+      </div>
 
       {/* Nome + apresentação na mesma linha */}
-      <div className="space-y-2">
+      <div className={mostra("nome") ? "space-y-2" : "hidden"}>
         <label htmlFor="char-name" className={LABEL}>
           Nome do personagem
         </label>
@@ -232,7 +237,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
       </div>
 
       {/* Tom de pele */}
-      <div className="space-y-2.5">
+      <div className={mostra("pele") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Tom de pele</span>
           <span className="font-crimson text-sm italic text-arcana-text">{tomAtual.label}</span>
@@ -252,7 +257,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
       </div>
 
       {/* Porte físico */}
-      <div className="space-y-2.5">
+      <div className={mostra("corpo") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Porte físico</span>
           <span className="font-crimson text-sm italic text-arcana-text">
@@ -288,7 +293,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
       </div>
 
       {/* Idade aparente — dial de rádio */}
-      <div className="space-y-2.5">
+      <div className={mostra("corpo") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Idade aparente</span>
           <span className="font-crimson text-sm italic text-arcana-text">
@@ -302,7 +307,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase }: Props) {
       </div>
 
       {/* Kits visuais — compactos */}
-      <div className="space-y-2.5">
+      <div className={mostra("kit") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Kit visual</span>
           <span className="font-crimson text-xs italic text-arcana-text-dim">

@@ -17,6 +17,8 @@ import {
 type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
+  /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
+  foco?: string;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -46,7 +48,8 @@ function CornerCheck({ active }: { active: boolean }) {
   );
 }
 
-export default function Step5Habilidades({ data, onUpdate }: Props) {
+export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
+  const mostra = (secao: string) => !foco || foco === secao;
   const ficha = data.ficha ?? FICHA_INICIAL;
   const escolhidas = ficha.habilidades;
   const total = totalHabilidades(ficha.nivel);
@@ -211,14 +214,14 @@ export default function Step5Habilidades({ data, onUpdate }: Props) {
         </span>
       </div>
 
-      <section className="space-y-3">
+      <section className={mostra("combate") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Combate</span>
         <div className="grid gap-2 sm:grid-cols-2">
           {HABILIDADES.filter((h) => h.categoria === "combate").map(renderCard)}
         </div>
       </section>
 
-      <section className="space-y-3">
+      <section className={mostra("profissao") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Profissão</span>
         <div className="grid gap-2 sm:grid-cols-2">
           {HABILIDADES.filter((h) => h.categoria === "profissao").map(renderCard)}

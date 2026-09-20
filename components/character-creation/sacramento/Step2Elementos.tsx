@@ -23,6 +23,8 @@ import {
 type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
+  /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
+  foco?: string;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -150,7 +152,8 @@ function Segmented<T extends string>({
   );
 }
 
-export default function Step2Elementos({ data, onUpdate }: Props) {
+export default function Step2Elementos({ data, onUpdate, foco }: Props) {
+  const mostra = (secao: string) => !foco || foco === secao;
   const e = data.elementos ?? ELEMENTOS_VAZIOS;
   const ap = data.base?.apresentacao;
   const set = (partial: Partial<ElementosHistoria>) =>
@@ -166,10 +169,12 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
 
   return (
     <div className="space-y-10 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.elementos} />
+      <div className={mostra("conceito") ? "" : "hidden"}>
+        <HowItWorks guide={PLAYER_GUIDES.elementos} />
+      </div>
 
       {/* ── Conceito ── */}
-      <section className="space-y-3">
+      <section className={mostra("conceito") ? "space-y-3" : "hidden"}>
         <div>
           <label htmlFor="el-conceito" className={LABEL}>
             Conceito
@@ -209,7 +214,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Origem ── */}
-      <section className="space-y-3">
+      <section className={mostra("origem") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Origem</span>
           <p className={HELPER}>De onde seu personagem veio. Escolha um lugar do Oeste ou escreva outro.</p>
@@ -303,7 +308,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Ocupação ── */}
-      <section className="space-y-3">
+      <section className={mostra("ocupacao") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Ocupação</span>
           <p className={HELPER}>
@@ -378,7 +383,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Família ── */}
-      <section className="space-y-3">
+      <section className={mostra("familia") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Família</span>
           <p className={HELPER}>Ter (ou não ter) família dá ao Juiz pessoas para trazer à história.</p>
@@ -421,7 +426,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Passado ── */}
-      <section className="space-y-3">
+      <section className={mostra("passado") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Passado</span>
           <p className={HELPER}>
@@ -466,7 +471,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Facções ── */}
-      <section className="space-y-3">
+      <section className={mostra("faccao") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Relação com facções do Oeste</span>
           <p className={HELPER}>
@@ -593,7 +598,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Vínculos ── */}
-      <section className="space-y-3">
+      <section className={mostra("vinculos") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Vínculos</span>
           <p className={HELPER}>
@@ -641,7 +646,7 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
       </section>
 
       {/* ── Redenção ── */}
-      <section className="space-y-3">
+      <section className={mostra("redencao") ? "space-y-3" : "hidden"}>
         <div>
           <span className={LABEL}>Trilha de Redenção</span>
           <p className={HELPER}>

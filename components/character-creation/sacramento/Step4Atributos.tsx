@@ -24,6 +24,8 @@ import {
 type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
+  /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
+  foco?: string;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -101,7 +103,8 @@ function BudgetBadge({ gasto, total }: { gasto: number; total: number }) {
   );
 }
 
-export default function Step4Atributos({ data, onUpdate }: Props) {
+export default function Step4Atributos({ data, onUpdate, foco }: Props) {
+  const mostra = (secao: string) => !foco || foco === secao;
   const ficha = data.ficha ?? FICHA_INICIAL;
   const set = (partial: Partial<FichaMecanica>) => onUpdate({ ficha: { ...ficha, ...partial } });
 
@@ -128,10 +131,12 @@ export default function Step4Atributos({ data, onUpdate }: Props) {
 
   return (
     <div className="space-y-9 max-w-2xl">
-      <HowItWorks guide={PLAYER_GUIDES.atributos} />
+      <div className={mostra("nivel") ? "" : "hidden"}>
+        <HowItWorks guide={PLAYER_GUIDES.atributos} />
+      </div>
 
       {/* Nível — barra deslizante */}
-      <section className="space-y-2.5">
+      <section className={mostra("nivel") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Nível inicial</span>
           <span className="font-crimson text-sm italic text-arcana-text">
@@ -228,7 +233,7 @@ export default function Step4Atributos({ data, onUpdate }: Props) {
       </section>
 
       {/* Atributos */}
-      <section className="space-y-3">
+      <section className={mostra("atributos") ? "space-y-3" : "hidden"}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <span className={LABEL}>Atributos</span>
@@ -264,7 +269,7 @@ export default function Step4Atributos({ data, onUpdate }: Props) {
       </section>
 
       {/* Antecedentes */}
-      <section className="space-y-3">
+      <section className={mostra("antecedentes") ? "space-y-3" : "hidden"}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <span className={LABEL}>Antecedentes</span>
@@ -307,7 +312,7 @@ export default function Step4Atributos({ data, onUpdate }: Props) {
 
       {/* Derivados (resumo inline — o painel do retrato também mostra) */}
       <section
-        className="rounded-2xl p-4"
+        className={mostra("antecedentes") ? "rounded-2xl p-4" : "hidden"}
         style={{ background: "rgba(27,27,42,0.72)", border: "1px solid rgba(209,171,85,0.25)" }}
       >
         <p className={LABEL}>Valores calculados</p>

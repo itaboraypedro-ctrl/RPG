@@ -6,6 +6,7 @@ import type {
   HistoriaSecao,
   PontoChave,
 } from "@/lib/character-creation/sacramento/types";
+import { PontoChaveIcon } from "./PontoChaveIcon";
 
 type Props = {
   historia: HistoriaEstruturada;
@@ -164,10 +165,24 @@ function PontoChavePill({
         boxShadow: gerandoEste ? "0 0 18px rgba(209,171,85,0.18)" : undefined,
       }}
     >
-      <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
-        {ponto.rotulo}
-      </p>
-      {gerandoEste ? (
+      <div className="flex items-start gap-3">
+        {/* Medalhão do tema — mesma linguagem dos emblemas de habilidade */}
+        <span
+          aria-hidden
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+          style={{
+            background: "rgba(209,171,85,0.1)",
+            border: "1px solid rgba(209,171,85,0.45)",
+            boxShadow: "inset 0 1px 0 rgba(255,240,200,0.12)",
+          }}
+        >
+          <PontoChaveIcon id={ponto.id} rotulo={ponto.rotulo} className="h-5 w-5 text-arcana-gold-bright" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-gold">
+            {ponto.rotulo}
+          </p>
+          {gerandoEste ? (
         <p className="font-crimson text-base italic text-arcana-text-dim animate-pulse mt-1">
           Reescrevendo a lenda com este destino…
         </p>
@@ -232,6 +247,8 @@ function PontoChavePill({
           </span>
         </button>
       )}
+        </div>
+      </div>
     </div>
   );
 }

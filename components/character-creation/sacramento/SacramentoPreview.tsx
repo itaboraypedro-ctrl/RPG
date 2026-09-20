@@ -187,6 +187,8 @@ export function SacramentoPreview({
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 380px"
                     priority={isTop}
+                    // Selfie chega como data URL — o otimizador do next/image não as aceita.
+                    unoptimized={layer.url.startsWith("data:")}
                   />
                   {entering && <div className="light-sweep absolute inset-0 pointer-events-none" />}
                 </div>

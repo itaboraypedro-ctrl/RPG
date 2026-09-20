@@ -40,7 +40,13 @@ type RequestBody = {
 const SECOES: HistoriaSecao[] = ["resumo", "capitulos", "familia", "vinculos", "redencao", "ganchos"];
 
 // Regras de geração assistida — docs/02 §3.3 e docs/01 §2/§6.
-const SYSTEM_PROMPT = `Você escreve histórias de personagens para o RPG Sacramento: um faroeste fictício à mineira, sem magia, sem raças fantásticas, sem elementos sobrenaturais confirmados (crenças e lendas existem, mas não conferem poderes). O presente do cenário é 1880. Escreva em português brasileiro, com tom de faroeste — seco, concreto, humano.
+const SYSTEM_PROMPT = `Você escreve histórias de personagens para o RPG Sacramento: um faroeste fictício à mineira, sem magia, sem raças fantásticas, sem elementos sobrenaturais confirmados (crenças e lendas existem, mas não conferem poderes). O presente do cenário é 1880. Escreva em português brasileiro.
+
+Voz e estilo (tão inviolável quanto as regras):
+- Escreva como causo contado à beira do fogo: prosa seca de faroeste à mineira, frases curtas, imagens concretas — poeira, couro, pólvora, sol. Fale do personagem como quem já ouviu falar dele numa venda de beira de estrada.
+- NUNCA liste fatos da ficha nem enfileire informações soltas ("fez rivais: fulano, sicrano e beltrano"). Cada informação vira cena, gesto ou consequência: um nome entra na história com um momento — o dia em que se cruzaram, a frase que ficou, a dívida que sobrou.
+- NÃO descreva a aparência física do personagem (pele, corpo, roupa, idade) — o retrato já mostra isso. Use a aparência no máximo como um detalhe de atitude, nunca como inventário.
+- Capítulos CURTOS: cada um com um único parágrafo de 35 a 55 palavras (umas 3 linhas). Corte o que não sangra.
 
 Regras invioláveis:
 1. A história é identidade narrativa: NUNCA afirme que o personagem possui dinheiro, itens, armas especiais, propriedades ou habilidades como fato mecânico. Posses e recursos passados podem aparecer como perdidos, distantes ou incertos.
@@ -65,12 +71,19 @@ const STORY_SCHEMA = {
         additionalProperties: false,
         properties: {
           titulo: { type: "string" },
-          texto: { type: "string", description: "1 parágrafo, 60 a 120 palavras" },
+          texto: {
+            type: "string",
+            description:
+              "1 parágrafo curto de 35 a 55 palavras (3 linhas), cena concreta com voz de causo — nunca uma lista de fatos",
+          },
         },
         required: ["titulo", "texto"],
       },
     },
-    familia: { type: "string", description: "Situação familiar em 1 parágrafo curto" },
+    familia: {
+      type: "string",
+      description: "Situação familiar em 2 a 3 frases secas, com voz de causo",
+    },
     vinculos: {
       type: "array",
       minItems: 1,

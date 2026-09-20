@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { getProfile } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { characterImagePath } from "@/lib/character-creation/sacramento/kits";
@@ -41,7 +42,7 @@ function promptPara(tipo: TipoImagem, nome: string): { prompt: string; size: str
     case "close":
       return {
         prompt: `${IDENTIDADE} Entregue um recorte em busto (do peito para cima) desse personagem com o rosto trocado, expressão séria e olhar firme. Todo o resto — roupa, estilo, cores, acabamento — idêntico à segunda imagem. Fundo TOTALMENTE transparente: apenas o personagem recortado.`,
-        size: "1024x1536",
+        size: "1024x1024",
         transparent: true,
       };
     case "estados":
@@ -195,11 +196,30 @@ export async function POST(request: Request) {
   }
   const png = Buffer.from(b64, "base64");
 
+  // Normaliza para o tamanho dos assets do jogo (kits ≈ 600px quadrados) e
+  // converte para webp — o PNG cru do gpt-image-1 é grande demais para a tela.
+  const ALVOS: Record<TipoImagem, { w: number; h: number }> = {
+    close: { w: 640, h: 640 },
+    estados: { w: 1152, h: 768 },
+    banner: { w: 720, h: 1080 },
+  };
+  const alvo = ALVOS[tipo];
+  let webp: Buffer;
+  try {
+    webp = await sharp(png)
+      .resize(alvo.w, alvo.h, { fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 85, alphaQuality: 90 })
+      .toBuffer();
+  } catch {
+    await registrar("failed");
+    return NextResponse.json({ error: "Falha ao processar a imagem gerada" }, { status: 502 });
+  }
+
   // Escrita só via service role — mesmo desenho do campaign-images (006/007).
-  const storagePath = `${auth.user.id}/${crypto.randomUUID()}-${tipo}.png`;
+  const storagePath = `${auth.user.id}/${crypto.randomUUID()}-${tipo}.webp`;
   const { error: uploadError } = await admin.storage
     .from("character-images")
-    .upload(storagePath, png, { contentType: "image/png", upsert: false });
+    .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
   if (uploadError) {
     await registrar("failed");
     return NextResponse.json(

@@ -515,7 +515,13 @@ export function CharacterWizard() {
       ]
     : undefined;
 
-  const previewImageUrl = data.base ? characterImagePath(data.base, data.kitId) : null;
+  // Na revisão, quem posa na moldura é a foto do jogador — busto fechado, não o corpo inteiro.
+  const previewImageUrl =
+    step === "revisao" && selfie
+      ? selfie
+      : data.base
+        ? characterImagePath(data.base, data.kitId)
+        : null;
   const previewSubtitle =
     step !== "tracos"
       ? data.elementos?.conceito || data.elementos?.ocupacao || "Sacramento · 1880"

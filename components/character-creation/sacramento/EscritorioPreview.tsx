@@ -178,29 +178,82 @@ export function EscritorioPreview({
           </div>
         )}
 
-        {/* ── Camada 6: placas de latão com a ficha ── */}
+        {/* ── Camada 6: régua de ferro com roletas de cadeado (a ficha) ──
+            Sobre o tampo da mesa, acima da plaqueta "SACRAMENTO · 1880"
+            (que fica livre no rodapé). Cada valor vive numa janelinha de
+            roleta: número gravado, vizinhos meio visíveis, e gira ao mudar. */}
         {stats && stats.length > 0 && (
-          <div className="absolute flex items-stretch justify-center gap-[1.5%] px-[6%]"
-            style={{ left: 0, right: 0, bottom: "0.9%", height: "5.4%" }}>
-            {stats.map((s) => (
-              <div key={s.label}
-                className="flex min-w-0 flex-1 flex-col items-center justify-center rounded-[3px]"
-                style={{
-                  background: "linear-gradient(180deg, #b98f4a 0%, #96702f 45%, #7a5a26 100%)",
-                  border: "1px solid rgba(58,40,12,0.9)",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,226,160,0.55), inset 0 -1px 2px rgba(40,24,6,0.6), 0 2px 6px rgba(0,0,0,0.55)",
-                }}>
-                <span className="font-cinzel font-bold leading-none"
-                  style={{ fontSize: "clamp(10px, 3cqw, 19px)", color: "#241505", textShadow: "0 1px 0 rgba(255,235,180,0.4)" }}>
-                  {s.value}
-                </span>
-                <span className="font-cinzel uppercase leading-none"
-                  style={{ fontSize: "clamp(6px, 1.5cqw, 10px)", letterSpacing: "0.08em", color: "#3a2810", marginTop: "2px" }}>
-                  {s.label}
-                </span>
-              </div>
-            ))}
+          <div className="absolute" style={{ left: "19%", width: "62%", top: "83%", height: "5.8%" }}>
+            <div className="relative flex h-full w-full items-stretch gap-[1.6%] rounded-[4px] px-[4.5%]"
+              style={{
+                background: "linear-gradient(180deg, #8a7458 0%, #5d4a34 45%, #3d2f1f 100%)",
+                border: "1px solid rgba(24,16,8,0.9)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,226,170,0.35), inset 0 -2px 3px rgba(20,12,4,0.7), 0 3px 10px rgba(0,0,0,0.65)",
+              }}>
+              {/* Parafusos das pontas */}
+              {(["2.2%", undefined] as const).map((left, i) => (
+                <span key={i} aria-hidden className="absolute top-1/2 -translate-y-1/2 rounded-full"
+                  style={{
+                    left,
+                    right: left ? undefined : "2.2%",
+                    width: "2.6%",
+                    aspectRatio: "1 / 1",
+                    background: "radial-gradient(circle at 35% 30%, #c9a86a, #6e5636 60%, #3a2b18)",
+                    boxShadow: "inset 0 -1px 1px rgba(0,0,0,0.7), 0 1px 1px rgba(255,220,150,0.25)",
+                  }} />
+              ))}
+              {stats.map((s) => {
+                const n = parseInt(s.value, 10);
+                const temVizinhos = !Number.isNaN(n);
+                return (
+                  <div key={s.label} className="flex min-w-0 flex-1 flex-col items-center justify-center"
+                    style={{ gap: "5%", paddingTop: "3%", paddingBottom: "3%" }}>
+                    <div className="relative w-full overflow-hidden rounded-[2px]" style={{
+                      height: "58%",
+                      background:
+                        "linear-gradient(180deg, #0f0a05 0%, #221809 26%, #2f2212 50%, #221809 74%, #0f0a05 100%)",
+                      border: "1px solid rgba(150,118,72,0.5)",
+                      boxShadow:
+                        "inset 0 3px 5px rgba(0,0,0,0.9), inset 0 -3px 5px rgba(0,0,0,0.85)",
+                    }}>
+                      <div key={s.value} className="dial-roll absolute inset-0">
+                        {temVizinhos && (
+                          <span aria-hidden className="absolute inset-x-0 flex justify-center font-rye leading-none"
+                            style={{ top: "-32%", fontSize: "clamp(8px, 1.9cqw, 14px)", color: "rgba(232,207,154,0.28)" }}>
+                            {n - 1}
+                          </span>
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center font-rye leading-none"
+                          style={{
+                            fontSize: "clamp(11px, 2.5cqw, 19px)",
+                            color: "#e8cf9a",
+                            textShadow: "0 1px 1px rgba(0,0,0,0.9), 0 0 6px rgba(232,207,154,0.25)",
+                          }}>
+                          {s.value}
+                        </span>
+                        {temVizinhos && (
+                          <span aria-hidden className="absolute inset-x-0 flex justify-center font-rye leading-none"
+                            style={{ bottom: "-32%", fontSize: "clamp(8px, 1.9cqw, 14px)", color: "rgba(232,207,154,0.28)" }}>
+                            {n + 1}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-cinzel uppercase leading-none truncate"
+                      style={{
+                        fontSize: "clamp(5px, 1.15cqw, 9px)",
+                        letterSpacing: "0.1em",
+                        color: "#2c1e0e",
+                        textShadow: "0 1px 0 rgba(255,224,150,0.3)",
+                        maxWidth: "100%",
+                      }}>
+                      {s.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -252,10 +305,23 @@ export function EscritorioPreview({
             transform: translateX(70%);
           }
         }
+        .dial-roll {
+          animation: dialRoll 420ms cubic-bezier(0.22, 1.4, 0.36, 1) both;
+          will-change: transform;
+        }
+        @keyframes dialRoll {
+          from {
+            transform: translateY(-34%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .janela-cena,
           .retrato-enter,
-          .retrato-sweep {
+          .retrato-sweep,
+          .dial-roll {
             animation: none;
           }
         }

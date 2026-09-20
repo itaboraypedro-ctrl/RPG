@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HowItWorks } from "@/components/campaign-creation/Explainer";
 import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
@@ -20,6 +20,8 @@ import {
 type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
+  /** Avisa o wizard qual cenário de loja deve ambientar o painel do retrato. */
+  onAmbient?: (imagem: string | null) => void;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -57,7 +59,7 @@ function SellerPortrait({ loja, size }: { loja: LojaInfo; size: string }) {
   );
 }
 
-export default function StepCompras({ data, onUpdate }: Props) {
+export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   const ficha = data.ficha ?? FICHA_INICIAL;
   const compras = useMemo(() => ficha.compras ?? [], [ficha.compras]);
   const [lojaId, setLojaId] = useState<string>(LOJAS[0].id);
@@ -74,6 +76,14 @@ export default function StepCompras({ data, onUpdate }: Props) {
   const montaria = montariaComprada(compras);
 
   const loja = LOJAS.find((l) => l.id === lojaId) ?? LOJAS[0];
+
+  // A cena da loja ativa ambienta o painel do retrato.
+  useEffect(() => {
+    onAmbient?.(loja.imagem ?? null);
+    return () => onAmbient?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loja.imagem]);
+
   const termo = busca.trim().toLowerCase();
   const visiveis: ItemCatalogo[] = termo
     ? CATALOGO.filter((i) => i.nome.toLowerCase().includes(termo))
@@ -181,30 +191,75 @@ export default function StepCompras({ data, onUpdate }: Props) {
         </div>
       </div>
 
-      {/* Balcão da loja ativa */}
-      {!termo && (
-        <div
-          className="rounded-2xl p-4 flex items-center gap-4"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(38,19,24,0.85), rgba(27,27,42,0.72) 70%)",
-            border: "1px solid rgba(209,171,85,0.3)",
-          }}
-        >
-          <SellerPortrait loja={loja} size="w-20 h-20 text-3xl" />
-          <div className="min-w-0">
-            <h4 className="font-cinzel text-sm uppercase tracking-[0.2em] text-arcana-gold-bright">
-              {loja.nome}
-            </h4>
-            <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim mt-0.5">
-              {loja.vendedor}
-            </p>
-            <p className="font-crimson text-base italic text-arcana-text leading-snug mt-1.5">
-              “{loja.fala}”
-            </p>
+      {/* Balcão da loja ativa — cena grande do vendedor */}
+      {!termo &&
+        (loja.imagem ? (
+          <div
+            key={loja.id}
+            className="balcao relative h-56 sm:h-64 rounded-2xl overflow-hidden"
+            style={{
+              border: "1px solid rgba(209,171,85,0.35)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.55), 0 0 22px rgba(209,171,85,0.1)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={loja.imagem}
+              alt={loja.vendedor}
+              className="balcao-img absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: "center 22%" }}
+            />
+            <span
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(11,11,20,0.82), rgba(11,11,20,0.3) 45%, rgba(11,11,20,0.1) 70%), linear-gradient(0deg, rgba(11,11,20,0.85), transparent 45%)",
+              }}
+            />
+            <div className="absolute inset-x-5 bottom-4">
+              <h4
+                className="font-cinzel text-lg sm:text-xl uppercase tracking-[0.2em] text-arcana-gold-bright"
+                style={{ textShadow: "0 2px 10px rgba(0,0,0,0.9)" }}
+              >
+                {loja.nome}
+              </h4>
+              <p
+                className="font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text mt-0.5"
+                style={{ textShadow: "0 2px 6px rgba(0,0,0,0.9)" }}
+              >
+                {loja.vendedor}
+              </p>
+              <p
+                className="font-crimson text-lg italic text-arcana-text leading-snug mt-1.5 max-w-[85%]"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.95)" }}
+              >
+                “{loja.fala}”
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div
+            className="rounded-2xl p-4 flex items-center gap-4"
+            style={{
+              background: "linear-gradient(135deg, rgba(38,19,24,0.85), rgba(27,27,42,0.72) 70%)",
+              border: "1px solid rgba(209,171,85,0.3)",
+            }}
+          >
+            <SellerPortrait loja={loja} size="w-20 h-20 text-3xl" />
+            <div className="min-w-0">
+              <h4 className="font-cinzel text-sm uppercase tracking-[0.2em] text-arcana-gold-bright">
+                {loja.nome}
+              </h4>
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim mt-0.5">
+                {loja.vendedor}
+              </p>
+              <p className="font-crimson text-base italic text-arcana-text leading-snug mt-1.5">
+                “{loja.fala}”
+              </p>
+            </div>
+          </div>
+        ))}
 
       <input
         type="text"
@@ -327,6 +382,40 @@ export default function StepCompras({ data, onUpdate }: Props) {
           </p>
         </div>
       )}
+
+      <style jsx>{`
+        .balcao {
+          animation: balcaoIn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes balcaoIn {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .balcao-img {
+          animation: kenburns 16s ease-in-out infinite alternate;
+          will-change: transform;
+        }
+        @keyframes kenburns {
+          from {
+            transform: scale(1) translateY(0);
+          }
+          to {
+            transform: scale(1.08) translateY(-2%);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .balcao,
+          .balcao-img {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }

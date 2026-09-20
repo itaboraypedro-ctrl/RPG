@@ -64,6 +64,7 @@ export function CharacterWizard() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [lojaAmbient, setLojaAmbient] = useState<string | null>(null);
   const revisaoTriggerRef = useRef<(() => void) | null>(null);
   const savedRef = useRef(false);
 
@@ -320,12 +321,21 @@ export function CharacterWizard() {
             .join(" · ")
         : undefined;
 
+  // Nas lojas (e no estábulo da montaria), a cena do vendedor ambienta o retrato.
+  const ambientImage =
+    step === "compras" && lojaAmbient
+      ? lojaAmbient
+      : step === "montaria"
+        ? "/story/vendedores/estabulo.webp"
+        : undefined;
+
   const previewContent = (
     <SacramentoPreview
       imageUrl={previewImageUrl}
       characterName={data.name}
       subtitle={previewSubtitle}
       stats={previewStats}
+      ambientImage={ambientImage}
     />
   );
 
@@ -337,7 +347,9 @@ export function CharacterWizard() {
       {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} />}
       {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} />}
       {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} />}
-      {step === "compras" && <StepCompras data={data} onUpdate={updateData} />}
+      {step === "compras" && (
+        <StepCompras data={data} onUpdate={updateData} onAmbient={setLojaAmbient} />
+      )}
       {step === "montaria" && <StepMontaria data={data} onUpdate={updateData} />}
       {step === "revisao" && (
         <StepRevisao

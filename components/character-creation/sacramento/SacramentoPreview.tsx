@@ -11,11 +11,19 @@ type Props = {
   subtitle?: string;
   /** Plaqueta opcional de valores derivados (etapas de ficha). */
   stats?: StatChip[];
+  /** Cena de fundo atrás do retrato (padrão: deserto; lojas trocam pela sua). */
+  ambientImage?: string;
 };
 
 type Layer = { url: string; key: number };
 
-export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: Props) {
+export function SacramentoPreview({
+  imageUrl,
+  characterName,
+  subtitle,
+  stats,
+  ambientImage = "/story/places/deserto-de-mucuri.webp",
+}: Props) {
   // Pilha de duas camadas: a nova entra por cima com crossfade + varredura de
   // luz; a anterior fica por baixo até a transição terminar (sem flash).
   const [layers, setLayers] = useState<Layer[]>(imageUrl ? [{ url: imageUrl, key: 0 }] : []);
@@ -41,9 +49,10 @@ export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: 
       {/* Cenário ambiente atrás do retrato */}
       <div aria-hidden className="ambient absolute -inset-x-20 -top-16 -bottom-10 pointer-events-none">
         <div
-          className="absolute inset-0"
+          key={ambientImage}
+          className="ambient-scene absolute inset-0"
           style={{
-            backgroundImage: "url(/story/places/deserto-de-mucuri.webp)",
+            backgroundImage: `url(${ambientImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center 30%",
             opacity: 0.3,
@@ -181,6 +190,17 @@ export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: 
       )}
 
       <style jsx>{`
+        .ambient-scene {
+          animation: ambientIn 700ms ease-out both;
+        }
+        @keyframes ambientIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 0.3;
+          }
+        }
         .aura {
           background: radial-gradient(
             60% 55% at 50% 45%,

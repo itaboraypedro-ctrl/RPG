@@ -11,7 +11,6 @@ import {
   APRESENTACOES,
   FAIXAS_ETARIAS,
   TIPOS_FISICOS,
-  TONS_DE_PELE,
 } from "@/lib/character-creation/sacramento/bases";
 import { kitById } from "@/lib/character-creation/sacramento/kits";
 import { habilidadeById, contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";

@@ -37,7 +37,47 @@ export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: 
   };
 
   return (
-    <div className="w-full max-w-[300px] mx-auto space-y-5">
+    <div className="relative w-full max-w-[380px] mx-auto space-y-5">
+      {/* Cenário ambiente atrás do retrato */}
+      <div aria-hidden className="ambient absolute -inset-x-20 -top-16 -bottom-10 pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "url(/story/places/deserto-de-mucuri.webp)",
+            backgroundSize: "cover",
+            backgroundPosition: "center 30%",
+            opacity: 0.3,
+            filter: "blur(2px) saturate(0.9)",
+            maskImage: "radial-gradient(78% 68% at 50% 44%, black 38%, transparent 82%)",
+            WebkitMaskImage: "radial-gradient(78% 68% at 50% 44%, black 38%, transparent 82%)",
+          }}
+        />
+        <div className="aura absolute inset-x-6 top-6 bottom-16" />
+        {[
+          { l: "12%", t: "18%", s: 3, d: "0s", dur: "9s" },
+          { l: "84%", t: "26%", s: 2, d: "1.4s", dur: "11s" },
+          { l: "22%", t: "64%", s: 2.5, d: "2.8s", dur: "10s" },
+          { l: "70%", t: "74%", s: 2, d: "0.8s", dur: "12s" },
+          { l: "8%", t: "44%", s: 2, d: "3.6s", dur: "13s" },
+          { l: "92%", t: "52%", s: 2.5, d: "2s", dur: "9.5s" },
+          { l: "48%", t: "10%", s: 2, d: "4.2s", dur: "11.5s" },
+          { l: "60%", t: "88%", s: 3, d: "1s", dur: "10.5s" },
+        ].map((p, i) => (
+          <span
+            key={i}
+            className="particle absolute rounded-full"
+            style={{
+              left: p.l,
+              top: p.t,
+              width: p.s,
+              height: p.s,
+              animationDelay: p.d,
+              animationDuration: p.dur,
+            }}
+          />
+        ))}
+      </div>
+
       <div className="relative">
         <div
           className="absolute -inset-2 rounded-2xl pointer-events-none"
@@ -89,7 +129,7 @@ export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: 
                     }
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 300px"
+                    sizes="(max-width: 1024px) 100vw, 380px"
                     priority={isTop}
                   />
                   {entering && <div className="light-sweep absolute inset-0 pointer-events-none" />}
@@ -141,6 +181,62 @@ export function SacramentoPreview({ imageUrl, characterName, subtitle, stats }: 
       )}
 
       <style jsx>{`
+        .aura {
+          background: radial-gradient(
+            60% 55% at 50% 45%,
+            rgba(209, 171, 85, 0.18),
+            rgba(92, 36, 29, 0.09) 55%,
+            transparent 78%
+          );
+          animation: auraPulse 6s ease-in-out infinite;
+          will-change: opacity, transform;
+        }
+        @keyframes auraPulse {
+          0%,
+          100% {
+            opacity: 0.55;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+        }
+        .particle {
+          background: #f0cc6a;
+          box-shadow: 0 0 6px 1px rgba(245, 212, 120, 0.55);
+          opacity: 0;
+          animation-name: particleFloat;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          will-change: opacity, transform;
+        }
+        @keyframes particleFloat {
+          0%,
+          100% {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          25% {
+            opacity: 0.7;
+          }
+          50% {
+            opacity: 0.35;
+            transform: translateY(-14px);
+          }
+          75% {
+            opacity: 0.65;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .aura,
+          .particle {
+            animation: none;
+          }
+          .particle {
+            opacity: 0.3;
+          }
+        }
         .portrait-enter {
           animation: portraitFade 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
           will-change: opacity, transform;

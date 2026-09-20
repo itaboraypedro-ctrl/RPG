@@ -286,16 +286,21 @@ export function EscritorioPreview({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/story/escritorio/janelinha.webp" alt="" aria-hidden
                       className="absolute inset-0 h-full w-full select-none" />
-                    {/* Rótulo gravado abaixo da régua */}
-                    <span className="absolute inset-x-[-40%] flex justify-center font-cinzel uppercase leading-none"
-                      style={{
-                        top: "108%",
-                        fontSize: "clamp(5px, 1.1cqw, 9px)",
-                        letterSpacing: "0.12em",
-                        color: "#c9ad7a",
-                        textShadow: "0 1px 2px rgba(0,0,0,0.85)",
-                      }}>
-                      {s.label}
+                    {/* Rótulo abaixo da régua — legível sobre a madeira (≥10px sempre) */}
+                    <span className="absolute inset-x-[-50%] flex justify-center leading-none"
+                      style={{ top: "106%" }}>
+                      <span className="font-cinzel uppercase leading-none rounded-[3px]"
+                        style={{
+                          fontSize: "clamp(10px, 1.6cqw, 14px)",
+                          letterSpacing: "0.1em",
+                          color: "#f5d478",
+                          padding: "2px 5px",
+                          background: "rgba(12,8,4,0.62)",
+                          textShadow: "0 1px 2px rgba(0,0,0,0.9)",
+                          whiteSpace: "nowrap",
+                        }}>
+                        {s.label}
+                      </span>
                     </span>
                   </div>
                 );

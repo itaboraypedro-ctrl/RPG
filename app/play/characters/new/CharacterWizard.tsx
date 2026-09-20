@@ -10,7 +10,8 @@ import Step3Historia from "@/components/character-creation/sacramento/Step5Histo
 import Step4Atributos from "@/components/character-creation/sacramento/Step4Atributos";
 import Step5Habilidades from "@/components/character-creation/sacramento/Step5Habilidades";
 import Step6Montaria from "@/components/character-creation/sacramento/Step6Montaria";
-import Step7Revisao from "@/components/character-creation/sacramento/Step7Revisao";
+import Step7Compras from "@/components/character-creation/sacramento/Step7Compras";
+import Step8Revisao from "@/components/character-creation/sacramento/Step8Revisao";
 import {
   APRESENTACOES,
   BASE_PADRAO,
@@ -38,6 +39,7 @@ const STEP_LABELS = [
   "Atributos",
   "Habilidades",
   "Montaria",
+  "Compras",
   "Revisão",
 ];
 const DRAFT_KEY = "sacramento-character-draft-v2";
@@ -54,7 +56,7 @@ export function CharacterWizard() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
-  const step7TriggerRef = useRef<(() => void) | null>(null);
+  const step8TriggerRef = useRef<(() => void) | null>(null);
   const savedRef = useRef(false);
 
   // ---- Rascunho: restaura no mount, salva a cada mudança ----
@@ -66,8 +68,12 @@ export function CharacterWizard() {
       if (draft?.data?.base) {
         // Restaurar no effect evita mismatch de hidratação (localStorage não existe no SSR).
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setData({ ficha: FICHA_INICIAL, kitId: "base", ...draft.data });
-        setStep(draft.step && draft.step >= 1 && draft.step <= 7 ? draft.step : 1);
+        setData({
+          kitId: "base",
+          ...draft.data,
+          ficha: { ...FICHA_INICIAL, ...draft.data.ficha },
+        });
+        setStep(draft.step && draft.step >= 1 && draft.step <= 8 ? draft.step : 1);
         setDraftRestored(true);
       }
     } catch {
@@ -128,7 +134,7 @@ export function CharacterWizard() {
     setData((prev) => ({ ...prev, ...partial }));
   };
 
-  const goNext = () => setStep((s) => Math.min(7, s + 1) as WizardStep);
+  const goNext = () => setStep((s) => Math.min(8, s + 1) as WizardStep);
   const goBack = () => setStep((s) => Math.max(1, s - 1) as WizardStep);
 
   const handleChangeBase = (base: BaseVisual) => {
@@ -205,12 +211,13 @@ export function CharacterWizard() {
     4: atributosOk,
     5: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
     6: !ficha.montaria || ficha.montaria.origem !== "",
-    7: !saving,
+    7: !validacao.erros.some((e) => e.includes("orçamento") || e.includes("espaço")),
+    8: !saving,
   };
   const canProceed = canProceedMap[step];
 
   const handleFooterNext = () => {
-    if (step === 7) step7TriggerRef.current?.();
+    if (step === 8) step8TriggerRef.current?.();
     else goNext();
   };
 
@@ -237,7 +244,7 @@ export function CharacterWizard() {
         disabled={!canProceed}
         className={canProceed ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
       >
-        {step === 7 ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
+        {step === 8 ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
       </button>
     </div>
   );
@@ -296,10 +303,11 @@ export function CharacterWizard() {
       {step === 4 && <Step4Atributos data={data} onUpdate={updateData} />}
       {step === 5 && <Step5Habilidades data={data} onUpdate={updateData} />}
       {step === 6 && <Step6Montaria data={data} onUpdate={updateData} />}
-      {step === 7 && (
-        <Step7Revisao
+      {step === 7 && <Step7Compras data={data} onUpdate={updateData} />}
+      {step === 8 && (
+        <Step8Revisao
           data={data}
-          triggerRef={step7TriggerRef}
+          triggerRef={step8TriggerRef}
           onSavingChange={setSaving}
           onSaved={clearDraft}
         />

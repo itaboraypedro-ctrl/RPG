@@ -16,6 +16,7 @@ import {
 import { kitById } from "@/lib/character-creation/sacramento/kits";
 import { habilidadeById, contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import { ANTECEDENTES, ATRIBUTOS, calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
+import { resumoCompras } from "@/lib/character-creation/sacramento/catalogo";
 import { faccaoById } from "@/lib/character-creation/sacramento/story-data";
 import {
   ELEMENTOS_VAZIOS,
@@ -36,7 +37,7 @@ const CARD_STYLE = {
   border: "1px solid rgba(255,255,255,0.08)",
 } as const;
 
-export default function Step7Revisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
+export default function Step8Revisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -100,6 +101,7 @@ export default function Step7Revisao({ data, triggerRef, onSavingChange, onSaved
   const kit = kitById(data.kitId ?? "base");
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const validacao = validarFicha(ficha);
+  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
 
   const tracos = base
     ? [
@@ -152,7 +154,7 @@ export default function Step7Revisao({ data, triggerRef, onSavingChange, onSaved
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <span className={LABEL}>Ficha · Nível {ficha.nivel}</span>
           <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">
-            {derivados.xp} XP · $200 para compras na mesa
+            {derivados.xp} XP · saldo ${compras.saldo}
           </span>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
@@ -199,6 +201,20 @@ export default function Step7Revisao({ data, triggerRef, onSavingChange, onSaved
               {ficha.montaria
                 ? `${ficha.montaria.nome || "Sem nome"} · Pot ${ficha.montaria.potencia} · Res ${ficha.montaria.resistencia} · Vida ${6 + ficha.montaria.resistencia}`
                 : "A resolver na mesa"}
+            </p>
+          </div>
+          <div>
+            <span className={LABEL}>Compras</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              {compras.custoTotal > 0
+                ? `${(ficha.compras ?? []).reduce((n, c) => n + c.quantidade, 0)} itens · $${compras.custoTotal} gastos · sobra $${compras.saldo}`
+                : "Nada comprado — $200 intactos"}
+            </p>
+          </div>
+          <div>
+            <span className={LABEL}>Recompensa pela cabeça</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              $0 — exceções da trilha só com o Juiz
             </p>
           </div>
         </div>

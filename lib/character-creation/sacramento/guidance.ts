@@ -4,7 +4,14 @@
 import type { SectionGuide } from "@/lib/rulesets/sacramento/guidance";
 
 export const PLAYER_GUIDES: Record<
-  "tracos" | "elementos" | "historia" | "atributos" | "habilidades" | "montaria" | "revisao",
+  | "tracos"
+  | "elementos"
+  | "historia"
+  | "atributos"
+  | "habilidades"
+  | "montaria"
+  | "compras"
+  | "revisao",
   SectionGuide
 > = {
   tracos: {
@@ -70,6 +77,17 @@ export const PLAYER_GUIDES: Record<
       "Sem pressa — dá para pular e resolver a montaria na mesa.",
     ],
     paginas: "50–51, 55",
+  },
+  compras: {
+    oQueE: "O enxoval inicial: $200 para comprar tudo — roupas, armas, munição e mantimentos.",
+    paraQueServe:
+      "É todo o patrimônio de partida. O que sobrar vira o dinheiro do personagem na campanha.",
+    naPratica: [
+      "A primeira compra usa o preço máximo da tabela, sem barganha — regra do livro.",
+      "Roupa vestida e arma no coldre não ocupam mochila; o resto gasta os 10 espaços.",
+      "Não precisa comprar tudo agora: sobrar dinheiro é estratégia, não erro.",
+    ],
+    paginas: "52–65",
   },
   revisao: {
     oQueE: "O resumo final de tudo: retrato, história e ficha.",

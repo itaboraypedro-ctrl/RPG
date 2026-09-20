@@ -8,6 +8,7 @@ import type {
   FichaMecanica,
   Nivel,
 } from "./types";
+import { resumoCompras } from "./catalogo";
 
 export interface AtributoInfo {
   id: AtributoId;
@@ -165,6 +166,16 @@ export function validarFicha(ficha: FichaMecanica): ValidacaoFicha {
   if (ficha.montaria) {
     const soma = ficha.montaria.potencia + ficha.montaria.resistencia;
     if (soma !== 3) erros.push("A montaria distribui exatamente 3 pontos entre Potência e Resistência.");
+  }
+
+  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
+  if (compras.saldo < 0) {
+    erros.push(`Compras acima do orçamento: os $200 iniciais não cobrem $${compras.custoTotal}.`);
+  }
+  if (compras.espacoUsado > compras.capacidade) {
+    erros.push(
+      `Falta espaço: ${compras.espacoUsado} de ${compras.capacidade} — vista roupas, porte armas ou deixe algo para trás.`,
+    );
   }
 
   return {

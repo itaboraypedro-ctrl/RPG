@@ -14,6 +14,7 @@ import { baseId } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath } from "@/lib/character-creation/sacramento/kits";
 import { calcularDerivados, validarFicha, XP_POR_NIVEL } from "@/lib/character-creation/sacramento/rules";
 import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
+import { itemById, resumoCompras } from "@/lib/character-creation/sacramento/catalogo";
 
 export type CreateSacramentoPayload = {
   name: string;
@@ -68,6 +69,22 @@ export async function createSacramentoCharacter(
 
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const proximoNivel = Math.min(6, ficha.nivel + 1) as keyof typeof XP_POR_NIVEL;
+  const compras = resumoCompras(ficha.compras ?? [], ficha.montaria !== null);
+  const inventario = (ficha.compras ?? [])
+    .map((c) => {
+      const item = itemById(c.id);
+      return item
+        ? {
+            id: item.id,
+            nome: item.nome,
+            categoria: item.categoria,
+            quantidade: c.quantidade,
+            precoPago: item.preco,
+            espaco: item.espaco,
+          }
+        : null;
+    })
+    .filter(Boolean);
 
   const supabase = await createClient();
 
@@ -85,7 +102,7 @@ export async function createSacramentoCharacter(
     speed: derivados.movimentos,
     xp: derivados.xp,
     xp_next_level: XP_POR_NIVEL[proximoNivel],
-    gold: 200, // orçamento inicial do livro (p. 52); compras acontecem na mesa
+    gold: compras.saldo, // $200 iniciais menos as compras (preço máximo, p. 52)
     conditions: [],
     death_saves: { successes: 0, failures: 0 },
     stats: {
@@ -102,7 +119,7 @@ export async function createSacramentoCharacter(
       montaria: ficha.montaria,
     },
     skills: { antecedentes: ficha.antecedentes, habilidades: ficha.habilidades },
-    inventory: [],
+    inventory: inventario,
     spells: [],
     backstory: renderBackstory(payload.historia),
     notes: "",

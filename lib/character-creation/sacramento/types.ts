@@ -4,7 +4,7 @@
 // A ficha mecânica segue docs/01 §3 (condições iniciais), §4 (antecedentes),
 // §5 (habilidades), §8 (montaria) e §10 (evolução por nível).
 
-export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type Apresentacao = "feminino" | "masculino";
 export type TomDePele = "muito-claro" | "claro" | "medio" | "escuro" | "muito-escuro";
@@ -91,6 +91,11 @@ export interface MontariaCriacao {
   origem: "juiz" | "comprar" | "";
 }
 
+export interface CompraItem {
+  id: string;
+  quantidade: number;
+}
+
 export interface FichaMecanica {
   nivel: Nivel;
   atributos: Record<AtributoId, number>;
@@ -98,6 +103,8 @@ export interface FichaMecanica {
   /** IDs das habilidades adquiridas; só Parrudeza pode repetir (docs/01 §5). */
   habilidades: string[];
   montaria: MontariaCriacao | null;
+  /** Compras iniciais com os $200 (preço máximo, sem barganha — p. 52). */
+  compras: CompraItem[];
 }
 
 export const FICHA_INICIAL: FichaMecanica = {
@@ -115,6 +122,7 @@ export const FICHA_INICIAL: FichaMecanica = {
   },
   habilidades: [],
   montaria: null,
+  compras: [],
 };
 
 // ---------- Estado do wizard ----------

@@ -655,9 +655,10 @@ export function CharacterWizard() {
       header={header}
       mobileHeader={mobileHeader}
       mobileOverlay={!!paneAtual}
-      // Depois da estética, o personagem sai de cena: foco total na história
-      // e na ficha. Ele volta na hora da foto (selfie em diante).
-      mobileScene={!["elementos", "atributos", "habilidades"].includes(step)}
+      // Depois da estética, o personagem sai de cena: foco total na história,
+      // na ficha, no retratista e na revisão. Ele reaparece nas lojas (vitrine)
+      // e no grand finale do "Criar personagem" (forja + banner).
+      mobileScene={!["elementos", "atributos", "habilidades", "selfie", "revisao"].includes(step)}
       mobileHelp={
         guiaDaEtapa ? (
           <button

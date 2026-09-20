@@ -221,8 +221,11 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                     : undefined}
                 />
                 <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 80% at 60% 30%, ${heroColor}18, transparent 65%)` }} />
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />
+                {/* Véu vertical mais leve no mobile — o retrato é o destaque */}
+                <div className="absolute inset-0 md:hidden" style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(7,7,13,0.25) 55%, rgba(7,7,13,0.92) 100%)" }} />
+                <div className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(to bottom, rgba(7,7,13,0.15) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.97) 100%)" }} />
+                {/* Véu lateral só em telas largas — no mobile ele cobria o personagem inteiro */}
+                <div className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(to right, rgba(7,7,13,0.6) 0%, transparent 35%, transparent 65%, rgba(7,7,13,0.6) 100%)" }} />
               </div>
             );
           })()}

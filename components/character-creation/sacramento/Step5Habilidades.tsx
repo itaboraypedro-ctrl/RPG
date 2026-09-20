@@ -109,11 +109,11 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
           />
         )}
         <CornerCheck active={active && !h.repetivel} />
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col items-center gap-2 text-center">
           <span
             aria-hidden
             className={[
-              "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors",
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors",
               active
                 ? "border-arcana-gold/60 text-arcana-gold-bright"
                 : cheio
@@ -129,42 +129,40 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
                 : { background: "rgba(8,8,15,0.4)" }
             }
           >
-            <HabilidadeIcon id={h.id} className="h-6 w-6" />
+            <HabilidadeIcon id={h.id} className="h-7 w-7" />
           </span>
-          <div className="min-w-0 flex-1">
+          <p
+            className={[
+              "font-cinzel text-[10px] uppercase tracking-[0.12em] leading-tight",
+              active
+                ? "font-bold text-arcana-gold-bright"
+                : cheio
+                  ? "text-arcana-text-dim"
+                  : "text-arcana-text",
+            ].join(" ")}
+          >
+            {h.nome}
+            {h.repetivel && parrudeza > 0 && (
+              <span className="ml-1 text-arcana-gold">×{parrudeza}</span>
+            )}
+          </p>
+          <p className="font-crimson text-[11px] leading-snug text-arcana-text-dim line-clamp-2">
+            {h.resumo}
+          </p>
+          {h.requisito && (
             <p
               className={[
-                "font-cinzel text-[11px] uppercase tracking-[0.14em]",
-                active
-                  ? "font-bold text-arcana-gold-bright"
-                  : cheio
-                    ? "text-arcana-text-dim"
-                    : "text-arcana-text",
+                "font-crimson text-[10px] italic leading-snug line-clamp-2",
+                inativa ? "text-arcana-danger" : "text-arcana-text-dim",
               ].join(" ")}
             >
-              {h.nome}
-              {h.repetivel && parrudeza > 0 && (
-                <span className="ml-1.5 text-arcana-gold">×{parrudeza}</span>
-              )}
+              {inativa
+                ? `Inativa: ${h.requisito.texto.toLowerCase()}`
+                : h.requisito.texto}
             </p>
-            <p className="font-crimson text-[13px] leading-snug text-arcana-text-dim mt-1">
-              {h.resumo}
-            </p>
-            {h.requisito && (
-              <p
-                className={[
-                  "font-crimson text-xs italic mt-1",
-                  inativa ? "text-arcana-danger" : "text-arcana-text-dim",
-                ].join(" ")}
-              >
-                {inativa
-                  ? `Inativa: ${h.requisito.texto.toLowerCase()} (fica na ficha, sem funcionar)`
-                  : h.requisito.texto}
-              </p>
-            )}
-          </div>
+          )}
           {h.repetivel && (
-            <div className="relative z-10 flex items-center gap-1.5 shrink-0">
+            <div className="relative z-10 flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={removeParrudeza}
@@ -218,14 +216,14 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
 
       <section className={mostra("combate") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Combate</span>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {HABILIDADES.filter((h) => h.categoria === "combate").map(renderCard)}
         </div>
       </section>
 
       <section className={mostra("profissao") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Profissão</span>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {HABILIDADES.filter((h) => h.categoria === "profissao").map(renderCard)}
         </div>
       </section>

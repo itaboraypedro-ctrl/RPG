@@ -314,14 +314,7 @@ export default function Step1Tracos({ data, onUpdate, onChangeBase, foco }: Prop
             Só aparência — não muda a ficha
           </span>
         </div>
-        <div
-          className={
-            foco === "kit"
-              ? "grid grid-flow-col grid-rows-2 auto-cols-[46%] gap-1.5 overflow-x-auto snap-x pb-1"
-              : "grid grid-cols-2 gap-1.5 sm:grid-cols-3"
-          }
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
           {KITS.map((k) => {
             const active = kitId === k.id;
             const forBase = kitAvailableForBase(k.id, base);

@@ -218,28 +218,14 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
 
       <section className={mostra("combate") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Combate</span>
-        <div
-          className={
-            foco === "combate"
-              ? "grid grid-flow-col grid-rows-2 auto-cols-[84%] gap-2 overflow-x-auto snap-x pb-1"
-              : "grid gap-2 sm:grid-cols-2"
-          }
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="grid gap-2 sm:grid-cols-2">
           {HABILIDADES.filter((h) => h.categoria === "combate").map(renderCard)}
         </div>
       </section>
 
       <section className={mostra("profissao") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Profissão</span>
-        <div
-          className={
-            foco === "profissao"
-              ? "grid grid-flow-col grid-rows-2 auto-cols-[84%] gap-2 overflow-x-auto snap-x pb-1"
-              : "grid gap-2 sm:grid-cols-2"
-          }
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="grid gap-2 sm:grid-cols-2">
           {HABILIDADES.filter((h) => h.categoria === "profissao").map(renderCard)}
         </div>
       </section>

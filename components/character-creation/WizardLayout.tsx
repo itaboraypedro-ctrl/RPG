@@ -11,6 +11,9 @@ type Props = {
   mobileOverlay?: boolean;
   /** Botão de ajuda ("?") flutuando no topo da cena, quando a etapa tem guia. */
   mobileHelp?: React.ReactNode;
+  /** false: o personagem sai de cena no mobile — foco total no conteúdo
+      (etapas de história/ficha entre a estética e a foto). */
+  mobileScene?: boolean;
   /** Muda a cada etapa — o miolo rolável volta ao topo quando muda. */
   scrollKey?: string | number;
 };
@@ -23,6 +26,7 @@ export function WizardLayout({
   mobileHeader,
   mobileOverlay = false,
   mobileHelp,
+  mobileScene = true,
   scrollKey,
 }: Props) {
   return (
@@ -30,7 +34,18 @@ export function WizardLayout({
       {/* Mobile: o personagem SEMPRE em cena. Micro-etapas compactas flutuam
           sobre a cena quase cheia; as densas vivem numa gaveta inferior. */}
       <div className="lg:hidden h-full flex flex-col">
-        {mobileOverlay ? (
+        {!mobileScene ? (
+          /* Modo foco: sem cena — só o conteúdo, em tela cheia */
+          <div className="relative flex-1 min-h-0 flex flex-col">
+            <div className="shrink-0 px-4 pt-3 pb-2 border-b border-arcana-border-dim flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">{mobileHeader ?? header}</div>
+              {mobileHelp && <div className="shrink-0">{mobileHelp}</div>}
+            </div>
+            <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-4">
+              {children}
+            </div>
+          </div>
+        ) : mobileOverlay ? (
           <div className="relative flex-1 min-h-0">
             {/* Cena quase cheia — o miolo reserva o rodapé do cartão flutuante */}
             <div className="absolute inset-x-0 top-0 bottom-0 flex items-start justify-center px-3 pt-2 pb-36">

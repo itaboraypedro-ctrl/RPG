@@ -28,8 +28,9 @@ type Layer = { url: string; key: number };
  */
 const MOLDURA = { left: "34.4%", top: "28.8%", width: "34.2%", height: "40.8%" } as const;
 const JANELA = { left: "67.6%", top: "0%", width: "32.4%", height: "32.6%" } as const;
-const LAMPARINA = { left: "71%", width: "24%", bottom: "11%" } as const;
 const PAPEL = { left: "2.5%", top: "42.5%", width: "22.5%" } as const;
+/** Placa de ferro com o nome, pendurada sob a moldura (aspecto real 4.104:1). */
+const PLACA = { left: "34.5%", top: "71.6%", width: "34%" } as const;
 
 export function EscritorioPreview({
   imageUrl,
@@ -133,61 +134,49 @@ export function EscritorioPreview({
         <img src="/story/escritorio/cena.webp" alt="" aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full select-none" />
 
-        {/* ── Camada 4: lamparina com chama viva ── */}
-        <div className="pointer-events-none absolute" style={{ ...LAMPARINA, aspectRatio: "1 / 1" }}>
-          {/* Chama dentro da cúpula */}
-          <div className="chama absolute" style={{ left: "44%", top: "33%", width: "12%", height: "17%" }} />
-          <div className="chama-nucleo absolute" style={{ left: "46.5%", top: "38%", width: "7%", height: "10%" }} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/story/escritorio/lamparina.webp" alt="" aria-hidden
-            className="absolute inset-0 h-full w-full select-none" />
-        </div>
-        {/* Luz quente da lamparina banhando a cena */}
-        <div aria-hidden className="luz-lamparina pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(42% 30% at 83% 80%, rgba(255,184,90,0.28), rgba(255,160,64,0.1) 45%, transparent 72%)",
-            mixBlendMode: "screen",
-          }} />
+        {/* ── Camada 4: placa de ferro com o nome, sob a moldura ── */}
+        {characterName && (
+          <div className="pointer-events-none absolute" style={{ ...PLACA, aspectRatio: "4.104 / 1" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/story/escritorio/placa.webp" alt="" aria-hidden
+              className="absolute inset-0 h-full w-full select-none" />
+            <div className="absolute flex items-center justify-center text-center"
+              style={{ left: "12%", right: "12%", top: "14%", bottom: "14%" }}>
+              <p className="font-rye truncate leading-none"
+                style={{
+                  fontSize: "clamp(10px, 3.1cqw, 21px)",
+                  letterSpacing: "0.06em",
+                  color: "#2c1a09",
+                  textShadow: "0 1px 0 rgba(255,224,150,0.4), 0 -1px 1px rgba(30,16,4,0.55)",
+                }}>
+                {characterName}
+              </p>
+            </div>
+          </div>
+        )}
 
-        {/* ── Camada 5: papel pregado com nome e conceito ── */}
-        <div className="pointer-events-none absolute" style={{ ...PAPEL, aspectRatio: "4 / 5" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/story/escritorio/papel.webp" alt="" aria-hidden
-            className="absolute inset-0 h-full w-full select-none" />
-          {(characterName || subtitle) && (
+        {/* ── Camada 5: papel pregado com o conceito ── */}
+        {subtitle && (
+          <div className="pointer-events-none absolute" style={{ ...PAPEL, aspectRatio: "4 / 5" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/story/escritorio/papel.webp" alt="" aria-hidden
+              className="absolute inset-0 h-full w-full select-none" />
             <div className="absolute flex flex-col items-center justify-center text-center"
               style={{ left: "16%", right: "14%", top: "22%", bottom: "20%", transform: "rotate(-3.5deg)" }}>
-              {characterName && (
-                <p className="font-cinzel uppercase leading-tight"
-                  style={{
-                    fontSize: "clamp(9px, 2.6cqw, 17px)",
-                    letterSpacing: "0.12em",
-                    color: "#4a3320",
-                    textShadow: "0 1px 0 rgba(255,240,210,0.35)",
-                  }}>
-                  {characterName}
-                </p>
-              )}
-              {characterName && subtitle && (
-                <div className="my-1.5 h-px w-2/3" style={{ background: "rgba(74,51,32,0.4)" }} />
-              )}
-              {subtitle && (
-                <p className="font-crimson italic leading-snug"
-                  style={{
-                    fontSize: "clamp(9px, 2.4cqw, 15px)",
-                    color: "#5c4229",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 4,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}>
-                  {subtitle}
-                </p>
-              )}
+              <p className="font-crimson italic leading-snug"
+                style={{
+                  fontSize: "clamp(9px, 2.4cqw, 15px)",
+                  color: "#5c4229",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 5,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}>
+                {subtitle}
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ── Camada 6: placas de latão com a ficha ── */}
         {stats && stats.length > 0 && (
@@ -263,69 +252,10 @@ export function EscritorioPreview({
             transform: translateX(70%);
           }
         }
-        .chama {
-          background: radial-gradient(
-            50% 62% at 50% 78%,
-            #fff6d8 0%,
-            #ffd873 34%,
-            #ff9f3d 62%,
-            rgba(255, 120, 40, 0.25) 82%,
-            transparent 100%
-          );
-          border-radius: 50% 50% 46% 54% / 62% 62% 38% 38%;
-          filter: blur(1px);
-          transform-origin: 50% 90%;
-          animation: chamaDanca 2.8s ease-in-out infinite;
-          will-change: transform, opacity;
-        }
-        .chama-nucleo {
-          background: radial-gradient(50% 60% at 50% 70%, #fffdf4 0%, #ffe9a8 55%, transparent 100%);
-          border-radius: 50% 50% 44% 56% / 64% 64% 36% 36%;
-          filter: blur(0.5px);
-          transform-origin: 50% 90%;
-          animation: chamaDanca 2.1s ease-in-out infinite reverse;
-        }
-        @keyframes chamaDanca {
-          0%,
-          100% {
-            transform: scaleY(1) scaleX(1) rotate(0deg);
-            opacity: 0.95;
-          }
-          22% {
-            transform: scaleY(1.12) scaleX(0.94) rotate(-2deg);
-            opacity: 1;
-          }
-          48% {
-            transform: scaleY(0.92) scaleX(1.05) rotate(1.5deg);
-            opacity: 0.85;
-          }
-          74% {
-            transform: scaleY(1.08) scaleX(0.96) rotate(-1deg);
-            opacity: 1;
-          }
-        }
-        .luz-lamparina {
-          animation: luzRespira 5.5s ease-in-out infinite;
-        }
-        @keyframes luzRespira {
-          0%,
-          100% {
-            opacity: 0.85;
-          }
-          40% {
-            opacity: 1;
-          }
-          65% {
-            opacity: 0.78;
-          }
-        }
         @media (prefers-reduced-motion: reduce) {
           .janela-cena,
           .retrato-enter,
-          .retrato-sweep,
-          .chama,
-          .chama-nucleo,
-          .luz-lamparina {
+          .retrato-sweep {
             animation: none;
           }
         }

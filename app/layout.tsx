@@ -5,6 +5,7 @@ import {
   Rajdhani,
   Cinzel,
   Crimson_Text,
+  Rye,
 } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
@@ -38,6 +39,13 @@ const crimson = Crimson_Text({
   style: ["normal", "italic"],
 });
 
+// Letreiro de western — usada em gravações de metal (placa do personagem).
+const rye = Rye({
+  variable: "--font-rye",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "Arcana — Onde histórias ganham vida",
   description:
@@ -52,7 +60,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} ${cinzel.variable} ${crimson.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} ${cinzel.variable} ${crimson.variable} ${rye.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createSacramentoCharacter,
   type CreateSacramentoPayload,
@@ -59,6 +59,10 @@ export default function ForjaPersonagem({
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   const [msgIdx, setMsgIdx] = useState(0);
   const [mostrarFechar, setMostrarFechar] = useState(false);
+  // Trava de gravação: o estado `fase` demora um commit para mudar, e o effect de
+  // auto-salvar pode disparar de novo nesse intervalo (StrictMode em dev roda os
+  // effects 2x). O ref é síncrono — um único INSERT, sem personagem duplicado.
+  const salvandoRef = useRef(false);
 
   // Mensagens rotativas estilo tela de carregamento de console.
   useEffect(() => {
@@ -68,8 +72,11 @@ export default function ForjaPersonagem({
   }, [fase]);
 
   const salvar = useCallback(async () => {
+    if (salvandoRef.current) return;
+    salvandoRef.current = true;
     const { name, base, historia } = data;
     if (!name || !base || !historia) {
+      salvandoRef.current = false;
       onCancel();
       return;
     }
@@ -88,6 +95,7 @@ export default function ForjaPersonagem({
       };
       const result = await createSacramentoCharacter(payload);
       if (!result.ok) {
+        salvandoRef.current = false; // libera o "Salvar de novo"
         setErroSalvar(result.error);
         setFase("erro-salvar");
         return;
@@ -99,6 +107,7 @@ export default function ForjaPersonagem({
         onExit();
       }
     } catch {
+      salvandoRef.current = false;
       setErroSalvar("Não foi possível salvar o personagem. Tente novamente.");
       setFase("erro-salvar");
     }

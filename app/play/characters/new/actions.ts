@@ -90,6 +90,19 @@ export async function createSacramentoCharacter(
 
   const supabase = await createClient();
 
+  // Idempotência: cliques duplos ou effects repetidos não criam personagem em dobro.
+  const { data: recente } = await supabase
+    .from("characters")
+    .select("id")
+    .eq("owner_id", auth.user.id)
+    .eq("name", name)
+    .gte("created_at", new Date(Date.now() - 2 * 60 * 1000).toISOString())
+    .limit(1);
+  if (recente && recente.length > 0) {
+    revalidatePath("/hub");
+    return { ok: true };
+  }
+
   const insertRow: Record<string, unknown> = {
     owner_id: auth.user.id,
     name,

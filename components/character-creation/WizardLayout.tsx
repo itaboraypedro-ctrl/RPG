@@ -7,6 +7,8 @@ type Props = {
   previewContent: React.ReactNode;
   /** Cabeçalho compacto do mobile (padrão: o mesmo header do desktop). */
   mobileHeader?: React.ReactNode;
+  /** Mobile minimalista: cena quase cheia, controles flutuando por cima. */
+  mobileOverlay?: boolean;
   /** Muda a cada etapa — o miolo rolável volta ao topo quando muda. */
   scrollKey?: string | number;
 };
@@ -17,34 +19,64 @@ export function WizardLayout({
   children,
   previewContent,
   mobileHeader,
+  mobileOverlay = false,
   scrollKey,
 }: Props) {
   return (
     <div className="arcana-scene h-dvh text-arcana-text overflow-hidden">
-      {/* Mobile: o personagem SEMPRE em cena; os controles vivem numa gaveta
-          inferior que mostra uma micro-etapa curta por vez. */}
+      {/* Mobile: o personagem SEMPRE em cena. Micro-etapas compactas flutuam
+          sobre a cena quase cheia; as densas vivem numa gaveta inferior. */}
       <div className="lg:hidden h-full flex flex-col">
-        <div className="relative shrink-0 flex items-center justify-center px-3 pt-2 pb-1"
-          style={{ height: "42dvh" }}>
-          {previewContent}
-        </div>
+        {mobileOverlay ? (
+          <div className="relative flex-1 min-h-0">
+            {/* Cena quase cheia — o miolo reserva o rodapé do cartão flutuante */}
+            <div className="absolute inset-x-0 top-0 bottom-0 flex items-start justify-center px-3 pt-2 pb-44">
+              {previewContent}
+            </div>
+            {/* Controles flutuando sobre a imagem */}
+            <div
+              key={scrollKey}
+              className="absolute inset-x-3 bottom-3 z-10 max-h-[52dvh] overflow-y-auto rounded-2xl px-4 py-3 space-y-3"
+              style={{
+                background: "rgba(13,13,22,0.82)",
+                backdropFilter: "blur(18px) saturate(1.3)",
+                border: "1px solid rgba(209,171,85,0.22)",
+                boxShadow: "0 16px 44px rgba(0,0,0,0.6)",
+              }}
+            >
+              {mobileHeader ?? header}
+              {children}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="relative shrink-0 flex items-center justify-center px-3 pt-2 pb-1"
+              style={{ height: "42dvh" }}>
+              {previewContent}
+            </div>
+            <div
+              className="relative z-10 flex-1 min-h-0 flex flex-col rounded-t-2xl border-t border-arcana-border-dim"
+              style={{
+                background: "rgba(13,13,22,0.92)",
+                backdropFilter: "blur(20px) saturate(1.3)",
+                boxShadow: "0 -14px 40px rgba(0,0,0,0.55)",
+              }}
+            >
+              <div className="shrink-0 px-4 pt-3 pb-2 border-b border-arcana-border-dim">
+                {mobileHeader ?? header}
+              </div>
+              <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-4">
+                {children}
+              </div>
+            </div>
+          </>
+        )}
+        {/* Rodapé fixo — Voltar/Continuar sempre no mesmo lugar */}
         <div
-          className="relative z-10 flex-1 min-h-0 flex flex-col rounded-t-2xl border-t border-arcana-border-dim"
-          style={{
-            background: "rgba(13,13,22,0.92)",
-            backdropFilter: "blur(20px) saturate(1.3)",
-            boxShadow: "0 -14px 40px rgba(0,0,0,0.55)",
-          }}
+          className="shrink-0 z-20 px-4 py-3 border-t border-arcana-border-dim"
+          style={{ background: "rgba(13,13,22,0.92)", backdropFilter: "blur(20px) saturate(1.3)" }}
         >
-          <div className="shrink-0 px-4 pt-3 pb-2 border-b border-arcana-border-dim">
-            {mobileHeader ?? header}
-          </div>
-          <div key={scrollKey} className="flex-1 overflow-y-auto px-4 py-4">
-            {children}
-          </div>
-          <div className="shrink-0 px-4 py-3 border-t border-arcana-border-dim">
-            {footer}
-          </div>
+          {footer}
         </div>
       </div>
 

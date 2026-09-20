@@ -175,7 +175,6 @@ export function EscritorioPreview({
                     priority={isTop}
                     unoptimized={layer.url.startsWith("data:")}
                   />
-                  {entering && <div className="retrato-sweep absolute inset-0 pointer-events-none" />}
                 </div>
               );
             })
@@ -323,38 +322,18 @@ export function EscritorioPreview({
             transform: translateX(-41%);
           }
         }
+        /* Troca de retrato: crossfade puro e curto — trocas rápidas de traço
+           (sliders) precisam parecer instantâneas, não animadas. */
         .retrato-enter {
-          animation: retratoFade 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          will-change: opacity, transform;
+          animation: retratoFade 160ms ease-out both;
+          will-change: opacity;
         }
         @keyframes retratoFade {
           from {
             opacity: 0;
-            transform: scale(1.02);
           }
           to {
             opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .retrato-sweep {
-          background: linear-gradient(
-            105deg,
-            transparent 38%,
-            rgba(245, 212, 120, 0.12) 48%,
-            rgba(255, 240, 200, 0.18) 50%,
-            rgba(245, 212, 120, 0.12) 52%,
-            transparent 62%
-          );
-          animation: retratoSweep 460ms cubic-bezier(0.4, 0, 0.2, 1) both;
-          will-change: transform;
-        }
-        @keyframes retratoSweep {
-          from {
-            transform: translateX(-70%);
-          }
-          to {
-            transform: translateX(70%);
           }
         }
         .aviso-revelacao {
@@ -384,7 +363,6 @@ export function EscritorioPreview({
         @media (prefers-reduced-motion: reduce) {
           .janela-cena,
           .retrato-enter,
-          .retrato-sweep,
           .dial-roll,
           .aviso-revelacao {
             animation: none;

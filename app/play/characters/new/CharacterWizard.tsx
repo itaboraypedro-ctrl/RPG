@@ -649,6 +649,7 @@ export function CharacterWizard() {
     <WizardLayout
       header={header}
       mobileHeader={mobileHeader}
+      mobileOverlay={!!paneAtual?.overlay}
       footer={footer}
       previewContent={previewContent}
       scrollKey={`${step}-${paneIdx}`}

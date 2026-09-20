@@ -5,15 +5,21 @@ import {
   createSacramentoCharacter,
   type CreateSacramentoPayload,
 } from "@/app/play/characters/new/actions";
+import { HowItWorks } from "@/components/campaign-creation/Explainer";
+import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
 import {
   APRESENTACOES,
   FAIXAS_ETARIAS,
   TIPOS_FISICOS,
   TONS_DE_PELE,
 } from "@/lib/character-creation/sacramento/bases";
+import { kitById } from "@/lib/character-creation/sacramento/kits";
+import { habilidadeById, contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
+import { ANTECEDENTES, ATRIBUTOS, calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
 import { faccaoById } from "@/lib/character-creation/sacramento/story-data";
 import {
   ELEMENTOS_VAZIOS,
+  FICHA_INICIAL,
   type SacramentoCreationData,
 } from "@/lib/character-creation/sacramento/types";
 
@@ -30,13 +36,13 @@ const CARD_STYLE = {
   border: "1px solid rgba(255,255,255,0.08)",
 } as const;
 
-export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
+export default function Step7Revisao({ data, triggerRef, onSavingChange, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
     if (saving) return;
-    const { name, base, historia, elementos } = data;
+    const { name, base, historia } = data;
     if (!name || !base || !historia) {
       setError("Faltam etapas anteriores — volte e complete o retrato e a história.");
       return;
@@ -48,13 +54,11 @@ export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved
       const payload: CreateSacramentoPayload = {
         name,
         base,
-        customizacoes: data.customizacoes ?? [],
-        avatarUrl: data.currentImageUrl ?? null,
-        avatarHistory: data.imageHistory ?? [],
-        rosto: data.rosto ?? null,
-        elementos: elementos ?? ELEMENTOS_VAZIOS,
+        kitId: data.kitId ?? "base",
+        elementos: data.elementos ?? ELEMENTOS_VAZIOS,
         historia,
         historiaModo: data.historiaModo ?? "manual",
+        ficha: data.ficha ?? FICHA_INICIAL,
       };
       const result = await createSacramentoCharacter(payload);
       if (result && !result.ok) {
@@ -91,7 +95,11 @@ export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved
   const base = data.base;
   const historia = data.historia;
   const elementos = data.elementos ?? ELEMENTOS_VAZIOS;
+  const ficha = data.ficha ?? FICHA_INICIAL;
   const faccao = faccaoById(elementos.faccaoId);
+  const kit = kitById(data.kitId ?? "base");
+  const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
+  const validacao = validarFicha(ficha);
 
   const tracos = base
     ? [
@@ -99,16 +107,21 @@ export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved
         TONS_DE_PELE.find((t) => t.id === base.tomDePele)?.label,
         FAIXAS_ETARIAS.find((f) => f.id === base.faixaEtaria)?.label,
         TIPOS_FISICOS.find((t) => t.id === base.tipoFisico)?.label,
+        kit && kit.id !== "base" ? `Kit ${kit.nome}` : null,
       ].filter(Boolean)
     : [];
 
+  const habilidadesNomes = (() => {
+    const parr = contarParrudeza(ficha.habilidades);
+    const outras = ficha.habilidades
+      .filter((id) => id !== "parrudeza")
+      .map((id) => habilidadeById(id)?.nome ?? id);
+    return parr > 0 ? [...outras, `Parrudeza ×${parr}`] : outras;
+  })();
+
   return (
     <div className="space-y-6 max-w-2xl">
-      <p className="font-crimson text-sm italic text-arcana-text-dim">
-        Última olhada antes de cravar o nome no Oeste. Visual e história são
-        identidade narrativa — atributos, antecedentes e compras vêm depois, com
-        as regras do livro e o Juiz.
-      </p>
+      <HowItWorks guide={PLAYER_GUIDES.revisao} />
 
       <div className="rounded-2xl p-5 space-y-4" style={CARD_STYLE}>
         <div>
@@ -131,18 +144,73 @@ export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved
               </span>
             ))}
           </div>
-          {(data.customizacoes?.length ?? 0) > 0 && (
-            <p className="font-crimson text-sm text-arcana-text-dim">
-              {data.customizacoes?.length}{" "}
-              {data.customizacoes?.length === 1 ? "ajuste aplicado" : "ajustes aplicados"} ao retrato
-              {data.rosto?.aplicado
-                ? data.rosto.modo === "foto"
-                  ? " · rosto a partir da sua foto"
-                  : " · rosto descrito por você"
-                : ""}
-            </p>
-          )}
         </div>
+      </div>
+
+      {/* Ficha */}
+      <div className="rounded-2xl p-5 space-y-4" style={CARD_STYLE}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <span className={LABEL}>Ficha · Nível {ficha.nivel}</span>
+          <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">
+            {derivados.xp} XP · $200 para compras na mesa
+          </span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+          {[
+            { label: "Vida", value: String(derivados.vidaMaxima) },
+            { label: "Dor", value: String(derivados.capacidadeDor) },
+            { label: "Defesa", value: String(derivados.defesa) },
+            { label: "Movim.", value: String(derivados.movimentos) },
+            { label: "Ações", value: String(derivados.acoesCombate) },
+            { label: "Iniciativa", value: `${derivados.cartasIniciativa}♠` },
+          ].map((s) => (
+            <div key={s.label}>
+              <p className="font-cinzel text-xl text-arcana-gold-bright leading-none">{s.value}</p>
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text-dim mt-1">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <span className={LABEL}>Atributos</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              {ATRIBUTOS.map((a) => `${a.nome} ${ficha.atributos[a.id]}`).join(" · ")}
+            </p>
+          </div>
+          <div>
+            <span className={LABEL}>Antecedentes</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              {ANTECEDENTES.filter((a) => ficha.antecedentes[a.id] > 0)
+                .map((a) => `${a.nome} ${ficha.antecedentes[a.id]}`)
+                .join(" · ") || "—"}
+            </p>
+          </div>
+          <div>
+            <span className={LABEL}>Habilidades</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              {habilidadesNomes.join(" · ") || "—"}
+            </p>
+          </div>
+          <div>
+            <span className={LABEL}>Montaria</span>
+            <p className="font-crimson text-base text-arcana-text-dim mt-1">
+              {ficha.montaria
+                ? `${ficha.montaria.nome || "Sem nome"} · Pot ${ficha.montaria.potencia} · Res ${ficha.montaria.resistencia} · Vida ${6 + ficha.montaria.resistencia}`
+                : "A resolver na mesa"}
+            </p>
+          </div>
+        </div>
+        {validacao.erros.length > 0 && (
+          <div className="space-y-1">
+            {validacao.erros.map((err) => (
+              <p key={err} className="font-crimson text-sm italic text-arcana-danger">
+                {err}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
 
       {historia && (
@@ -174,7 +242,7 @@ export default function Step6Revisao({ data, triggerRef, onSavingChange, onSaved
                 <p className="font-crimson text-base text-arcana-text-dim mt-1">{elementos.origem}</p>
               </div>
             )}
-            {faccao && faccao.id !== "nenhuma" && (
+            {faccao && (
               <div>
                 <span className={LABEL}>Facção</span>
                 <p className="font-crimson text-base text-arcana-text-dim mt-1">

@@ -1,88 +1,76 @@
-// Dados narrativos do cenário para a parte de história do wizard.
+// Dados narrativos para a parte de história do wizard.
 // Tudo aqui é sugestão aberta, nunca lista fechada (docs/01 §1 — LIVRE):
 // o livro proíbe transformar exemplos em validação obrigatória.
+// Lugares e facções vêm dos dados canônicos do ruleset (com as artes de public/story).
 
-/** Origens sugeridas — lugares canônicos do Oeste + categorias abertas (docs/02 §5.2–5.3). */
-export const ORIGENS_SUGERIDAS: string[] = [
-  "Tupaciguara",
-  "Bom Fim",
-  "Belo Horizonte",
-  "Sacramento",
-  "Araguari",
-  "Vila de Desemboque",
-  "Maria da Fé",
-  "Araçuaí",
-  "Santo Ozório",
-  "Serra da Saudade",
-  "Povos originários",
-  "Estrangeiro",
-  "Oriente",
+import { SACRAMENTO_PLACES } from "@/lib/rulesets/sacramento/places";
+import { SACRAMENTO_FACTIONS } from "@/lib/rulesets/sacramento/factions";
+import type { SacramentoFaction, SacramentoPlace } from "@/lib/rulesets/sacramento/types";
+
+export { SACRAMENTO_PLACES, SACRAMENTO_FACTIONS };
+export type { SacramentoFaction, SacramentoPlace };
+
+/** Conceitos de exemplo (estilo p. 23) — atalhos, não classes. */
+export const CONCEITOS_SUGERIDOS: string[] = [
+  "Pistoleiro em busca de recomeço",
+  "Ex-padre que perdeu a fé, não o rebanho",
+  "Caçadora de recompensas com um nome na lista que dói",
+  "Médica que trata qualquer um — por um preço justo",
+  "Jogador que aposta tudo, menos a própria história",
+  "Vaqueiro sem terra procurando onde pertencer",
+  "Fugitiva com a recompensa na própria cabeça",
+  "Ferreiro que forjou a arma errada para a pessoa errada",
 ];
 
-export const OCUPACOES_SUGERIDAS: string[] = [
-  "Pistoleiro de aluguel",
-  "Vaqueiro",
-  "Médica de fronteira",
-  "Jogador de cartas",
-  "Ferreiro",
-  "Caçadora de recompensas",
-  "Padre errante",
-  "Mineradora",
-  "Músico de salão",
-  "Ex-soldado da Guerra do Carvão",
+export interface OcupacaoSugerida {
+  nome: string;
+  contexto: string;
+}
+
+/** Ocupações com contexto de mundo — não impactam a ficha (docs/01 §2). */
+export const OCUPACOES_SUGERIDAS: OcupacaoSugerida[] = [
+  { nome: "Pistoleiro de aluguel", contexto: "Vive de escoltas, cobranças e serviços que a lei não faz" },
+  { nome: "Vaqueiro", contexto: "Toca boiada entre fazendas; conhece cada trilha e cada tempestade" },
+  { nome: "Médico de fronteira", contexto: "Único socorro em dias de viagem — de parto a bala alojada" },
+  { nome: "Jogador de cartas", contexto: "Roda saloons vivendo do blefe e da sorte alheia" },
+  { nome: "Ferreiro", contexto: "Ferra cavalos, conserta armas e guarda segredos da cidade" },
+  { nome: "Caçador de recompensas", contexto: "Persegue cartazes de procurado pelo Oeste — vivo ou morto" },
+  { nome: "Padre errante", contexto: "Leva missa, batismo e enterro onde não há igreja" },
+  { nome: "Minerador", contexto: "Arranca carvão e esperança das minas de Araguari" },
+  { nome: "Músico de salão", contexto: "Anima festas e funerais; ouve tudo o que ninguém devia contar" },
+  { nome: "Ex-soldado", contexto: "Sobrou da Guerra do Carvão com cicatrizes e histórias que não conta" },
+  { nome: "Comerciante de rota", contexto: "Cruza o Oeste com mercadorias, notícias e dívidas" },
+  { nome: "Rastreador", contexto: "Lê pegadas, vento e silêncio; acha quem não quer ser achado" },
 ];
 
-export interface FaccaoCenario {
+/** Origens sem cidade canônica (docs/01 §2.1) — categorias abertas do livro. */
+export interface OrigemAberta {
   id: string;
   nome: string;
   descricao: string;
 }
 
-/**
- * Facções do mundo (docs/02 §14). Em Sacramento não existe "facção jogável":
- * a relação do personagem com elas é puramente narrativa.
- */
-export const FACCOES: FaccaoCenario[] = [
-  {
-    id: "nenhuma",
-    nome: "Nenhuma",
-    descricao: "Sem laço relevante com facções do Oeste.",
-  },
-  {
-    id: "curupira",
-    nome: "Gangue do Curupira",
-    descricao: "Emboscadas e silêncio na Floresta do Cipó.",
-  },
-  {
-    id: "bandoleira-escarlate",
-    nome: "Bandoleira Escarlate",
-    descricao: "Bandidagem de vermelho, liderada pelo Escarlate.",
-  },
-  {
-    id: "seis-balas",
-    nome: "Seis Balas",
-    descricao: "Crime organizado com comando em Belo Horizonte.",
-  },
-  {
-    id: "cogumelo",
-    nome: "Gangue do Cogumelo",
-    descricao: "Chá, alucinações e devoção no Sertão de Fungos.",
-  },
-  {
-    id: "novos-sagrados",
-    nome: "Novos Sagrados",
-    descricao: "Culto reorganizado nas ruínas de Sacramento pelos novos Bispos.",
-  },
-  {
-    id: "lei",
-    nome: "Forças da lei",
-    descricao: "Polícia de BH, xerifes da Defesa Nacional ou Boinas Brancas.",
-  },
-  {
-    id: "outra",
-    nome: "Outra",
-    descricao: "Um bando, família ou organização criada por você.",
-  },
+export const ORIGENS_ABERTAS: OrigemAberta[] = [
+  { id: "povos-originarios", nome: "Povos originários", descricao: "Nascido entre os povos que ocupam o País desde antes dos navios" },
+  { id: "estrangeiro", nome: "Estrangeiro", descricao: "Veio de além-mar, das terras da Revolução Industrial" },
+  { id: "oriente", nome: "Oriente", descricao: "Das levas que ergueram o Bairro Oriental de Belo Horizonte" },
+  { id: "interior", nome: "Rancho perdido", descricao: "De um canto sem nome no mapa — só quem é de lá conhece" },
+];
+
+/** Presets de família — atalhos que preenchem o campo, sempre editáveis. */
+export const FAMILIA_PRESETS: { detalhe: string; tipo: "sim" | "complicada" }[] = [
+  { tipo: "sim", detalhe: "Família viva no lugar de origem, esperando notícias que nunca chegam" },
+  { tipo: "sim", detalhe: "Irmãos espalhados pelo Oeste, cada um seguindo um caminho" },
+  { tipo: "complicada", detalhe: "Romperam quando parti; carrego o sobrenome como um peso" },
+  { tipo: "complicada", detalhe: "Metade da família não sabe que estou vivo — e é melhor assim" },
+];
+
+export const PASSADO_PRESETS: string[] = [
+  "Cavalguei com uma gangue e saí sem me despedir — eles não esquecem",
+  "Um trabalho deu errado e alguém inocente pagou o preço",
+  "Fui acusado de um crime que não cometi; o verdadeiro culpado anda solto",
+  "Devo dinheiro a gente que não perdoa atraso",
+  "Sobrevivi a algo que ninguém acredita — e não conto a ninguém",
 ];
 
 export const RELACOES_FACCAO_SUGERIDAS: string[] = [
@@ -193,18 +181,10 @@ export function trilhaById(id: string): TrilhaRedencao | undefined {
   return TRILHAS_REDENCAO.find((t) => t.id === id);
 }
 
-export function faccaoById(id: string): FaccaoCenario | undefined {
-  return FACCOES.find((f) => f.id === id);
+export function faccaoById(id: string): SacramentoFaction | undefined {
+  return SACRAMENTO_FACTIONS.find((f) => f.id === id);
 }
 
-/** Sugestões rápidas para a personalização visual (estilo faroeste do cenário). */
-export const ESTILOS_SUGERIDOS: string[] = [
-  "Roupa de vaqueiro surrada, chapéu de couro e lenço vermelho no pescoço",
-  "Sobretudo escuro de pistoleiro, cinturão de balas e botas com esporas",
-  "Vestido de gala vinho com luvas e broche de prata",
-  "Poncho listrado, sombrero e barba por fazer",
-  "Terno de jogador com colete bordado e cartola",
-  "Batina preta empoeirada com rosário de contas",
-  "Macacão de mineração, luvas grossas e lamparina no cinto",
-  "Cabelo longo trançado, casaco de pele e arco às costas",
-];
+export function placeById(id: string): SacramentoPlace | undefined {
+  return SACRAMENTO_PLACES.find((p) => p.id === id);
+}

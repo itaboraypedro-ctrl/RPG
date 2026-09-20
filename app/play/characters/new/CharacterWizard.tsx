@@ -5,20 +5,23 @@ import { WizardLayout } from "@/components/character-creation/WizardLayout";
 import { StepIndicator } from "@/components/character-creation/StepIndicator";
 import { SacramentoPreview } from "@/components/character-creation/sacramento/SacramentoPreview";
 import Step1Tracos from "@/components/character-creation/sacramento/Step1Tracos";
-import Step2Estilo from "@/components/character-creation/sacramento/Step2Estilo";
-import Step3Rosto from "@/components/character-creation/sacramento/Step3Rosto";
-import Step4Elementos from "@/components/character-creation/sacramento/Step4Elementos";
-import Step5Historia from "@/components/character-creation/sacramento/Step5Historia";
-import Step6Revisao from "@/components/character-creation/sacramento/Step6Revisao";
+import Step2Elementos from "@/components/character-creation/sacramento/Step2Elementos";
+import Step3Historia from "@/components/character-creation/sacramento/Step5Historia";
+import Step4Atributos from "@/components/character-creation/sacramento/Step4Atributos";
+import Step5Habilidades from "@/components/character-creation/sacramento/Step5Habilidades";
+import Step6Montaria from "@/components/character-creation/sacramento/Step6Montaria";
+import Step7Revisao from "@/components/character-creation/sacramento/Step7Revisao";
 import {
   APRESENTACOES,
   BASE_PADRAO,
   FAIXAS_ETARIAS,
   TIPOS_FISICOS,
   TONS_DE_PELE,
-  baseId,
   baseImagePath,
 } from "@/lib/character-creation/sacramento/bases";
+import { characterImagePath, kitById } from "@/lib/character-creation/sacramento/kits";
+import { calcularDerivados, validarFicha } from "@/lib/character-creation/sacramento/rules";
+import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import type {
   BaseVisual,
   HistoriaEstruturada,
@@ -26,21 +29,32 @@ import type {
   SacramentoCreationData,
   WizardStep,
 } from "@/lib/character-creation/sacramento/types";
+import { FICHA_INICIAL } from "@/lib/character-creation/sacramento/types";
 
-const STEP_LABELS = ["Traços", "Estilo", "Rosto", "Elementos", "História", "Revisão"];
-const DRAFT_KEY = "sacramento-character-draft-v1";
+const STEP_LABELS = [
+  "Traços",
+  "Elementos",
+  "História",
+  "Atributos",
+  "Habilidades",
+  "Montaria",
+  "Revisão",
+];
+const DRAFT_KEY = "sacramento-character-draft-v2";
 
 export function CharacterWizard() {
   const [step, setStep] = useState<WizardStep>(1);
-  const [data, setData] = useState<Partial<SacramentoCreationData>>({ base: BASE_PADRAO });
+  const [data, setData] = useState<Partial<SacramentoCreationData>>({
+    base: BASE_PADRAO,
+    kitId: "base",
+    ficha: FICHA_INICIAL,
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [secaoGerando, setSecaoGerando] = useState<HistoriaSecao | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [historyIndex, setHistoryIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const step6TriggerRef = useRef<(() => void) | null>(null);
+  const step7TriggerRef = useRef<(() => void) | null>(null);
   const savedRef = useRef(false);
 
   // ---- Rascunho: restaura no mount, salva a cada mudança ----
@@ -52,9 +66,8 @@ export function CharacterWizard() {
       if (draft?.data?.base) {
         // Restaurar no effect evita mismatch de hidratação (localStorage não existe no SSR).
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setData(draft.data);
-        setStep(draft.step && draft.step >= 1 && draft.step <= 6 ? draft.step : 1);
-        setHistoryIndex(Math.max(0, (draft.data.imageHistory?.length ?? 1) - 1));
+        setData({ ficha: FICHA_INICIAL, kitId: "base", ...draft.data });
+        setStep(draft.step && draft.step >= 1 && draft.step <= 7 ? draft.step : 1);
         setDraftRestored(true);
       }
     } catch {
@@ -71,6 +84,28 @@ export function CharacterWizard() {
     }
   }, [step, data]);
 
+  // ---- Pré-carrega as 120 bases: troca de traço vira transição instantânea ----
+  useEffect(() => {
+    const idle =
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback
+        : (cb: () => void) => window.setTimeout(cb, 300);
+    idle(() => {
+      for (const a of APRESENTACOES)
+        for (const t of TONS_DE_PELE)
+          for (const f of FAIXAS_ETARIAS)
+            for (const tp of TIPOS_FISICOS) {
+              const img = new window.Image();
+              img.src = baseImagePath({
+                apresentacao: a.id,
+                tomDePele: t.id,
+                faixaEtaria: f.id,
+                tipoFisico: tp.id,
+              });
+            }
+    });
+  }, []);
+
   const clearDraft = () => {
     savedRef.current = true;
     try {
@@ -83,9 +118,8 @@ export function CharacterWizard() {
   const resetAll = () => {
     clearDraft();
     savedRef.current = false;
-    setData({ base: BASE_PADRAO });
+    setData({ base: BASE_PADRAO, kitId: "base", ficha: FICHA_INICIAL });
     setStep(1);
-    setHistoryIndex(0);
     setAiError(null);
     setDraftRestored(false);
   };
@@ -94,94 +128,24 @@ export function CharacterWizard() {
     setData((prev) => ({ ...prev, ...partial }));
   };
 
-  const goNext = () => setStep((s) => Math.min(6, s + 1) as WizardStep);
+  const goNext = () => setStep((s) => Math.min(7, s + 1) as WizardStep);
   const goBack = () => setStep((s) => Math.max(1, s - 1) as WizardStep);
 
-  // Trocar a base descarta o retrato personalizado (foi pintado sobre a base antiga).
   const handleChangeBase = (base: BaseVisual) => {
-    setData((prev) => ({
-      ...prev,
-      base,
-      customizacoes: [],
-      currentImageUrl: undefined,
-      imageHistory: [],
-      rosto: undefined,
-    }));
-    setHistoryIndex(0);
-  };
-
-  // ---- IA: personalização visual (roupas/rosto) ----
-  const customize = async (
-    mode: "estilo" | "rosto-foto" | "rosto-descricao",
-    payload: string,
-  ): Promise<boolean> => {
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    setIsGenerating(true);
-    setAiError(null);
-    try {
-      const current = data.currentImageUrl;
-      const body: Record<string, unknown> = { mode };
-      if (current && current.startsWith("http")) {
-        body.currentImageUrl = current;
-      } else if (data.base) {
-        body.baseId = baseId(data.base);
-      }
-      if (mode === "rosto-foto") body.facePhotoDataUrl = payload;
-      else body.instruction = payload;
-
-      const res = await fetch("/api/ai/customize-character", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: abortRef.current.signal,
-      });
-      const json = (await res.json()) as { imageUrl?: string; error?: string };
-      if (!res.ok || !json.imageUrl) {
-        setAiError(json.error ?? "A geração falhou. Tente de novo em instantes.");
-        return false;
-      }
-
-      setData((prev) => {
-        const imageHistory = [...(prev.imageHistory ?? []), json.imageUrl as string];
-        const next: Partial<SacramentoCreationData> = {
-          ...prev,
-          currentImageUrl: json.imageUrl,
-          imageHistory,
-        };
-        if (mode === "estilo") {
-          next.customizacoes = [...(prev.customizacoes ?? []), payload];
-        } else {
-          next.rosto = {
-            modo: mode === "rosto-foto" ? "foto" : "descricao",
-            descricao: mode === "rosto-descricao" ? payload : undefined,
-            aplicado: true,
-          };
-        }
-        setHistoryIndex(imageHistory.length - 1);
-        return next;
-      });
-      return true;
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        setAiError("A geração falhou. Verifique a conexão e tente de novo.");
-      }
-      return false;
-    } finally {
-      setIsGenerating(false);
-    }
+    setData((prev) => ({ ...prev, base }));
   };
 
   // ---- IA: história ----
   const visualResumo = () => {
     const b = data.base;
     if (!b) return "";
+    const kit = kitById(data.kitId ?? "base");
     const partes = [
       APRESENTACOES.find((a) => a.id === b.apresentacao)?.label,
       `pele ${TONS_DE_PELE.find((t) => t.id === b.tomDePele)?.label?.toLowerCase()}`,
       FAIXAS_ETARIAS.find((f) => f.id === b.faixaEtaria)?.hint,
       TIPOS_FISICOS.find((t) => t.id === b.tipoFisico)?.label?.toLowerCase(),
-      ...(data.customizacoes ?? []),
+      kit && kit.id !== "base" ? `veste como ${kit.nome.toLowerCase()} (${kit.descricao.toLowerCase()})` : null,
     ];
     return partes.filter(Boolean).join(", ");
   };
@@ -223,34 +187,30 @@ export function CharacterWizard() {
     }
   };
 
-  const navigateHistory = (dir: "prev" | "next") => {
-    const imageHistory = data.imageHistory ?? [];
-    if (imageHistory.length === 0) return;
-    const newIdx =
-      dir === "prev"
-        ? Math.max(0, historyIndex - 1)
-        : Math.min(imageHistory.length - 1, historyIndex + 1);
-    setHistoryIndex(newIdx);
-    const url = imageHistory[newIdx];
-    if (typeof url === "string") updateData({ currentImageUrl: url });
-  };
-
   // ---- Navegação/validação ----
+  const ficha = data.ficha ?? FICHA_INICIAL;
+  const validacao = validarFicha(ficha);
+  const atributosOk =
+    validacao.atributosGastos === validacao.atributosOrcamento &&
+    validacao.antecedentesGastos === validacao.antecedentesOrcamento &&
+    !validacao.erros.some((e) => e.includes("antecedente comporta") || e.includes("passar de 3") || e.includes("progressão"));
+
   const canProceedMap: Record<WizardStep, boolean> = {
     1: !!data.name && data.name.trim().length >= 2 && !!data.base,
-    2: !isGenerating,
-    3: (data.rosto?.aplicado === true || data.rosto?.modo === "manter") && !isGenerating,
-    4:
+    2:
       !!data.elementos &&
       data.elementos.conceito.trim().length > 0 &&
       data.elementos.redencaoTrilhaId.length > 0,
-    5: !!data.historia && data.historiaAprovada === true && !isGenerating,
-    6: !saving,
+    3: !!data.historia && data.historiaAprovada === true && !isGenerating,
+    4: atributosOk,
+    5: validacao.habilidadesEscolhidas === validacao.habilidadesTotal,
+    6: !ficha.montaria || ficha.montaria.origem !== "",
+    7: !saving,
   };
   const canProceed = canProceedMap[step];
 
   const handleFooterNext = () => {
-    if (step === 6) step6TriggerRef.current?.();
+    if (step === 7) step7TriggerRef.current?.();
     else goNext();
   };
 
@@ -277,15 +237,27 @@ export function CharacterWizard() {
         disabled={!canProceed}
         className={canProceed ? "arcana-btn-primary" : "arcana-btn-primary-disabled"}
       >
-        {step === 6 ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
+        {step === 7 ? (saving ? "Cravando o nome…" : "Criar personagem") : "Continuar"}
       </button>
     </div>
   );
 
-  const previewImageUrl =
-    data.currentImageUrl ?? (data.base ? baseImagePath(data.base) : null);
-  const previewSubtitle =
+  const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
+  const previewStats =
     step >= 4
+      ? [
+          { label: "Vida", value: String(derivados.vidaMaxima) },
+          { label: "Dor", value: String(derivados.capacidadeDor) },
+          { label: "Defesa", value: String(derivados.defesa) },
+          { label: "Movim.", value: String(derivados.movimentos) },
+          { label: "Ações", value: String(derivados.acoesCombate) },
+          { label: "Nível", value: String(ficha.nivel) },
+        ]
+      : undefined;
+
+  const previewImageUrl = data.base ? characterImagePath(data.base, data.kitId) : null;
+  const previewSubtitle =
+    step >= 2
       ? data.elementos?.conceito || data.elementos?.ocupacao || "Sacramento · 1880"
       : data.base
         ? [
@@ -299,12 +271,9 @@ export function CharacterWizard() {
   const previewContent = (
     <SacramentoPreview
       imageUrl={previewImageUrl}
-      isGenerating={isGenerating && step <= 3}
-      history={data.imageHistory ?? []}
-      currentHistoryIndex={historyIndex}
-      onNavigateHistory={navigateHistory}
       characterName={data.name}
       subtitle={previewSubtitle}
+      stats={previewStats}
     />
   );
 
@@ -313,26 +282,9 @@ export function CharacterWizard() {
       {step === 1 && (
         <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} />
       )}
-      {step === 2 && (
-        <Step2Estilo
-          data={data}
-          onCustomize={(instruction) => customize("estilo", instruction)}
-          isGenerating={isGenerating}
-          error={aiError}
-        />
-      )}
+      {step === 2 && <Step2Elementos data={data} onUpdate={updateData} />}
       {step === 3 && (
-        <Step3Rosto
-          data={data}
-          onUpdate={updateData}
-          onApplyFace={(mode, payload) => customize(mode, payload)}
-          isGenerating={isGenerating}
-          error={aiError}
-        />
-      )}
-      {step === 4 && <Step4Elementos data={data} onUpdate={updateData} />}
-      {step === 5 && (
-        <Step5Historia
+        <Step3Historia
           data={data}
           onUpdate={updateData}
           onGenerateStory={generateStory}
@@ -341,10 +293,13 @@ export function CharacterWizard() {
           error={aiError}
         />
       )}
-      {step === 6 && (
-        <Step6Revisao
+      {step === 4 && <Step4Atributos data={data} onUpdate={updateData} />}
+      {step === 5 && <Step5Habilidades data={data} onUpdate={updateData} />}
+      {step === 6 && <Step6Montaria data={data} onUpdate={updateData} />}
+      {step === 7 && (
+        <Step7Revisao
           data={data}
-          triggerRef={step6TriggerRef}
+          triggerRef={step7TriggerRef}
           onSavingChange={setSaving}
           onSaved={clearDraft}
         />

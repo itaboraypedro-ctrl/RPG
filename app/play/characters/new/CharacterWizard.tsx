@@ -706,7 +706,9 @@ export function CharacterWizard() {
           }
         />
       )}
-      {step === "selfie" && <StepSelfie selfie={selfie} onSelfie={setSelfie} />}
+      {step === "selfie" && (
+        <StepSelfie selfie={selfie} onSelfie={setSelfie} characterName={data.name} />
+      )}
       {modalAto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <button

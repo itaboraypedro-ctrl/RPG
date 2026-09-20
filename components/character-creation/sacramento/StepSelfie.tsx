@@ -6,6 +6,8 @@ type Props = {
   /** Data URL da selfie confirmada (ou null). */
   selfie: string | null;
   onSelfie: (dataUrl: string | null) => void;
+  /** Nome do personagem — o retratista chama pelo nome na recepção. */
+  characterName?: string;
 };
 
 const CARD_STYLE = {
@@ -25,11 +27,14 @@ const IRIS_FRAMES = [0, 1, 2, 3, 4].map(
 /** O vídeo vive sob a abertura interna do aro da íris (13% de margem → 74% de diâmetro). */
 const LENTE_BOX = { top: "13%", left: "13%", width: "74%", height: "74%" } as const;
 
-export default function StepSelfie({ selfie, onSelfie }: Props) {
+export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const irisTimerRef = useRef<number | null>(null);
   const irisFrameRef = useRef(4);
+  // O retratista recebe o forasteiro ANTES de a lente aparecer — e a câmera
+  // só pede permissão depois que o jogador topa.
+  const [fase, setFase] = useState<"apresentacao" | "camera">("apresentacao");
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [cameraErro, setCameraErro] = useState<string | null>(null);
   const [irisFrame, setIrisFrame] = useState(4);
@@ -108,13 +113,13 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
     }
   }, [animarIris]);
 
-  // Sem selfie confirmada → câmera ligada; ao sair da etapa, desliga.
+  // Câmera só liga depois da recepção do retratista; ao sair da etapa, desliga.
   // A câmera é um sistema externo: os setState acontecem nas continuações async.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!selfie) void ligarCamera();
+    if (!selfie && fase === "camera") void ligarCamera();
     return pararCamera;
-  }, [selfie, ligarCamera, pararCamera]);
+  }, [selfie, fase, ligarCamera, pararCamera]);
 
   const capturar = () => {
     const video = videoRef.current;
@@ -186,6 +191,61 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
 
   const aroAberto = IRIS_FRAMES[0];
   const quadroAtual = IRIS_FRAMES[irisFrame];
+
+  // ── Recepção: o retratista aprova o freguês antes de a lente aparecer ──
+  if (!selfie && fase === "apresentacao") {
+    return (
+      <div className="max-w-2xl">
+        <div
+          className="arcana-rise-in relative overflow-hidden rounded-2xl p-6 sm:p-10"
+          style={{ border: "1px solid rgba(209,171,85,0.25)" }}
+        >
+          {temEstudio ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={ESTUDIO_IMG} alt="" aria-hidden
+              className="absolute inset-0 h-full w-full object-cover"
+              onError={() => setTemEstudio(false)} />
+          ) : (
+            <div aria-hidden className="absolute inset-0"
+              style={{ background: "linear-gradient(180deg, #14141f 0%, #0b0b14 100%)" }} />
+          )}
+          <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.68)" }} />
+
+          <div className="relative flex flex-col items-center gap-4 text-center">
+            {temFotografo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={FOTOGRAFO_IMG} alt="O retratista de Sacramento"
+                className="h-36 w-36 rounded-2xl object-cover"
+                style={{
+                  border: "1px solid rgba(209,171,85,0.55)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(209,171,85,0.18)",
+                }}
+                onError={() => setTemFotografo(false)} />
+            ) : (
+              <div className="flex h-36 w-36 items-center justify-center rounded-2xl font-cinzel text-5xl text-arcana-gold-bright"
+                style={{ background: "var(--color-arcana-surface-3)" }} aria-hidden>
+                R
+              </div>
+            )}
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+              O retratista
+            </p>
+            <p className="font-crimson text-xl text-arcana-text leading-snug max-w-md">
+              &ldquo;Ora… então {characterName?.trim() ? `você é ${characterName.trim()}` : "é você o tal forasteiro"}.
+              Gostei da sua figura. Mas lenda nenhuma roda o Oeste sem retrato — fique firme,
+              que eu preciso de uma fotografia sua agora.&rdquo;
+            </p>
+            <p className="font-crimson text-sm italic text-arcana-text-dim">
+              Leva um instante: rosto na lente, boa luz de frente, cara séria.
+            </p>
+            <button type="button" onClick={() => setFase("camera")} className="arcana-btn-primary">
+              Estou pronto
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-2xl">

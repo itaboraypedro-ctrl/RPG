@@ -183,50 +183,37 @@ export function EscritorioPreview({
             (que fica livre no rodapé). Cada valor vive numa janelinha de
             roleta: número gravado, vizinhos meio visíveis, e gira ao mudar. */}
         {stats && stats.length > 0 && (
-          <div className="absolute" style={{ left: "19%", width: "62%", top: "83%", height: "5.8%" }}>
-            <div className="relative flex h-full w-full items-stretch gap-[1.6%] rounded-[4px] px-[4.5%]"
-              style={{
-                background: "linear-gradient(180deg, #8a7458 0%, #5d4a34 45%, #3d2f1f 100%)",
-                border: "1px solid rgba(24,16,8,0.9)",
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,226,170,0.35), inset 0 -2px 3px rgba(20,12,4,0.7), 0 3px 10px rgba(0,0,0,0.65)",
-              }}>
-              {/* Parafusos das pontas */}
-              {(["2.2%", undefined] as const).map((left, i) => (
-                <span key={i} aria-hidden className="absolute top-1/2 -translate-y-1/2 rounded-full"
-                  style={{
-                    left,
-                    right: left ? undefined : "2.2%",
-                    width: "2.6%",
-                    aspectRatio: "1 / 1",
-                    background: "radial-gradient(circle at 35% 30%, #c9a86a, #6e5636 60%, #3a2b18)",
-                    boxShadow: "inset 0 -1px 1px rgba(0,0,0,0.7), 0 1px 1px rgba(255,220,150,0.25)",
-                  }} />
-              ))}
+          <div className="absolute" style={{ left: "17%", width: "66%", top: "82.2%", height: "8.8%" }}>
+            {/* A régua de ferro real (12.05:1) atravessa atrás das janelinhas */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/story/escritorio/regua.webp" alt="" aria-hidden
+              className="absolute left-0 w-full select-none"
+              style={{ top: "14%", aspectRatio: "12.049 / 1", filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.6))" }} />
+            {/* Seis janelinhas de roleta parafusadas sobre a régua */}
+            <div className="absolute flex items-start justify-between"
+              style={{ left: "5.5%", right: "5.5%", top: 0, height: "70%" }}>
               {stats.map((s) => {
                 const n = parseInt(s.value, 10);
                 const temVizinhos = !Number.isNaN(n);
                 return (
-                  <div key={s.label} className="flex min-w-0 flex-1 flex-col items-center justify-center"
-                    style={{ gap: "5%", paddingTop: "3%", paddingBottom: "3%" }}>
-                    <div className="relative w-full overflow-hidden rounded-[2px]" style={{
-                      height: "58%",
-                      background:
-                        "linear-gradient(180deg, #0f0a05 0%, #221809 26%, #2f2212 50%, #221809 74%, #0f0a05 100%)",
-                      border: "1px solid rgba(150,118,72,0.5)",
-                      boxShadow:
-                        "inset 0 3px 5px rgba(0,0,0,0.9), inset 0 -3px 5px rgba(0,0,0,0.85)",
-                    }}>
+                  <div key={s.label} className="relative h-full" style={{ aspectRatio: "0.598 / 1" }}>
+                    {/* Cilindro escuro atrás da abertura vazada (24.6/22.3 · 49.8×55) */}
+                    <div className="absolute overflow-hidden"
+                      style={{
+                        left: "23%", top: "21%", width: "53%", height: "58%",
+                        background:
+                          "linear-gradient(180deg, #0d0803 0%, #201507 30%, #2c1f0e 50%, #201507 70%, #0d0803 100%)",
+                      }}>
                       <div key={s.value} className="dial-roll absolute inset-0">
                         {temVizinhos && (
                           <span aria-hidden className="absolute inset-x-0 flex justify-center font-rye leading-none"
-                            style={{ top: "-32%", fontSize: "clamp(8px, 1.9cqw, 14px)", color: "rgba(232,207,154,0.28)" }}>
+                            style={{ top: "-26%", fontSize: "clamp(8px, 1.7cqw, 13px)", color: "rgba(232,207,154,0.3)" }}>
                             {n - 1}
                           </span>
                         )}
                         <span className="absolute inset-0 flex items-center justify-center font-rye leading-none"
                           style={{
-                            fontSize: "clamp(11px, 2.5cqw, 19px)",
+                            fontSize: "clamp(11px, 2.4cqw, 19px)",
                             color: "#e8cf9a",
                             textShadow: "0 1px 1px rgba(0,0,0,0.9), 0 0 6px rgba(232,207,154,0.25)",
                           }}>
@@ -234,19 +221,23 @@ export function EscritorioPreview({
                         </span>
                         {temVizinhos && (
                           <span aria-hidden className="absolute inset-x-0 flex justify-center font-rye leading-none"
-                            style={{ bottom: "-32%", fontSize: "clamp(8px, 1.9cqw, 14px)", color: "rgba(232,207,154,0.28)" }}>
+                            style={{ bottom: "-26%", fontSize: "clamp(8px, 1.7cqw, 13px)", color: "rgba(232,207,154,0.3)" }}>
                             {n + 1}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="font-cinzel uppercase leading-none truncate"
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/story/escritorio/janelinha.webp" alt="" aria-hidden
+                      className="absolute inset-0 h-full w-full select-none" />
+                    {/* Rótulo gravado abaixo da régua */}
+                    <span className="absolute inset-x-[-40%] flex justify-center font-cinzel uppercase leading-none"
                       style={{
-                        fontSize: "clamp(5px, 1.15cqw, 9px)",
-                        letterSpacing: "0.1em",
-                        color: "#2c1e0e",
-                        textShadow: "0 1px 0 rgba(255,224,150,0.3)",
-                        maxWidth: "100%",
+                        top: "108%",
+                        fontSize: "clamp(5px, 1.1cqw, 9px)",
+                        letterSpacing: "0.12em",
+                        color: "#c9ad7a",
+                        textShadow: "0 1px 2px rgba(0,0,0,0.85)",
                       }}>
                       {s.label}
                     </span>

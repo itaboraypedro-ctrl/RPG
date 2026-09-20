@@ -356,7 +356,12 @@ export async function POST(request: Request) {
           type: "json_schema",
           json_schema: { name: "historia_personagem", strict: true, schema: STORY_SCHEMA },
         },
-        max_completion_tokens: 4000,
+        // Modelos de raciocínio gastam o orçamento pensando ANTES de escrever o
+        // JSON — 4000 estourava e o content voltava vazio ("Resposta inválida").
+        max_completion_tokens: 16000,
+        ...(STORY_MODEL.startsWith("gpt-5") || STORY_MODEL.startsWith("o")
+          ? { reasoning_effort: "low" }
+          : {}),
       }),
       signal: AbortSignal.timeout(100000),
     });
@@ -379,13 +384,20 @@ export async function POST(request: Request) {
   }
 
   const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
+    choices?: { finish_reason?: string; message?: { content?: string; refusal?: string } }[];
     usage?: { total_tokens?: number };
   };
-  const content = data.choices?.[0]?.message?.content;
+  const choice = data.choices?.[0];
+  const content = choice?.message?.content;
   if (!content) {
     await registrar("failed");
-    return NextResponse.json({ error: "Resposta inválida da OpenAI" }, { status: 502 });
+    return NextResponse.json(
+      {
+        error: "Resposta inválida da OpenAI",
+        detail: choice?.message?.refusal ?? `finish_reason: ${choice?.finish_reason ?? "?"}`,
+      },
+      { status: 502 },
+    );
   }
 
   let historia: HistoriaEstruturada;

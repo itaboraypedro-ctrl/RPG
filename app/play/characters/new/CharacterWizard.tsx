@@ -515,13 +515,22 @@ export function CharacterWizard() {
       ]
     : undefined;
 
-  // Na revisão, quem posa na moldura é a foto do jogador — busto fechado, não o corpo inteiro.
+  // Na revisão, a moldura mostra o retrato FORJADO se já chegou; enquanto a
+  // forja trabalha, um recado do retratista — nunca a selfie crua.
+  const closeGerado =
+    forjaStatus.close === "ok" ? (forjaImagensRef.current.close ?? null) : null;
   const previewImageUrl =
-    step === "revisao" && selfie
-      ? selfie
+    step === "revisao" && closeGerado
+      ? closeGerado
       : data.base
         ? characterImagePath(data.base, data.kitId)
         : null;
+  const retratoAviso =
+    step === "revisao" && !closeGerado && forjaStatus.close === "gerando"
+      ? "Sua fotografia está na câmara de revelação. Entrego em breve — retrato bom não se apressa."
+      : step === "revisao" && !closeGerado && forjaStatus.close === "erro"
+        ? "Tive um contratempo com a chapa. Revelamos de novo na hora de criar o personagem."
+        : undefined;
   const previewSubtitle =
     step !== "tracos"
       ? data.elementos?.conceito || data.elementos?.ocupacao || "Sacramento · 1880"
@@ -553,6 +562,7 @@ export function CharacterWizard() {
       stats={previewStats}
       ambientImage={ambientImage}
       nivel={mostrarStats ? ficha.nivel : undefined}
+      retratoAviso={retratoAviso}
     />
   );
 

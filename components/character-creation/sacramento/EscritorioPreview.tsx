@@ -15,6 +15,8 @@ type Props = {
   ambientImage?: string;
   /** Compatibilidade com o SacramentoPreview — o nível já vem nos stats. */
   nivel?: number;
+  /** Recado do retratista dentro da moldura (retrato forjado ainda não chegou). */
+  retratoAviso?: string;
 };
 
 type Layer = { url: string; key: number };
@@ -38,6 +40,7 @@ export function EscritorioPreview({
   subtitle,
   stats,
   ambientImage = "/story/places/deserto-de-mucuri.webp",
+  retratoAviso,
 }: Props) {
   // Pilha de duas camadas: a nova entra por cima com crossfade; a anterior
   // fica por baixo até a transição terminar (sem flash) — padrão do preview antigo.
@@ -88,7 +91,27 @@ export function EscritorioPreview({
 
         {/* ── Camada 2: o personagem dentro da moldura ── */}
         <div className="absolute overflow-hidden" style={{ ...MOLDURA, background: "#151019" }}>
-          {layers.length === 0 ? (
+          {retratoAviso ? (
+            // O retrato forjado ainda não chegou: bilhete do retratista pregado na moldura vazia.
+            <div className="absolute inset-0 flex items-center justify-center p-[8%]">
+              <div className="aviso-revelacao relative w-[82%]" style={{ aspectRatio: "4 / 5" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/story/escritorio/papel.webp" alt="" aria-hidden
+                  className="absolute inset-0 h-full w-full select-none" />
+                <div className="absolute flex flex-col items-center justify-center gap-[6%] text-center"
+                  style={{ left: "16%", right: "14%", top: "20%", bottom: "18%", transform: "rotate(-3.5deg)" }}>
+                  <p className="font-crimson italic leading-snug"
+                    style={{ fontSize: "clamp(9px, 2.2cqw, 14px)", color: "#5c4229" }}>
+                    {retratoAviso}
+                  </p>
+                  <p className="font-cinzel uppercase leading-none"
+                    style={{ fontSize: "clamp(6px, 1.3cqw, 10px)", letterSpacing: "0.2em", color: "#4a3320" }}>
+                    — O retratista
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : layers.length === 0 ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
               <svg viewBox="0 0 60 90" className="w-14 opacity-25" aria-hidden>
                 <circle cx="30" cy="18" r="10" fill="#d1ab55" />
@@ -296,6 +319,18 @@ export function EscritorioPreview({
             transform: translateX(70%);
           }
         }
+        .aviso-revelacao {
+          animation: avisoPulsa 3.4s ease-in-out infinite;
+        }
+        @keyframes avisoPulsa {
+          0%,
+          100% {
+            opacity: 0.92;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
         .dial-roll {
           animation: dialRoll 420ms cubic-bezier(0.22, 1.4, 0.36, 1) both;
           will-change: transform;
@@ -312,7 +347,8 @@ export function EscritorioPreview({
           .janela-cena,
           .retrato-enter,
           .retrato-sweep,
-          .dial-roll {
+          .dial-roll,
+          .aviso-revelacao {
             animation: none;
           }
         }

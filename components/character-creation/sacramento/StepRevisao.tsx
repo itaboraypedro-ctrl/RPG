@@ -3,12 +3,6 @@
 import { useState } from "react";
 import { HowItWorks } from "@/components/campaign-creation/Explainer";
 import { PLAYER_GUIDES } from "@/lib/character-creation/sacramento/guidance";
-import {
-  APRESENTACOES,
-  FAIXAS_ETARIAS,
-  TIPOS_FISICOS,
-} from "@/lib/character-creation/sacramento/bases";
-import { kitById } from "@/lib/character-creation/sacramento/kits";
 import { habilidadeById, contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import {
   ANTECEDENTES,
@@ -17,7 +11,7 @@ import {
   validarFicha,
 } from "@/lib/character-creation/sacramento/rules";
 import { resumoCompras } from "@/lib/character-creation/sacramento/catalogo";
-import { faccaoById, trilhaById } from "@/lib/character-creation/sacramento/story-data";
+import { trilhaById } from "@/lib/character-creation/sacramento/story-data";
 import {
   ELEMENTOS_VAZIOS,
   FICHA_INICIAL,
@@ -101,34 +95,11 @@ export default function StepRevisao({
   const historia = data.historia;
   const modoManual = data.historiaModo === "manual";
 
-  const base = data.base;
   const elementos = data.elementos ?? ELEMENTOS_VAZIOS;
   const ficha = data.ficha ?? FICHA_INICIAL;
-  const faccao = faccaoById(elementos.faccaoId);
-  const kit = kitById(data.kitId ?? "base");
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const validacao = validarFicha(ficha);
   const compras = resumoCompras(ficha.compras ?? []);
-
-  // Aparência em prosa — nada de chips soltos ("pele" e "aparência" pedem feminino).
-  const PELE: Record<string, string> = {
-    "muito-claro": "muito clara",
-    claro: "clara",
-    medio: "média",
-    escuro: "escura",
-    "muito-escuro": "muito escura",
-  };
-  const aparencia = base
-    ? [
-        `apresentação ${APRESENTACOES.find((a) => a.id === base.apresentacao)?.label.toLowerCase()}`,
-        `pele ${PELE[base.tomDePele]}`,
-        `por volta de ${FAIXAS_ETARIAS.find((f) => f.id === base.faixaEtaria)?.hint.replace("~", "")}`,
-        `porte ${TIPOS_FISICOS.find((t) => t.id === base.tipoFisico)?.label.toLowerCase()}`,
-        kit && kit.id !== "base" ? `kit ${kit.nome}` : null,
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : "";
 
   const habilidadesNomes = (() => {
     const parr = contarParrudeza(ficha.habilidades);
@@ -142,40 +113,16 @@ export default function StepRevisao({
     <div className="space-y-6 max-w-2xl">
       <HowItWorks guide={PLAYER_GUIDES.revisao} />
 
-      {/* Identidade */}
-      <div className="rounded-2xl p-5 space-y-4" style={CARD_STYLE}>
-        <div>
-          <span className={LABEL}>Nome</span>
-          <p className="font-cinzel text-xl uppercase tracking-[0.15em] text-arcana-gold-bright mt-1">
-            {data.name || "—"}
+      {/* Quem é — só nome e conceito; o resto a cena ao lado mostra melhor */}
+      <div>
+        <h3 className="font-cinzel text-xl uppercase tracking-[0.15em] text-arcana-gold-bright">
+          {data.name || "—"}
+        </h3>
+        {elementos.conceito && (
+          <p className="font-crimson text-base italic text-arcana-text-dim mt-0.5">
+            {elementos.conceito}
           </p>
-          {elementos.conceito && (
-            <p className="font-crimson text-base italic text-arcana-text-dim mt-1">
-              {elementos.conceito}
-            </p>
-          )}
-        </div>
-        <div>
-          <span className={LABEL}>Aparência</span>
-          <p className="font-crimson text-base text-arcana-text-dim mt-1">{aparencia}</p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {elementos.origem && (
-            <div>
-              <span className={LABEL}>Origem</span>
-              <p className="font-crimson text-base text-arcana-text-dim mt-1">{elementos.origem}</p>
-            </div>
-          )}
-          {faccao && (
-            <div>
-              <span className={LABEL}>Facção</span>
-              <p className="font-crimson text-base text-arcana-text-dim mt-1">
-                {faccao.nome}
-                {elementos.faccaoRelacao ? ` · ${elementos.faccaoRelacao}` : ""}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* História — nasce e é lapidada aqui */}
@@ -350,79 +297,50 @@ export default function StepRevisao({
         </div>
       )}
 
-      {/* Ficha */}
-      <div className="rounded-2xl p-5 space-y-4" style={CARD_STYLE}>
+      {/* Ficha conferida — compacta: os 6 números grandes já vivem na régua da cena */}
+      <div className="rounded-2xl p-5 space-y-3" style={CARD_STYLE}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <span className={LABEL}>Ficha · Nível {ficha.nivel}</span>
           <span className="font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim">
-            {derivados.xp} XP · saldo ${compras.saldo}
+            {derivados.xp} XP · sobra ${compras.saldo}
           </span>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
-          {[
-            { label: "Vida", value: String(derivados.vidaMaxima) },
-            { label: "Dor", value: String(derivados.capacidadeDor) },
-            { label: "Defesa", value: String(derivados.defesa) },
-            { label: "Movim.", value: String(derivados.movimentos) },
-            { label: "Ações", value: String(derivados.acoesCombate) },
-            { label: "Iniciativa", value: `${derivados.cartasIniciativa}♠` },
-          ].map((s) => (
-            <div key={s.label}>
-              <p className="font-cinzel text-xl text-arcana-gold-bright leading-none">{s.value}</p>
-              <p className="font-cinzel text-[10px] uppercase tracking-[0.12em] text-arcana-text-dim mt-1">
-                {s.label}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <span className={LABEL}>Atributos</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {ATRIBUTOS.map((a) => `${a.nome} ${ficha.atributos[a.id]}`).join(" · ")}
+        <p className="font-crimson text-base text-arcana-text">
+          Vida {derivados.vidaMaxima} · Dor {derivados.capacidadeDor} · Defesa {derivados.defesa} ·
+          Movim. {derivados.movimentos} · Ações {derivados.acoesCombate} · Iniciativa{" "}
+          {derivados.cartasIniciativa}♠
+        </p>
+        <div className="space-y-2">
+          <p className="font-crimson text-base text-arcana-text-dim">
+            <span className={LABEL}>Atributos</span>{" "}
+            {ATRIBUTOS.map((a) => `${a.nome} ${ficha.atributos[a.id]}`).join(" · ")}
+          </p>
+          <p className="font-crimson text-base text-arcana-text-dim">
+            <span className={LABEL}>Antecedentes</span>{" "}
+            {ANTECEDENTES.filter((a) => ficha.antecedentes[a.id] > 0)
+              .map((a) => `${a.nome} ${ficha.antecedentes[a.id]}`)
+              .join(" · ") || "—"}
+          </p>
+          <p className="font-crimson text-base text-arcana-text-dim">
+            <span className={LABEL}>Habilidades</span> {habilidadesNomes.join(" · ") || "—"}
+          </p>
+          {(ficha.montarias?.length ?? 0) > 0 && (
+            <p className="font-crimson text-base text-arcana-text-dim">
+              <span className={LABEL}>{ficha.montarias.length > 1 ? "Montarias" : "Montaria"}</span>{" "}
+              {ficha.montarias
+                .map(
+                  (m) =>
+                    `${m.nome || (m.animal === "cavalo" ? "Cavalo" : "Mula")} · Pot ${m.potencia} · Res ${m.resistencia} · Vida ${6 + m.resistencia}`,
+                )
+                .join(" — ")}
             </p>
-          </div>
-          <div>
-            <span className={LABEL}>Antecedentes</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {ANTECEDENTES.filter((a) => ficha.antecedentes[a.id] > 0)
-                .map((a) => `${a.nome} ${ficha.antecedentes[a.id]}`)
-                .join(" · ") || "—"}
-            </p>
-          </div>
-          <div>
-            <span className={LABEL}>Habilidades</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {habilidadesNomes.join(" · ") || "—"}
-            </p>
-          </div>
-          <div>
-            <span className={LABEL}>{(ficha.montarias?.length ?? 0) > 1 ? "Montarias" : "Montaria"}</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {(ficha.montarias?.length ?? 0) > 0
-                ? ficha.montarias
-                    .map(
-                      (m) =>
-                        `${m.nome || (m.animal === "cavalo" ? "Cavalo" : "Mula")} · Pot ${m.potencia} · Res ${m.resistencia} · Vida ${6 + m.resistencia}`,
-                    )
-                    .join(" — ")
-                : "A resolver na mesa"}
-            </p>
-          </div>
-          <div>
-            <span className={LABEL}>Compras</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              {compras.custoTotal > 0
-                ? `${(ficha.compras ?? []).reduce((n, c) => n + c.quantidade, 0)} itens · $${compras.custoTotal} gastos · sobra $${compras.saldo}`
-                : "Nada comprado — $200 intactos"}
-            </p>
-          </div>
-          <div>
-            <span className={LABEL}>Recompensa pela cabeça</span>
-            <p className="font-crimson text-base text-arcana-text-dim mt-1">
-              $0 — exceções da trilha só com o Juiz
-            </p>
-          </div>
+          )}
+          <p className="font-crimson text-base text-arcana-text-dim">
+            <span className={LABEL}>Alforje</span>{" "}
+            {compras.custoTotal > 0
+              ? `${(ficha.compras ?? []).reduce((n, c) => n + c.quantidade, 0)} itens · $${compras.custoTotal} gastos`
+              : "Nada comprado — $200 intactos"}
+          </p>
         </div>
         {validacao.erros.length > 0 && (
           <div className="space-y-1">

@@ -283,16 +283,35 @@ export default function Step2Elementos({ data, onUpdate }: Props) {
                 }
               >
                 <CornerCheck active={active} />
-                <span
-                  className={[
-                    "block font-cinzel text-[11px] uppercase tracking-[0.16em]",
-                    active ? "font-bold text-arcana-gold-bright" : "text-arcana-text",
-                  ].join(" ")}
-                >
-                  {o.nome}
-                </span>
-                <span className="mt-0.5 block font-crimson text-[13px] leading-snug text-arcana-text-dim">
-                  {o.contexto}
+                <span className="flex items-start gap-3">
+                  {o.emblema && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={o.emblema}
+                      alt=""
+                      loading="lazy"
+                      className="h-11 w-11 shrink-0 rounded-xl object-cover"
+                      style={{
+                        background: EMBLEM_BG,
+                        border: active
+                          ? "1px solid rgba(209,171,85,0.6)"
+                          : "1px solid var(--color-arcana-border-dim)",
+                      }}
+                    />
+                  )}
+                  <span className="min-w-0">
+                    <span
+                      className={[
+                        "block font-cinzel text-[11px] uppercase tracking-[0.16em]",
+                        active ? "font-bold text-arcana-gold-bright" : "text-arcana-text",
+                      ].join(" ")}
+                    >
+                      {o.nome}
+                    </span>
+                    <span className="mt-0.5 block font-crimson text-[13px] leading-snug text-arcana-text-dim">
+                      {o.contexto}
+                    </span>
+                  </span>
                 </span>
               </button>
             );

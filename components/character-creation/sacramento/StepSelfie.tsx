@@ -16,21 +16,69 @@ const CARD_STYLE = {
 /** Lado do quadrado capturado — suficiente para o gpt-image-1 ler o rosto. */
 const CAPTURE_SIZE = 768;
 
-// Assets do estúdio do retratista — a tela degrada com elegância se ainda não existirem.
 const FOTOGRAFO_IMG = "/story/fotografo/fotografo.webp";
 const ESTUDIO_IMG = "/story/fotografo/estudio.webp";
-const IRIS_IMG = "/story/fotografo/iris.png";
+/** Obturador real em 5 quadros: 0 = aberto, 4 = fechado. */
+const IRIS_FRAMES = [0, 1, 2, 3, 4].map(
+  (i) => `/story/fotografo/iris-${String(i).padStart(2, "0")}.webp`,
+);
+/** O vídeo vive sob a abertura interna do aro da íris (13% de margem → 74% de diâmetro). */
+const LENTE_BOX = { top: "13%", left: "13%", width: "74%", height: "74%" } as const;
 
 export default function StepSelfie({ selfie, onSelfie }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const flashTimerRef = useRef<number | null>(null);
+  const irisTimerRef = useRef<number | null>(null);
+  const irisFrameRef = useRef(4);
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [cameraErro, setCameraErro] = useState<string | null>(null);
+  const [irisFrame, setIrisFrame] = useState(4);
+  const [flashAtivo, setFlashAtivo] = useState(false);
   const [disparando, setDisparando] = useState(false);
   const [temFotografo, setTemFotografo] = useState(true);
   const [temEstudio, setTemEstudio] = useState(true);
   const [temIris, setTemIris] = useState(true);
+
+  // ---- Íris: animação quadro a quadro (0 aberta ↔ 4 fechada) ----
+  const animarIris = useCallback((para: number, msPorQuadro: number, aoTerminar?: () => void) => {
+    if (irisTimerRef.current) window.clearTimeout(irisTimerRef.current);
+    const reduzMovimento =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduzMovimento) {
+      irisFrameRef.current = para;
+      setIrisFrame(para);
+      aoTerminar?.();
+      return;
+    }
+    const passo = () => {
+      const atual = irisFrameRef.current;
+      if (atual === para) {
+        aoTerminar?.();
+        return;
+      }
+      const proximo = atual + (para > atual ? 1 : -1);
+      irisFrameRef.current = proximo;
+      setIrisFrame(proximo);
+      irisTimerRef.current = window.setTimeout(passo, msPorQuadro);
+    };
+    passo();
+  }, []);
+
+  // Pré-carrega os quadros para a animação não piscar.
+  useEffect(() => {
+    IRIS_FRAMES.forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (irisTimerRef.current) window.clearTimeout(irisTimerRef.current);
+    },
+    [],
+  );
 
   const pararCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -50,13 +98,15 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
       }
       setCameraOk(true);
       setCameraErro(null);
+      // Câmera autorizada → o obturador se abre.
+      animarIris(0, 110);
     } catch {
       setCameraOk(false);
       setCameraErro(
         "Não conseguimos acessar a câmera. Libere o acesso no navegador ou envie uma foto abaixo.",
       );
     }
-  }, []);
+  }, [animarIris]);
 
   // Sem selfie confirmada → câmera ligada; ao sair da etapa, desliga.
   // A câmera é um sistema externo: os setState acontecem nas continuações async.
@@ -65,23 +115,6 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
     if (!selfie) void ligarCamera();
     return pararCamera;
   }, [selfie, ligarCamera, pararCamera]);
-
-  useEffect(
-    () => () => {
-      if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current);
-    },
-    [],
-  );
-
-  const entregarFoto = (dataUrl: string) => {
-    // O disparo cênico (íris + flash) fecha antes da foto aparecer.
-    setDisparando(true);
-    flashTimerRef.current = window.setTimeout(() => {
-      pararCamera();
-      onSelfie(dataUrl);
-      setDisparando(false);
-    }, 650);
-  };
 
   const capturar = () => {
     const video = videoRef.current;
@@ -106,7 +139,18 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
       CAPTURE_SIZE,
       CAPTURE_SIZE,
     );
-    entregarFoto(canvas.toDataURL("image/jpeg", 0.88));
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+    // Disparo cênico: obturador fecha rápido, flash de magnésio, e a foto se revela.
+    setDisparando(true);
+    animarIris(4, 55, () => {
+      setFlashAtivo(true);
+      window.setTimeout(() => {
+        pararCamera();
+        onSelfie(dataUrl);
+        setDisparando(false);
+        setFlashAtivo(false);
+      }, 420);
+    });
   };
 
   const receberArquivo = (file: File | undefined) => {
@@ -139,6 +183,9 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
     };
     reader.readAsDataURL(file);
   };
+
+  const aroAberto = IRIS_FRAMES[0];
+  const quadroAtual = IRIS_FRAMES[irisFrame];
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -175,18 +222,17 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
             de respeito se tira com cara de poucos amigos.&rdquo;
           </p>
           <p className="font-crimson text-sm italic text-arcana-text-dim">
-            Centralize o rosto no círculo, com boa luz de frente. A foto serve só para pintar seus
+            Centralize o rosto na lente, com boa luz de frente. A foto serve só para pintar seus
             retratos — ela não fica salva.
           </p>
         </div>
       </div>
 
-      {/* O estúdio: cenário + câmera de círculo */}
+      {/* O estúdio: cenário + lente com obturador real */}
       <div
         className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
         style={{ border: "1px solid rgba(209,171,85,0.25)" }}
       >
-        {/* Cenário do estúdio ao fundo */}
         {temEstudio ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -206,21 +252,30 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
             }}
           />
         )}
-        {/* Escurece o cenário para o círculo dominar a cena */}
-        <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.62)" }} />
+        {/* Meia-luz para a lente dominar a cena */}
+        <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.5)" }} />
 
         <div className="relative mx-auto w-full max-w-sm aspect-square">
           {selfie ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={selfie}
-              alt="Sua selfie capturada"
-              className="selfie-revelada h-full w-full rounded-full object-cover"
-              style={{
-                border: "2px solid var(--color-arcana-gold)",
-                boxShadow: "0 0 40px rgba(209,171,85,0.3)",
-              }}
-            />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selfie}
+                alt="Sua selfie capturada"
+                className="selfie-revelada absolute rounded-full object-cover"
+                style={LENTE_BOX}
+              />
+              {temIris && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={aroAberto}
+                  alt=""
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+                  onError={() => setTemIris(false)}
+                />
+              )}
+            </>
           ) : (
             <>
               <video
@@ -228,54 +283,38 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
                 autoPlay
                 playsInline
                 muted
-                className="h-full w-full rounded-full object-cover -scale-x-100"
-                style={{ background: "rgba(11,11,20,0.85)" }}
+                className="absolute rounded-full object-cover -scale-x-100"
+                style={{ ...LENTE_BOX, background: "rgba(11,11,20,0.85)" }}
               />
-              {/* Aro da lente + máscara fora do círculo */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-full"
-                style={{
-                  border: "3px solid rgba(209,171,85,0.8)",
-                  boxShadow:
-                    "0 0 0 6px rgba(28,18,6,0.85), 0 0 0 8px rgba(209,171,85,0.35), 0 0 0 9999px rgba(11,11,20,0.45), inset 0 0 60px rgba(11,11,20,0.55)",
-                }}
-              />
-              {/* Marcações de lente antiga */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-full"
-                style={{
-                  background:
-                    "linear-gradient(0deg, transparent 48.8%, rgba(209,171,85,0.4) 49.2%, rgba(209,171,85,0.4) 50.8%, transparent 51.2%) no-repeat 50% 0/2px 14px, linear-gradient(0deg, transparent 48.8%, rgba(209,171,85,0.4) 49.2%, rgba(209,171,85,0.4) 50.8%, transparent 51.2%) no-repeat 50% 100%/2px 14px",
-                }}
-              />
-              <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold-bright drop-shadow">
-                Centralize o rosto no círculo
-              </p>
-              {/* Disparo: íris fecha + flash de magnésio */}
-              {disparando && (
-                <>
-                  {temIris ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={IRIS_IMG}
-                      alt=""
-                      aria-hidden
-                      className="iris-fechando pointer-events-none absolute inset-0 h-full w-full rounded-full object-cover"
-                      onError={() => setTemIris(false)}
-                    />
-                  ) : (
-                    <div
-                      aria-hidden
-                      className="iris-fechando pointer-events-none absolute inset-0 rounded-full"
-                      style={{ boxShadow: "inset 0 0 0 200px rgba(11,11,20,0.95)" }}
-                    />
-                  )}
-                  <div aria-hidden className="flash-magnesio pointer-events-none fixed inset-0 z-40" />
-                </>
+              {temIris ? (
+                // Obturador real: fechado ao chegar, abre com a câmera, fecha no disparo.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={quadroAtual}
+                  alt=""
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+                  onError={() => setTemIris(false)}
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute rounded-full"
+                  style={{
+                    ...LENTE_BOX,
+                    border: "3px solid rgba(209,171,85,0.8)",
+                    boxShadow:
+                      "0 0 0 6px rgba(28,18,6,0.85), 0 0 0 8px rgba(209,171,85,0.35), inset 0 0 60px rgba(11,11,20,0.55)",
+                  }}
+                />
               )}
+              <p className="pointer-events-none absolute inset-x-0 -bottom-1 text-center font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold-bright drop-shadow">
+                Centralize o rosto na lente
+              </p>
             </>
+          )}
+          {flashAtivo && (
+            <div aria-hidden className="flash-magnesio pointer-events-none fixed inset-0 z-40" />
           )}
         </div>
 
@@ -299,7 +338,9 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
               onClick={capturar}
               disabled={cameraOk !== true || disparando}
               className={
-                cameraOk === true && !disparando ? "arcana-btn-primary" : "arcana-btn-primary-disabled"
+                cameraOk === true && !disparando
+                  ? "arcana-btn-primary"
+                  : "arcana-btn-primary-disabled"
               }
             >
               {disparando ? "…" : "Tirar o retrato"}
@@ -326,38 +367,23 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
       </div>
 
       <style jsx>{`
-        .iris-fechando {
-          animation: irisFecha 0.55s cubic-bezier(0.7, 0, 0.84, 0) both;
-          transform-origin: center;
-        }
         .flash-magnesio {
-          background: radial-gradient(ellipse at center, #fff8e7 0%, rgba(255, 248, 231, 0.85) 45%, transparent 100%);
-          animation: flashPop 0.65s ease-out both;
+          background: radial-gradient(
+            ellipse at center,
+            #fff8e7 0%,
+            rgba(255, 248, 231, 0.85) 45%,
+            transparent 100%
+          );
+          animation: flashPop 0.42s ease-out both;
         }
         .selfie-revelada {
           animation: selfieRevela 0.6s ease-out both;
-        }
-        @keyframes irisFecha {
-          0% {
-            transform: scale(2.6) rotate(0deg);
-            opacity: 0;
-          }
-          35% {
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1) rotate(35deg);
-            opacity: 1;
-          }
         }
         @keyframes flashPop {
           0% {
             opacity: 0;
           }
-          55% {
-            opacity: 0;
-          }
-          65% {
+          18% {
             opacity: 1;
           }
           100% {
@@ -377,7 +403,6 @@ export default function StepSelfie({ selfie, onSelfie }: Props) {
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .iris-fechando,
           .flash-magnesio,
           .selfie-revelada {
             animation: none;

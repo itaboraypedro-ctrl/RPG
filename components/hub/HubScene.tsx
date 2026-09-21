@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { deleteCharacter } from "@/app/hub/actions";
 import { AuthContext } from "@/components/providers/AuthProvider";
 import { HubSessionCard } from "./HubSessionCard";
 import { getClassColor } from "@/lib/character-colors";
@@ -55,8 +57,34 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
   const [greeting, setGreeting] = useState("");
 
   /* character selection */
+  const router = useRouter();
   const [activeIdx, setActiveIdx] = useState(0);
   const activeChar = characters[activeIdx] ?? null;
+
+  /* apagar personagem — destrutivo, sempre com confirmação */
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false);
+  const [apagando, setApagando] = useState(false);
+  const [erroApagar, setErroApagar] = useState<string | null>(null);
+
+  const apagarAtivo = async () => {
+    if (!activeChar || apagando) return;
+    setApagando(true);
+    setErroApagar(null);
+    try {
+      const result = await deleteCharacter(activeChar.id);
+      if (!result.ok) {
+        setErroApagar(result.error);
+        return;
+      }
+      setConfirmandoApagar(false);
+      setActiveIdx(0);
+      router.refresh();
+    } catch {
+      setErroApagar("Não foi possível apagar. Tente de novo.");
+    } finally {
+      setApagando(false);
+    }
+  };
 
   /* parallax */
   const targetP = useRef({ x: 0, y: 0 });
@@ -277,6 +305,11 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                       className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-text-dim/50 transition-colors hover:text-arcana-gold">
                       + Novo
                     </Link>
+                    <button type="button"
+                      onClick={() => { setErroApagar(null); setConfirmandoApagar(true); }}
+                      className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-arcana-text-dim/50 transition-colors hover:text-red-300">
+                      Apagar
+                    </button>
                   </div>
                 </>
               ) : isGm ? (
@@ -379,6 +412,63 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
           </div>
         </div>
       </div>
+
+      {/* ── Confirmação de apagar personagem ── */}
+      {confirmandoApagar && activeChar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            aria-label="Cancelar"
+            onClick={() => !apagando && setConfirmandoApagar(false)}
+            className="absolute inset-0 cursor-default"
+            style={{ background: "rgba(5,5,10,0.65)", backdropFilter: "blur(3px)" }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-w-md rounded-2xl p-6 space-y-4"
+            style={{
+              background: "rgba(15,15,26,0.97)",
+              backdropFilter: "blur(24px) saturate(1.4)",
+              border: "1px solid rgba(224,112,95,0.4)",
+              boxShadow: "0 12px 48px rgba(0,0,0,0.6)",
+            }}
+          >
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-red-300/90">
+              Cova rasa
+            </p>
+            <h3 className="font-cinzel text-lg uppercase tracking-[0.15em] text-arcana-text">
+              Enterrar {activeChar.name}?
+            </h3>
+            <p className="font-crimson text-base text-arcana-text-dim leading-relaxed">
+              A ficha, a história e os retratos se vão para sempre — o Oeste não devolve seus
+              mortos. Não há como desfazer.
+            </p>
+            {erroApagar && (
+              <p className="font-crimson text-sm italic text-red-300" role="alert">
+                {erroApagar}
+              </p>
+            )}
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setConfirmandoApagar(false)}
+                disabled={apagando}
+                className="arcana-btn-ghost"
+              >
+                Deixa ele viver
+              </button>
+              <button
+                type="button"
+                onClick={() => void apagarAtivo()}
+                disabled={apagando}
+                className="arcana-btn-danger"
+              >
+                {apagando ? "Cavando…" : "Enterrar de vez"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         @keyframes heroFadeIn {

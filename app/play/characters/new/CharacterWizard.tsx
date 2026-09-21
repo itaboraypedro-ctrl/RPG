@@ -241,8 +241,13 @@ export function CharacterWizard() {
     setStepIdx((i) => Math.max(0, i - 1));
   };
 
-  // Micro-etapas do mobile: o personagem fica em cena e cada fatia é curta.
-  const panes = isMobile ? (WIZARD_PANES[step] ?? null) : null;
+  // Micro-etapas: no mobile em todos os steps fatiados; no desktop, Elementos
+  // também anda por fatias — cada seção cabe na tela, sem scroll.
+  const panes = isMobile
+    ? (WIZARD_PANES[step] ?? null)
+    : step === "elementos"
+      ? WIZARD_PANES.elementos
+      : null;
   const paneAtual = panes?.[paneIdx] ?? null;
   const ultimaPane = !panes || paneIdx >= panes.length - 1;
 
@@ -506,11 +511,39 @@ export function CharacterWizard() {
   const atoII = ["compras", "montaria", "revisao"].includes(step);
   const tituloAto = atoII ? "Ato II · A vida no Oeste" : "Ato I · Quem você é";
   const header = (
-    <StepIndicator
-      currentStep={idx + 1}
-      stepLabels={stepIds.map((id) => STEP_LABELS[id])}
-      title={tituloAto}
-    />
+    <div className="space-y-3">
+      <StepIndicator
+        currentStep={idx + 1}
+        stepLabels={stepIds.map((id) => STEP_LABELS[id])}
+        title={tituloAto}
+      />
+      {/* Desktop com etapa fatiada: qual fatia e quanto falta */}
+      {panes && !isMobile && paneAtual && (
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-cinzel text-xs uppercase tracking-[0.2em] text-arcana-gold-bright">
+            {paneAtual.titulo}
+          </p>
+          <div className="flex items-center gap-1.5" aria-label={`Parte ${paneIdx + 1} de ${panes.length}`}>
+            {panes.map((p, i) => (
+              <span
+                key={p.id}
+                aria-hidden
+                className="h-1.5 rounded-full transition-all duration-200"
+                style={{
+                  width: i === paneIdx ? 16 : 6,
+                  background:
+                    i < paneIdx
+                      ? "rgba(209,171,85,0.9)"
+                      : i === paneIdx
+                        ? "linear-gradient(90deg, #f5d478, #d1ab55)"
+                        : "rgba(209,171,85,0.25)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   // Mobile: cabeçalho compacto da gaveta — etapa, micro-etapa e progresso.

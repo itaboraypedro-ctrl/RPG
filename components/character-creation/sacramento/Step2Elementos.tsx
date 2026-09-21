@@ -237,7 +237,7 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
                 style={active ? { boxShadow: "0 0 18px rgba(209,171,85,0.18)" } : undefined}
               >
                 <CornerCheck active={active} />
-                <span className="relative block h-20">
+                <span className="relative block h-32 sm:h-40">
                   {p.imagem && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -257,7 +257,7 @@ export default function Step2Elementos({ data, onUpdate, foco }: Props) {
                   />
                   <span
                     className={[
-                      "absolute bottom-1.5 left-2 right-2 font-cinzel text-[11px] uppercase tracking-[0.12em] leading-tight",
+                      "absolute bottom-2 left-2.5 right-2.5 font-cinzel text-xs uppercase tracking-[0.12em] leading-tight sm:text-sm",
                       active ? "text-arcana-gold-bright" : "text-arcana-text",
                     ].join(" ")}
                     style={{ textShadow: "0 2px 6px rgba(0,0,0,0.9)" }}

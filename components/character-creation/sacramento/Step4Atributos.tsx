@@ -131,12 +131,12 @@ export default function Step4Atributos({ data, onUpdate, foco }: Props) {
 
   return (
     <div className="space-y-9 max-w-2xl">
-      <div className={mostra("nivel") ? "hidden lg:block" : "hidden"}>
+      <div className={mostra("atributos") ? "hidden lg:block" : "hidden"}>
         <HowItWorks guide={PLAYER_GUIDES.atributos} />
       </div>
 
       {/* Nível — barra deslizante */}
-      <section className={mostra("nivel") ? "space-y-2.5" : "hidden"}>
+      <section className={mostra("atributos") ? "space-y-2.5" : "hidden"}>
         <div className="flex items-baseline justify-between">
           <span className={LABEL}>Nível inicial</span>
           <span className="font-crimson text-sm italic text-arcana-text">

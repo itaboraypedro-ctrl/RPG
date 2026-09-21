@@ -29,6 +29,8 @@ export function HubGreeting({
   const [greeting, setGreeting] = useState<string | null>(null);
 
   useEffect(() => {
+    // Saudação depende do relógio do cliente — no effect para não divergir do SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGreeting(PERIOD_LABEL[periodFromHour(new Date().getHours())]);
   }, []);
 

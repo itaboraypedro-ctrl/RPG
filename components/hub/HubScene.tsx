@@ -230,12 +230,13 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
             );
           })()}
 
-          {/* Bloco inferior: info à esquerda + carrossel grudado à direita */}
-          <div className="absolute bottom-0 left-0 z-10 w-full flex items-end"
+          {/* Bloco inferior: info à esquerda + carrossel grudado à direita
+              (no mobile vira coluna: info em cima, carrossel deslizável embaixo) */}
+          <div className="absolute bottom-0 left-0 z-10 w-full flex flex-col md:flex-row md:items-end"
             style={{ background: "linear-gradient(to top, rgba(7,7,13,0.92) 0%, rgba(7,7,13,0.5) 55%, transparent 100%)" }}>
 
             {/* Info do personagem */}
-            <div className="shrink-0 pl-10 pr-6 pb-7">
+            <div className="shrink-0 px-5 pb-3 md:pl-10 md:pr-6 md:pb-7">
               {greeting && (
                 <p className="mb-2 font-cinzel text-[9px] uppercase tracking-[0.5em] text-arcana-gold/50">
                   {greeting}, {profile.display_name} · {subline}
@@ -318,7 +319,7 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
 
             {/* Carrossel grudado à direita do bloco de info */}
             {characters.length > 0 && (
-              <div className="flex-1 min-w-0">
+              <div className="w-full min-w-0 md:w-auto md:flex-1">
                 <CharacterCarousel
                   characters={characters}
                   activeIdx={activeIdx}
@@ -415,7 +416,7 @@ function CharacterCarousel({ characters, activeIdx, onSelect }: CarouselProps) {
     <div className="relative py-2">
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto px-10 pt-4 pb-3"
+        className="flex gap-3 overflow-x-auto px-4 pt-4 pb-3 md:px-10"
         style={{
           scrollbarWidth: "none",
           scrollSnapType: "x mandatory",

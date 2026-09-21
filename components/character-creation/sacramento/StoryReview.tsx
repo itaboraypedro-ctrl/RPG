@@ -16,6 +16,8 @@ type Props = {
   secaoGerando: HistoriaSecao | null;
   /** id do ponto-chave em reescrita, ou null. */
   pontoGerando?: string | null;
+  /** Mobile: retrato revelado (ou recado do retratista) entre pontos-chave e resumo. */
+  retratoSlot?: React.ReactNode;
   onChange: (historia: HistoriaEstruturada) => void;
   onRegenSection?: (secao: HistoriaSecao, feedback: string) => void;
   /** Reescreve a história inteira com o novo valor do ponto-chave. */
@@ -259,6 +261,7 @@ export function StoryReview({
   isGenerating,
   secaoGerando,
   pontoGerando,
+  retratoSlot,
   onChange,
   onRegenSection,
   onAlterarPonto,
@@ -317,6 +320,9 @@ export function StoryReview({
           </div>
         </section>
       )}
+
+      {/* Mobile: o retrato revelado entra aqui, entre os pontos-chave e o resumo */}
+      {retratoSlot}
 
       {/* Resumo */}
       <SectionShell {...shellProps("Resumo", "resumo")}>

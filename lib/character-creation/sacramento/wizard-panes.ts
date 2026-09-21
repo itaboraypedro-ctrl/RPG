@@ -27,8 +27,7 @@ export const WIZARD_PANES: Record<string, WizardPane[]> = {
     { id: "redencao", titulo: "Trilha de Redenção" },
   ],
   atributos: [
-    { id: "nivel", titulo: "Nível inicial", overlay: true },
-    { id: "atributos", titulo: "Atributos" },
+    { id: "atributos", titulo: "Nível & Atributos" },
     { id: "antecedentes", titulo: "Antecedentes" },
   ],
   habilidades: [

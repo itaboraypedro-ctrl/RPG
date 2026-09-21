@@ -215,14 +215,14 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
             {temFotografo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={FOTOGRAFO_IMG} alt="O retratista de Sacramento"
-                className="h-36 w-36 rounded-2xl object-cover"
+                className="h-64 w-64 rounded-2xl object-cover sm:h-72 sm:w-72"
                 style={{
                   border: "1px solid rgba(209,171,85,0.55)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(209,171,85,0.18)",
                 }}
                 onError={() => setTemFotografo(false)} />
             ) : (
-              <div className="flex h-36 w-36 items-center justify-center rounded-2xl font-cinzel text-5xl text-arcana-gold-bright"
+              <div className="flex h-64 w-64 items-center justify-center rounded-2xl font-cinzel text-5xl text-arcana-gold-bright sm:h-72 sm:w-72"
                 style={{ background: "var(--color-arcana-surface-3)" }} aria-hidden>
                 R
               </div>
@@ -248,11 +248,11 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      {/* O retratista recebe o forasteiro */}
-      <div className="rounded-2xl p-5 flex items-start gap-4" style={CARD_STYLE}>
+    <div className="space-y-4 max-w-2xl">
+      {/* O retratista, curto e grosso — a lente é a protagonista (sem scroll) */}
+      <div className="rounded-2xl px-4 py-3 flex items-center gap-3" style={CARD_STYLE}>
         <div
-          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl"
+          className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl"
           style={{ border: "1px solid rgba(209,171,85,0.45)" }}
         >
           {temFotografo ? (
@@ -265,7 +265,7 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
             />
           ) : (
             <div
-              className="flex h-full w-full items-center justify-center font-cinzel text-2xl text-arcana-gold-bright"
+              className="flex h-full w-full items-center justify-center font-cinzel text-lg text-arcana-gold-bright"
               style={{ background: "var(--color-arcana-surface-3)" }}
               aria-hidden
             >
@@ -273,24 +273,19 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
             </div>
           )}
         </div>
-        <div className="min-w-0 space-y-1">
-          <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
-            O retratista
+        <div className="min-w-0">
+          <p className="font-crimson text-base text-arcana-text leading-snug">
+            &ldquo;Olho na lente, queixo erguido — e nada de sorrir.&rdquo;
           </p>
-          <p className="font-crimson text-lg text-arcana-text leading-snug">
-            &ldquo;Firme aí, forasteiro. Olho na lente, queixo erguido — e nada de sorrir. Retrato
-            de respeito se tira com cara de poucos amigos.&rdquo;
-          </p>
-          <p className="font-crimson text-sm italic text-arcana-text-dim">
-            Centralize o rosto na lente, com boa luz de frente. A foto serve só para pintar seus
-            retratos — ela não fica salva.
+          <p className="font-crimson text-xs italic text-arcana-text-dim">
+            Boa luz de frente · a foto não fica salva
           </p>
         </div>
       </div>
 
       {/* O estúdio: cenário + lente com obturador real */}
       <div
-        className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
+        className="relative overflow-hidden rounded-2xl p-4 sm:p-6"
         style={{ border: "1px solid rgba(209,171,85,0.25)" }}
       >
         {temEstudio ? (
@@ -315,7 +310,7 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
         {/* Meia-luz para a lente dominar a cena */}
         <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.5)" }} />
 
-        <div className="relative mx-auto w-full max-w-sm aspect-square">
+        <div className="relative mx-auto w-full max-w-[300px] aspect-square sm:max-w-sm">
           {selfie ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}

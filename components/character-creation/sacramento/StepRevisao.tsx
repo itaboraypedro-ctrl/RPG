@@ -39,6 +39,9 @@ type Props = {
   podeRevisarSecao: boolean;
   /** Elementos mudaram depois do limite — a lenda mantida não reflete as últimas escolhas. */
   historiaDesatualizada: boolean;
+  /** Close forjado (URL) — no mobile aparece entre os pontos-chave e o resumo. */
+  retratoUrl?: string | null;
+  retratoPendente?: "gerando" | "erro";
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -89,8 +92,55 @@ export default function StepRevisao({
   podeReescrever,
   podeRevisarSecao,
   historiaDesatualizada,
+  retratoUrl,
+  retratoPendente,
 }: Props) {
   const [feedbackGeral, setFeedbackGeral] = useState("");
+
+  // Mobile: o retrato revelado surge no meio da lenda, entre os pontos-chave e
+  // o resumo — impacto no primeiro scroll, e a página segue normal.
+  const retratoSlot =
+    retratoUrl || retratoPendente ? (
+      <div className="lg:hidden">
+        {retratoUrl ? (
+          <div
+            className="relative overflow-hidden rounded-2xl"
+            style={{
+              background: "#151019",
+              border: "1px solid rgba(209,171,85,0.45)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.6), 0 0 32px rgba(209,171,85,0.15)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={retratoUrl}
+              alt="Seu retrato, revelado pelo retratista"
+              className="w-full object-cover object-top"
+              style={{ aspectRatio: "3 / 4" }}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 px-4 py-3"
+              style={{ background: "linear-gradient(to top, rgba(7,7,13,0.85), transparent)" }}
+            >
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold-bright">
+                Revelado pelo retratista
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl p-4" style={CARD_STYLE}>
+            <p className="font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-gold">
+              O retratista
+            </p>
+            <p className="font-crimson text-base italic text-arcana-text-dim mt-1">
+              {retratoPendente === "erro"
+                ? "“A chapa rachou na revelação — na criação do personagem eu bato outra, sem cobrar nada.”"
+                : "“Sua fotografia ainda está na câmara de revelação. Chega junto com o resto, confia.”"}
+            </p>
+          </div>
+        )}
+      </div>
+    ) : undefined;
 
   const historia = data.historia;
   const modoManual = data.historiaModo === "manual";
@@ -245,6 +295,7 @@ export default function StepRevisao({
             isGenerating={isGenerating}
             secaoGerando={secaoGerando}
             pontoGerando={pontoGerando}
+            retratoSlot={retratoSlot}
             onChange={(h) => onUpdate({ historia: h })}
             onRegenSection={
               modoManual || !podeRevisarSecao

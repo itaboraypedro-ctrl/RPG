@@ -656,9 +656,11 @@ export function CharacterWizard() {
       mobileHeader={mobileHeader}
       mobileOverlay={!!paneAtual}
       // Depois da estética, o personagem sai de cena: foco total na história,
-      // na ficha, no retratista e na revisão. Ele reaparece nas lojas (vitrine)
-      // e no grand finale do "Criar personagem" (forja + banner).
-      mobileScene={!["elementos", "atributos", "habilidades", "selfie", "revisao"].includes(step)}
+      // na ficha, no retratista, nas compras e na revisão. Ele reaparece no
+      // grand finale do "Criar personagem" (forja + banner).
+      mobileScene={
+        !["elementos", "atributos", "habilidades", "selfie", "compras", "revisao"].includes(step)
+      }
       mobileHelp={
         guiaDaEtapa ? (
           <button
@@ -702,6 +704,8 @@ export function CharacterWizard() {
           reescritasRestantes={reescritasRestantes}
           podeReescrever={!iaTravada}
           podeRevisarSecao={revisoesUsadas < LIMITE_REVISOES_SECAO}
+          retratoUrl={closeGerado}
+          retratoPendente={retratoPendente}
           historiaDesatualizada={
             iaTravada && !!data.historia && data.historiaBaseHash !== storyFingerprint()
           }

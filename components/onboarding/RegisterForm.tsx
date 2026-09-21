@@ -57,7 +57,12 @@ export function RegisterForm({ role }: Props) {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      // Traduz o erro mais comum com uma saída prática (contas de teste incluídas).
+      setError(
+        /already registered|already been registered/i.test(signUpError.message)
+          ? "Este e-mail já tem uma conta — entre pela página de login. Para criar outra conta de teste, use uma variação: seuemail+teste2@gmail.com conta como e-mail novo e chega na mesma caixa."
+          : signUpError.message,
+      );
       setSubmitting(false);
       return;
     }

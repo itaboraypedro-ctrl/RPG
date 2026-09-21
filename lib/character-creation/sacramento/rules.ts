@@ -71,16 +71,60 @@ export const ANTECEDENTES: AntecedenteInfo[] = [
  */
 export interface LimitesCriacao {
   nivelMaximo: Nivel;
+  /** Nível com que a ficha nasce (o Juiz da mesa pode fixar). */
+  nivelInicial: Nivel;
+  /** true = o jogador não escolhe o nível. */
+  nivelTravado: boolean;
+  /** Dinheiro inicial para as compras (padrão do livro: $200, p. 52). */
+  dinheiroInicial: number;
   /** null = todas as lojas liberadas. */
   lojasPermitidas: string[] | null;
   itensBloqueados: string[];
+  /** Equipamento que todo personagem da mesa recebe de graça. */
+  itensIniciais: { id: string; quantidade: number }[];
 }
 
 export const LIMITES_PADRAO: LimitesCriacao = {
   nivelMaximo: 6,
+  nivelInicial: 1,
+  nivelTravado: false,
+  dinheiroInicial: 200,
   lojasPermitidas: null,
   itensBloqueados: [],
+  itensIniciais: [],
 };
+
+/** Sanitiza as regras salvas em sessions.settings.regrasCriacao sobre o padrão. */
+export function limitesDaMesa(raw: unknown): LimitesCriacao {
+  const r = (raw ?? {}) as Partial<LimitesCriacao>;
+  const nivel = (v: unknown, padrao: Nivel): Nivel =>
+    typeof v === "number" && v >= 1 && v <= 6 ? (Math.round(v) as Nivel) : padrao;
+  const nivelMaximo = nivel(r.nivelMaximo, LIMITES_PADRAO.nivelMaximo);
+  const nivelInicial = nivel(r.nivelInicial, LIMITES_PADRAO.nivelInicial);
+  return {
+    nivelMaximo,
+    nivelInicial: (Math.min(nivelInicial, nivelMaximo) as Nivel),
+    nivelTravado: r.nivelTravado === true,
+    dinheiroInicial:
+      typeof r.dinheiroInicial === "number" && r.dinheiroInicial >= 0 && r.dinheiroInicial <= 100000
+        ? r.dinheiroInicial
+        : LIMITES_PADRAO.dinheiroInicial,
+    lojasPermitidas: Array.isArray(r.lojasPermitidas)
+      ? r.lojasPermitidas.filter((x): x is string => typeof x === "string")
+      : null,
+    itensBloqueados: Array.isArray(r.itensBloqueados)
+      ? r.itensBloqueados.filter((x): x is string => typeof x === "string")
+      : [],
+    itensIniciais: Array.isArray(r.itensIniciais)
+      ? r.itensIniciais
+          .filter(
+            (x): x is { id: string; quantidade: number } =>
+              !!x && typeof x.id === "string" && typeof x.quantidade === "number" && x.quantidade > 0,
+          )
+          .map((x) => ({ id: x.id, quantidade: Math.min(99, Math.round(x.quantidade)) }))
+      : [],
+  };
+}
 
 /** LIVRO p. 49 — XP acumulado por marco (interpretação C09, confirmável pela mesa). */
 export const XP_POR_NIVEL: Record<Nivel, number> = { 1: 0, 2: 10, 3: 20, 4: 30, 5: 45, 6: 65 };
@@ -146,7 +190,10 @@ export interface ValidacaoFicha {
   erros: string[];
 }
 
-export function validarFicha(ficha: FichaMecanica): ValidacaoFicha {
+export function validarFicha(
+  ficha: FichaMecanica,
+  dinheiroInicial: number = LIMITES_PADRAO.dinheiroInicial,
+): ValidacaoFicha {
   const erros: string[] = [];
   const atributosGastos = Object.values(ficha.atributos).reduce((a, b) => a + b, 0);
   const atributosOrcamento = orcamentoAtributos(ficha.nivel);
@@ -190,7 +237,7 @@ export function validarFicha(ficha: FichaMecanica): ValidacaoFicha {
     }
   }
 
-  const compras = resumoCompras(ficha.compras ?? []);
+  const compras = resumoCompras(ficha.compras ?? [], dinheiroInicial);
   if (compras.saldo < 0) {
     erros.push(`Compras acima do orçamento: os $200 iniciais não cobrem $${compras.custoTotal}.`);
   }

@@ -370,7 +370,7 @@ const CAPACIDADE_MONTARIA = 15;
  * (máx. 4 prontas + 1 faca fora do limite; máx. 2 bandoleiras);
  * o resto guarda na mochila (10) e na montaria comprada (15), se houver.
  */
-export function resumoCompras(itens: CompraItem[]): ResumoCompras {
+export function resumoCompras(itens: CompraItem[], orcamento: number = ORCAMENTO): ResumoCompras {
   let custoTotal = 0;
   let espaco = 0;
   const avisos: string[] = [];
@@ -415,7 +415,7 @@ export function resumoCompras(itens: CompraItem[]): ResumoCompras {
   const capacidade = CAPACIDADE_MOCHILA + CAPACIDADE_MONTARIA * nMontarias;
   return {
     custoTotal,
-    saldo: ORCAMENTO - custoTotal,
+    saldo: orcamento - custoTotal,
     espacoUsado: espaco,
     capacidade,
     armasProntas: armasProntas + (facaLivreUsada ? 1 : 0),

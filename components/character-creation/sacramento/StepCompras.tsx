@@ -13,7 +13,7 @@ import {
   type ItemCatalogo,
   type LojaInfo,
 } from "@/lib/character-creation/sacramento/catalogo";
-import { LIMITES_PADRAO } from "@/lib/character-creation/sacramento/rules";
+import { LIMITES_PADRAO, type LimitesCriacao } from "@/lib/character-creation/sacramento/rules";
 import {
   FICHA_INICIAL,
   type SacramentoCreationData,
@@ -22,6 +22,8 @@ import {
 type Props = {
   data: Partial<SacramentoCreationData>;
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
+  /** Regras da mesa (dinheiro, lojas, itens). */
+  limites?: LimitesCriacao;
   /** Avisa o wizard qual cenário de loja deve ambientar o painel do retrato. */
   onAmbient?: (imagem: string | null) => void;
 };
@@ -103,11 +105,11 @@ function Stepper({
   );
 }
 
-export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
+export default function StepCompras({ data, onUpdate, onAmbient, limites: limitesProp }: Props) {
   const ficha = data.ficha ?? FICHA_INICIAL;
   const compras = useMemo(() => ficha.compras ?? [], [ficha.compras]);
-  // Limites da campanha (o Juiz poderá restringir lojas/itens; padrão libera tudo).
-  const limites = LIMITES_PADRAO;
+  // Limites da campanha (regras da mesa; padrão libera tudo).
+  const limites = limitesProp ?? LIMITES_PADRAO;
   const lojasVisiveis = LOJAS.filter(
     (l) => !limites.lojasPermitidas || limites.lojasPermitidas.includes(l.id),
   );
@@ -122,7 +124,7 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
   };
 
   const qty = (id: string) => compras.find((c) => c.id === id)?.quantidade ?? 0;
-  const resumo = useMemo(() => resumoCompras(compras), [compras]);
+  const resumo = useMemo(() => resumoCompras(compras, limites.dinheiroInicial), [compras, limites.dinheiroInicial]);
   const animais = montariasCompradas(compras);
   const totalItens = compras.reduce((n, c) => n + c.quantidade, 0);
 
@@ -225,6 +227,18 @@ export default function StepCompras({ data, onUpdate, onAmbient }: Props) {
           Alforje{totalItens > 0 ? ` · ${totalItens}` : ""}
         </button>
       </div>
+
+      {limites.itensIniciais.length > 0 && (
+        <p className="font-crimson text-sm italic text-arcana-text-dim">
+          Cortesia do Juiz — todo personagem desta mesa já começa com:{" "}
+          <span className="text-arcana-gold-bright">
+            {limites.itensIniciais
+              .map((i) => `${itemById(i.id)?.nome ?? i.id}${i.quantidade > 1 ? ` ×${i.quantidade}` : ""}`)
+              .join(", ")}
+          </span>
+          .
+        </p>
+      )}
 
       {animais.length > 0 && (
         <p className="font-crimson text-sm italic text-arcana-gold-bright">

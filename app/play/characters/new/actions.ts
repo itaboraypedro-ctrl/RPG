@@ -26,6 +26,8 @@ export type CreateSacramentoPayload = {
   ficha: FichaMecanica;
   /** URLs públicas geradas na forja (close/estados/banner) — ausentes se a forja falhou. */
   imagens?: ImagensGeradas;
+  /** Regras da mesa aplicadas na criação (dinheiro e equipamento inicial). */
+  regras?: { dinheiroInicial: number; itensIniciais: { id: string; quantidade: number }[] };
 };
 
 /** Compila a história estruturada num texto corrido para a coluna backstory. */
@@ -64,14 +66,16 @@ export async function createSacramentoCharacter(
   }
 
   const ficha = payload.ficha;
-  const validacao = validarFicha(ficha);
+  const dinheiroInicial =
+    typeof payload.regras?.dinheiroInicial === "number" ? payload.regras.dinheiroInicial : 200;
+  const validacao = validarFicha(ficha, dinheiroInicial);
   if (validacao.erros.length > 0) {
     return { ok: false, error: validacao.erros[0] };
   }
 
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
   const proximoNivel = Math.min(6, ficha.nivel + 1) as keyof typeof XP_POR_NIVEL;
-  const compras = resumoCompras(ficha.compras ?? []);
+  const compras = resumoCompras(ficha.compras ?? [], dinheiroInicial);
   const inventario = (ficha.compras ?? [])
     .map((c) => {
       const item = itemById(c.id);
@@ -86,7 +90,22 @@ export async function createSacramentoCharacter(
           }
         : null;
     })
-    .filter(Boolean);
+    .filter(Boolean) as Record<string, unknown>[];
+
+  // Equipamento da mesa: itens que todo personagem recebe de graça (não descontam).
+  for (const inicial of payload.regras?.itensIniciais ?? []) {
+    const item = itemById(inicial.id);
+    if (!item || inicial.quantidade <= 0) continue;
+    inventario.push({
+      id: item.id,
+      nome: item.nome,
+      categoria: item.categoria,
+      quantidade: inicial.quantidade,
+      precoPago: 0,
+      espaco: item.espaco,
+      daMesa: true,
+    });
+  }
 
   const supabase = await createClient();
 

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import { SessionForm } from "@/components/sessions/SessionForm";
+import { RegrasCriacaoForm } from "@/components/sessions/RegrasCriacaoForm";
+import { limitesDaMesa } from "@/lib/character-creation/sacramento/rules";
 import type { Session } from "@/lib/types";
 
 export default async function EditSessionPage({
@@ -43,6 +45,12 @@ export default async function EditSessionPage({
       </Link>
       <h1 className="text-lg font-bold tracking-tight">Editar sessão</h1>
       <SessionForm mode="edit" session={session} templates={templates ?? []} />
+      <RegrasCriacaoForm
+        sessionId={session.id}
+        initial={limitesDaMesa(
+          (session.settings as { regrasCriacao?: unknown } | null)?.regrasCriacao,
+        )}
+      />
     </div>
   );
 }

@@ -17,6 +17,8 @@ type StatusImagem = "idle" | "gerando" | "ok" | "erro";
 
 type Props = {
   data: Partial<SacramentoCreationData>;
+  /** Regras da mesa que afetam o salvamento (saldo e equipamento inicial). */
+  regras?: { dinheiroInicial: number; itensIniciais: { id: string; quantidade: number }[] };
   /** A forja roda no wizard (começa na selfie, durante as compras); aqui só se exibe e conclui. */
   status: Record<TipoImagem, StatusImagem>;
   erros: Partial<Record<TipoImagem, string>>;
@@ -47,6 +49,7 @@ const MENSAGENS = [
 
 export default function ForjaPersonagem({
   data,
+  regras,
   status,
   erros,
   imagens,
@@ -92,6 +95,7 @@ export default function ForjaPersonagem({
         historiaModo: data.historiaModo ?? "manual",
         ficha: data.ficha ?? FICHA_INICIAL,
         imagens,
+        regras,
       };
       const result = await createSacramentoCharacter(payload);
       if (!result.ok) {
@@ -111,7 +115,7 @@ export default function ForjaPersonagem({
       setErroSalvar("Não foi possível salvar o personagem. Tente novamente.");
       setFase("erro-salvar");
     }
-  }, [data, imagens, onCancel, onSaved, onExit]);
+  }, [data, imagens, regras, onCancel, onSaved, onExit]);
 
   // Todas as imagens resolvidas com sucesso → salva sozinho.
   const todasOk = TRABALHOS.every(({ tipo }) => status[tipo] === "ok");

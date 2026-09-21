@@ -28,6 +28,8 @@ import { montariasCompradas } from "@/lib/character-creation/sacramento/catalogo
 import {
   ANTECEDENTES,
   ATRIBUTOS,
+  LIMITES_PADRAO,
+  type LimitesCriacao,
   calcularDerivados,
   validarFicha,
 } from "@/lib/character-creation/sacramento/rules";
@@ -85,7 +87,13 @@ const subscribeMobile = (cb: () => void) => {
 };
 const isMobileNow = () => window.matchMedia(MOBILE_QUERY).matches;
 
-export function CharacterWizard() {
+type WizardProps = {
+  /** Regras da mesa (sessions.settings.regrasCriacao), já sanitizadas. */
+  limites?: LimitesCriacao;
+  mesaNome?: string;
+};
+
+export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome }: WizardProps) {
   const router = useRouter();
   const isMobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -94,7 +102,7 @@ export function CharacterWizard() {
   const [data, setData] = useState<Partial<SacramentoCreationData>>({
     base: BASE_PADRAO,
     kitId: "base",
-    ficha: FICHA_INICIAL,
+    ficha: { ...FICHA_INICIAL, nivel: limites.nivelInicial },
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [secaoGerando, setSecaoGerando] = useState<HistoriaSecao | null>(null);
@@ -163,7 +171,12 @@ export function CharacterWizard() {
         setData({
           kitId: "base",
           ...draft.data,
-          ficha: { ...FICHA_INICIAL, ...draft.data.ficha },
+          ficha: {
+            ...FICHA_INICIAL,
+            ...draft.data.ficha,
+            // Mesa com nível travado vale mais que o rascunho.
+            ...(limites.nivelTravado ? { nivel: limites.nivelInicial } : {}),
+          },
         });
         // A selfie não persiste — quem recarregou depois dela volta para a etapa da foto.
         setStepIdx(
@@ -221,7 +234,7 @@ export function CharacterWizard() {
   const resetAll = () => {
     clearDraft();
     savedRef.current = false;
-    setData({ base: BASE_PADRAO, kitId: "base", ficha: FICHA_INICIAL });
+    setData({ base: BASE_PADRAO, kitId: "base", ficha: { ...FICHA_INICIAL, nivel: limites.nivelInicial } });
     setStepIdx(0);
     setPaneIdx(0);
     setAiError(null);
@@ -438,7 +451,7 @@ export function CharacterWizard() {
   };
 
   // ---- Navegação/validação ----
-  const validacao = validarFicha(ficha);
+  const validacao = validarFicha(ficha, limites.dinheiroInicial);
   const atributosOk =
     validacao.atributosGastos === validacao.atributosOrcamento &&
     validacao.antecedentesGastos === validacao.antecedentesOrcamento &&
@@ -515,7 +528,7 @@ export function CharacterWizard() {
       <StepIndicator
         currentStep={idx + 1}
         stepLabels={stepIds.map((id) => STEP_LABELS[id])}
-        title={tituloAto}
+        title={mesaNome ? `${tituloAto} · ${mesaNome}` : tituloAto}
       />
       {/* Desktop com etapa fatiada: qual fatia e quanto falta */}
       {panes && !isMobile && paneAtual && (
@@ -719,10 +732,12 @@ export function CharacterWizard() {
         <Step1Tracos data={data} onUpdate={updateData} onChangeBase={handleChangeBase} foco={foco} />
       )}
       {step === "elementos" && <Step2Elementos data={data} onUpdate={updateData} foco={foco} />}
-      {step === "atributos" && <Step4Atributos data={data} onUpdate={updateData} foco={foco} />}
+      {step === "atributos" && (
+        <Step4Atributos data={data} onUpdate={updateData} foco={foco} limites={limites} />
+      )}
       {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} foco={foco} />}
       {step === "compras" && (
-        <StepCompras data={data} onUpdate={updateData} onAmbient={setLojaAmbient} />
+        <StepCompras data={data} onUpdate={updateData} onAmbient={setLojaAmbient} limites={limites} />
       )}
       {step === "montaria" && <StepMontaria data={data} onUpdate={updateData} />}
       {step === "revisao" && (
@@ -739,6 +754,7 @@ export function CharacterWizard() {
           podeRevisarSecao={revisoesUsadas < LIMITE_REVISOES_SECAO}
           retratoUrl={closeGerado}
           retratoPendente={retratoPendente}
+          limites={limites}
           historiaDesatualizada={
             iaTravada && !!data.historia && data.historiaBaseHash !== storyFingerprint()
           }
@@ -891,6 +907,7 @@ export function CharacterWizard() {
       {forjando && (
         <ForjaPersonagem
           data={data}
+          regras={{ dinheiroInicial: limites.dinheiroInicial, itensIniciais: limites.itensIniciais }}
           status={forjaStatus}
           erros={forjaErros}
           imagens={forjaImagensRef.current}

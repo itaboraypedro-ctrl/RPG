@@ -6,6 +6,7 @@ import {
   ANTECEDENTES,
   ATRIBUTOS,
   LIMITES_PADRAO,
+  type LimitesCriacao,
   XP_POR_NIVEL,
   calcularDerivados,
   orcamentoAntecedentes,
@@ -26,6 +27,8 @@ type Props = {
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
   /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
   foco?: string;
+  /** Regras da mesa (nível máximo/travado). */
+  limites?: LimitesCriacao;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -103,8 +106,9 @@ function BudgetBadge({ gasto, total }: { gasto: number; total: number }) {
   );
 }
 
-export default function Step4Atributos({ data, onUpdate, foco }: Props) {
+export default function Step4Atributos({ data, onUpdate, foco, limites }: Props) {
   const mostra = (secao: string) => !foco || foco === secao;
+  const lim = limites ?? LIMITES_PADRAO;
   const ficha = data.ficha ?? FICHA_INICIAL;
   const set = (partial: Partial<FichaMecanica>) => onUpdate({ ficha: { ...ficha, ...partial } });
 
@@ -147,22 +151,23 @@ export default function Step4Atributos({ data, onUpdate, foco }: Props) {
         <input
           type="range"
           min={1}
-          max={LIMITES_PADRAO.nivelMaximo}
+          max={lim.nivelMaximo}
           step={1}
           value={ficha.nivel}
           onChange={(e) => set({ nivel: Number(e.target.value) as Nivel })}
           aria-label="Nível inicial"
+          disabled={lim.nivelTravado}
           aria-valuetext={`Nível ${ficha.nivel}, ${XP_POR_NIVEL[ficha.nivel]} XP`}
           className="nivel-slider w-full"
         />
         <div className="flex justify-between px-1.5">
           {([1, 2, 3, 4, 5, 6] as Nivel[]).map((n) => {
-            const bloqueado = n > LIMITES_PADRAO.nivelMaximo;
+            const bloqueado = n > lim.nivelMaximo;
             return (
               <button
                 key={n}
                 type="button"
-                disabled={bloqueado}
+                disabled={bloqueado || lim.nivelTravado}
                 onClick={() => set({ nivel: n })}
                 className={[
                   "font-cinzel text-[11px] tracking-[0.1em] transition-colors",
@@ -179,7 +184,9 @@ export default function Step4Atributos({ data, onUpdate, foco }: Props) {
           })}
         </div>
         <p className={HELPER}>
-          O padrão do livro é o nível 1. O Juiz da campanha pode fixar o nível inicial da mesa.
+          {lim.nivelTravado
+            ? `O Juiz desta mesa fixou o nível inicial em ${lim.nivelInicial}.`
+            : "O padrão do livro é o nível 1. O Juiz da campanha pode fixar o nível inicial da mesa."}
         </p>
         <style jsx>{`
           .nivel-slider {

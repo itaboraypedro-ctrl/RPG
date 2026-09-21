@@ -7,6 +7,7 @@ import { habilidadeById, contarParrudeza } from "@/lib/character-creation/sacram
 import {
   ANTECEDENTES,
   ATRIBUTOS,
+  type LimitesCriacao,
   calcularDerivados,
   validarFicha,
 } from "@/lib/character-creation/sacramento/rules";
@@ -42,6 +43,8 @@ type Props = {
   /** Close forjado (URL) — no mobile aparece entre os pontos-chave e o resumo. */
   retratoUrl?: string | null;
   retratoPendente?: "gerando" | "erro";
+  /** Regras da mesa (dinheiro inicial muda o saldo exibido/validado). */
+  limites?: LimitesCriacao;
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -94,6 +97,7 @@ export default function StepRevisao({
   historiaDesatualizada,
   retratoUrl,
   retratoPendente,
+  limites,
 }: Props) {
   const [feedbackGeral, setFeedbackGeral] = useState("");
 
@@ -148,8 +152,8 @@ export default function StepRevisao({
   const elementos = data.elementos ?? ELEMENTOS_VAZIOS;
   const ficha = data.ficha ?? FICHA_INICIAL;
   const derivados = calcularDerivados(ficha, contarParrudeza(ficha.habilidades));
-  const validacao = validarFicha(ficha);
-  const compras = resumoCompras(ficha.compras ?? []);
+  const validacao = validarFicha(ficha, limites?.dinheiroInicial);
+  const compras = resumoCompras(ficha.compras ?? [], limites?.dinheiroInicial);
 
   const habilidadesNomes = (() => {
     const parr = contarParrudeza(ficha.habilidades);

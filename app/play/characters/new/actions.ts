@@ -117,11 +117,14 @@ export async function createSacramentoCharacter(
     speed: derivados.movimentos,
     xp: derivados.xp,
     xp_next_level: XP_POR_NIVEL[proximoNivel],
-    gold: compras.saldo, // $200 iniciais menos as compras (preço máximo, p. 52)
+    // A coluna é integer, mas o catálogo tem preços em centavos (meias $0,25…):
+    // arredonda aqui e guarda o saldo exato em stats.saldo.
+    gold: Math.round(compras.saldo),
     conditions: [],
     death_saves: { successes: 0, failures: 0 },
     stats: {
       sistema: "sacramento",
+      saldo: compras.saldo, // valor exato, com centavos ($200 menos as compras, p. 52)
       atributos: ficha.atributos,
       derivados: {
         vidaMaxima: derivados.vidaMaxima,

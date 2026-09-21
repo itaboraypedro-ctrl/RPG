@@ -211,36 +211,38 @@ export default function StepSelfie({ selfie, onSelfie, characterName }: Props) {
           )}
           <div aria-hidden className="absolute inset-0" style={{ background: "rgba(11,11,20,0.68)" }} />
 
-          <div className="relative flex flex-col items-center gap-4 text-center">
+          <div className="relative flex flex-col items-center gap-4 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
             {temFotografo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={FOTOGRAFO_IMG} alt="O retratista de Sacramento"
-                className="h-64 w-64 rounded-2xl object-cover sm:h-72 sm:w-72"
+                className="h-64 w-64 shrink-0 rounded-2xl object-cover sm:h-72 sm:w-72 lg:h-56 lg:w-56"
                 style={{
                   border: "1px solid rgba(209,171,85,0.55)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(209,171,85,0.18)",
                 }}
                 onError={() => setTemFotografo(false)} />
             ) : (
-              <div className="flex h-64 w-64 items-center justify-center rounded-2xl font-cinzel text-5xl text-arcana-gold-bright sm:h-72 sm:w-72"
+              <div className="flex h-64 w-64 shrink-0 items-center justify-center rounded-2xl font-cinzel text-5xl text-arcana-gold-bright sm:h-72 sm:w-72 lg:h-56 lg:w-56"
                 style={{ background: "var(--color-arcana-surface-3)" }} aria-hidden>
                 R
               </div>
             )}
-            <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
-              O retratista
-            </p>
-            <p className="font-crimson text-xl text-arcana-text leading-snug max-w-md">
-              &ldquo;Ora… então {characterName?.trim() ? `você é ${characterName.trim()}` : "é você o tal forasteiro"}.
-              Gostei da sua figura. Mas lenda nenhuma roda o Oeste sem retrato — fique firme,
-              que eu preciso de uma fotografia sua agora.&rdquo;
-            </p>
-            <p className="font-crimson text-sm italic text-arcana-text-dim">
-              Leva um instante: rosto na lente, boa luz de frente, cara séria.
-            </p>
-            <button type="button" onClick={() => setFase("camera")} className="arcana-btn-primary">
-              Estou pronto
-            </button>
+            <div className="flex flex-col items-center gap-3 lg:items-start">
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+                O retratista
+              </p>
+              <p className="font-crimson text-xl text-arcana-text leading-snug max-w-md">
+                &ldquo;Ora… então {characterName?.trim() ? `você é ${characterName.trim()}` : "é você o tal forasteiro"}.
+                Gostei da sua figura. Mas lenda nenhuma roda o Oeste sem retrato — fique firme,
+                que eu preciso de uma fotografia sua agora.&rdquo;
+              </p>
+              <p className="font-crimson text-sm italic text-arcana-text-dim">
+                Leva um instante: rosto na lente, boa luz de frente, cara séria.
+              </p>
+              <button type="button" onClick={() => setFase("camera")} className="arcana-btn-primary">
+                Estou pronto
+              </button>
+            </div>
           </div>
         </div>
       </div>

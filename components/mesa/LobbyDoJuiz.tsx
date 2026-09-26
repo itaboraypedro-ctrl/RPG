@@ -7,8 +7,10 @@ import { createClient } from "@/lib/supabase";
 import { kickPlayer, updateStatus } from "@/app/dashboard/sessions/[id]/actions";
 import { economiaDaMesa } from "@/lib/rulesets/sacramento/economia";
 import { fichaMesa } from "@/lib/rulesets/sacramento/mesa";
+import { numeroSessao, sessaoAberta, sessoesDaMesa } from "@/lib/sessoes-de-jogo";
 import type { LimitesCriacao } from "@/lib/character-creation/sacramento/rules";
 import type { Character, Session } from "@/lib/types";
+import { ConfirmarAcao } from "./ConfirmarAcao";
 import { RetratoEstado } from "./pecas";
 
 export type JogadorLobby = {
@@ -22,7 +24,7 @@ const STATUS_SESSAO: Record<string, { rotulo: string; cls: string }> = {
   lobby: { rotulo: "Aguardando início", cls: "border-amber-400/60 text-amber-200" },
   active: { rotulo: "● Em jogo", cls: "border-emerald-400/60 text-emerald-200" },
   paused: { rotulo: "⏸ Pausada", cls: "border-amber-400/60 text-amber-200" },
-  finished: { rotulo: "Encerrada", cls: "border-arcana-border text-arcana-text" },
+  finished: { rotulo: "Campanha encerrada", cls: "border-arcana-border text-arcana-text" },
 };
 
 /** Lobby da campanha Sacramento: entrada da mesa do Juiz, bando e resumo das regras. */
@@ -40,9 +42,14 @@ export function LobbyDoJuiz({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
+  const [confirmar, setConfirmar] = useState<"sessao" | "campanha" | null>(null);
   const economia = economiaDaMesa(session.settings);
   const prontos = jogadores.filter((j) => j.personagens.length > 0).length;
   const emJogo = session.status === "active" || session.status === "paused";
+  const sessoes = sessoesDaMesa(session.settings);
+  const aberta = sessaoAberta(sessoes);
+  const ultima = sessoes[sessoes.length - 1];
+  const proxima = numeroSessao(sessoes.length + 1);
 
   // Jogadores entrando / personagens salvos aparecem sem recarregar.
   useEffect(() => {
@@ -57,15 +64,16 @@ export function LobbyDoJuiz({
     };
   }, [session.id, router]);
 
-  function mudar(next: "active" | "paused" | "finished", irParaMesa = false) {
+  function mudar(next: "lobby" | "active" | "finished", irPara?: string) {
     start(async () => {
       setErro(null);
       const r = await updateStatus(session.id, next);
+      setConfirmar(null);
       if (r.error) {
         setErro(r.error);
         return;
       }
-      if (irParaMesa) router.push(`/dashboard/sessions/${session.id}/play`);
+      if (irPara) router.push(irPara);
       else router.refresh();
     });
   }
@@ -79,7 +87,12 @@ export function LobbyDoJuiz({
     });
   }
 
-  const st = STATUS_SESSAO[session.status] ?? STATUS_SESSAO.lobby;
+  const st =
+    session.status === "lobby" && ultima?.fim
+      ? { rotulo: `Sessão ${numeroSessao(ultima.numero)} encerrada`, cls: STATUS_SESSAO.lobby.cls }
+      : aberta && emJogo
+        ? { ...STATUS_SESSAO[session.status], rotulo: `${STATUS_SESSAO[session.status].rotulo} · Sessão ${numeroSessao(aberta.numero)}` }
+        : (STATUS_SESSAO[session.status] ?? STATUS_SESSAO.lobby);
 
   return (
     <div className="arcana-scene fixed inset-0 z-40 overflow-y-auto text-arcana-text">
@@ -113,24 +126,33 @@ export function LobbyDoJuiz({
                   disabled={pending}
                   onClick={() => {
                     if (prontos === 0 && !window.confirm("Nenhum personagem pronto ainda. Iniciar mesmo assim?")) return;
-                    mudar("active", true);
+                    mudar("active", `/dashboard/sessions/${session.id}/play`);
                   }}
                 >
-                  {pending ? "Iniciando…" : "⚔ Iniciar partida"}
+                  {pending ? "Iniciando…" : `⚔ Iniciar sessão ${proxima}`}
                 </button>
               )}
-              {session.status === "active" && (
-                <button className="arcana-btn-ghost" disabled={pending} onClick={() => mudar("paused")}>Pausar</button>
+              {emJogo && (
+                <button className="arcana-btn-ghost" disabled={pending} onClick={() => setConfirmar("sessao")}>
+                  Encerrar sessão {numeroSessao(aberta?.numero ?? sessoes.length)}
+                </button>
               )}
-              {session.status === "paused" && (
-                <button className="arcana-btn-ghost" disabled={pending} onClick={() => mudar("active")}>Retomar</button>
+              {ultima?.fim && (
+                <Link href={`/dashboard/sessions/${session.id}/resumo?sessao=${ultima.numero}`} className="arcana-btn-ghost">
+                  📜 Resumo da sessão {numeroSessao(ultima.numero)}
+                </Link>
               )}
-              {session.status !== "finished" && (
-                <button
-                  className="arcana-btn-danger"
-                  disabled={pending}
-                  onClick={() => { if (window.confirm("Encerrar a partida? Não dá para desfazer.")) mudar("finished"); }}
-                >
+              {session.status === "finished" ? (
+                <>
+                  <button className="arcana-btn-primary" disabled={pending} onClick={() => mudar("lobby")}>
+                    {pending ? "Reabrindo…" : "↺ Reabrir campanha"}
+                  </button>
+                  <Link href={`/dashboard/sessions/${session.id}/resumo`} className="arcana-btn-ghost">
+                    📜 Resumo da campanha
+                  </Link>
+                </>
+              ) : (
+                <button className="arcana-btn-danger" disabled={pending} onClick={() => setConfirmar("campanha")}>
                   Encerrar
                 </button>
               )}
@@ -138,6 +160,12 @@ export function LobbyDoJuiz({
                 ✦ Hub de História
               </Link>
             </div>
+            {sessoes.length > 0 && (
+              <p className="font-crimson text-sm text-arcana-text">
+                {sessoes.length} sess{sessoes.length > 1 ? "ões" : "ão"} jogada{sessoes.length > 1 ? "s" : ""} ·{" "}
+                {sessoes.map((s) => `${numeroSessao(s.numero)} em ${new Date(s.inicio).toLocaleDateString("pt-BR")}`).join(" · ")}
+              </p>
+            )}
             {erro && <p className="font-crimson text-sm text-red-300">{erro}</p>}
           </div>
         </header>
@@ -223,6 +251,28 @@ export function LobbyDoJuiz({
           </Link>
         </section>
       </div>
+      {confirmar === "sessao" && (
+        <ConfirmarAcao
+          titulo={`Encerrar sessão ${numeroSessao(aberta?.numero ?? sessoes.length)}`}
+          texto="O bando sai da mesa e cada jogador vê o resumo da sessão. A campanha continua — vocês voltam na próxima sessão."
+          confirmar="Encerrar sessão"
+          pending={pending}
+          onFechar={() => setConfirmar(null)}
+          onConfirmar={() => mudar("lobby", `/dashboard/sessions/${session.id}/resumo?sessao=${aberta?.numero ?? sessoes.length}`)}
+        />
+      )}
+      {confirmar === "campanha" && (
+        <ConfirmarAcao
+          titulo="Encerrar a campanha"
+          texto={`Isso finaliza ${session.title} para todo o bando e mostra o resumo da campanha. Dá para reabrir depois pelo lobby.`}
+          confirmar="Encerrar campanha"
+          palavra="encerrar"
+          perigo
+          pending={pending}
+          onFechar={() => setConfirmar(null)}
+          onConfirmar={() => mudar("finished", `/dashboard/sessions/${session.id}/resumo`)}
+        />
+      )}
     </div>
   );
 }

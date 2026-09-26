@@ -8,6 +8,8 @@ import { updateStatus } from "@/app/dashboard/sessions/[id]/actions";
 import { ReguaEconomia } from "@/components/campaign-story/ReguaEconomia";
 import { economiaDaMesa, nivelEconomia } from "@/lib/rulesets/sacramento/economia";
 import { cenaDaMesa, iniciativaDaMesa } from "@/lib/rulesets/sacramento/mesa";
+import { numeroSessao, sessaoAberta, sessoesDaMesa } from "@/lib/sessoes-de-jogo";
+import { ConfirmarAcao } from "./ConfirmarAcao";
 import type { CampaignElement, Character, Session, SessionEvent } from "@/lib/types";
 import { BandoJuiz } from "./BandoJuiz";
 import { CenaJuiz, type NpcCombate } from "./CenaJuiz";
@@ -115,13 +117,15 @@ export function MesaDoJuiz({
   const economia = nivelEconomia(economiaDaMesa(session.settings).id);
   const cena = cenaDaMesa(session.settings);
   const iniciativa = iniciativaDaMesa(session.settings);
+  const sessaoAtual = sessaoAberta(sessoesDaMesa(session.settings));
 
-  function status(next: "active" | "paused" | "finished") {
+  const [confirmarFim, setConfirmarFim] = useState(false);
+  function encerrarSessao() {
     start(async () => {
-      const r = await updateStatus(session.id, next);
+      const r = await updateStatus(session.id, "lobby");
+      setConfirmarFim(false);
       if (r.error) setErro(r.error);
-      else if (next === "finished") router.push(`/dashboard/sessions/${session.id}`);
-      else router.refresh();
+      else router.push(`/dashboard/sessions/${session.id}/resumo${sessaoAtual ? `?sessao=${sessaoAtual.numero}` : ""}`);
     });
   }
 
@@ -164,8 +168,9 @@ export function MesaDoJuiz({
           <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">Mesa do Juiz · Sacramento</p>
           <h1 className="truncate font-cinzel text-base font-bold uppercase tracking-[0.12em] text-arcana-gold-bright">{session.title}</h1>
         </div>
-        <span className={`rounded-full border px-2.5 py-0.5 font-cinzel text-[10px] uppercase tracking-[0.2em] ${session.status === "active" ? "border-emerald-400/60 text-emerald-200" : "border-amber-400/60 text-amber-200"}`}>
-          {session.status === "active" ? "● Em jogo" : "⏸ Pausada"}
+        <span className="rounded-full border border-emerald-400/60 px-2.5 py-0.5 font-cinzel text-[10px] uppercase tracking-[0.2em] text-emerald-200">
+          ● Em jogo
+          {sessaoAtual && ` · Sessão ${numeroSessao(sessaoAtual.numero)}`}
         </span>
         {iniciativa && <span className="font-cinzel text-xs text-arcana-gold-bright">⚔ Rodada {iniciativa.rodada}</span>}
         <button
@@ -179,17 +184,8 @@ export function MesaDoJuiz({
           Hub de História ↗
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          {session.status === "active" ? (
-            <button className="arcana-btn-ghost arcana-btn-sm" disabled={pending} onClick={() => status("paused")}>Pausar</button>
-          ) : (
-            <button className="arcana-btn-primary arcana-btn-sm" disabled={pending} onClick={() => status("active")}>Retomar</button>
-          )}
-          <button
-            className="arcana-btn-danger arcana-btn-sm"
-            disabled={pending}
-            onClick={() => { if (window.confirm("Encerrar a partida? Não dá para desfazer.")) status("finished"); }}
-          >
-            Encerrar
+          <button className="arcana-btn-danger arcana-btn-sm" disabled={pending} onClick={() => setConfirmarFim(true)}>
+            Encerrar sessão{sessaoAtual ? ` ${numeroSessao(sessaoAtual.numero)}` : ""}
           </button>
         </div>
         {erro && <p className="w-full font-crimson text-sm text-red-300">{erro}</p>}
@@ -240,6 +236,16 @@ export function MesaDoJuiz({
             <ReguaEconomia sessionId={session.id} nivelAtualId={economia.id} onChange={() => void refetchTudo()} compacto />
           </div>
         </div>
+      )}
+      {confirmarFim && (
+        <ConfirmarAcao
+          titulo={`Encerrar sessão${sessaoAtual ? ` ${numeroSessao(sessaoAtual.numero)}` : ""}`}
+          texto="O bando sai da mesa e cada jogador vê o resumo da sessão: dinheiro, XP, itens e principais feitos. A campanha continua na próxima sessão."
+          confirmar="Encerrar sessão"
+          pending={pending}
+          onFechar={() => setConfirmarFim(false)}
+          onConfirmar={encerrarSessao}
+        />
       )}
     </div>
   );

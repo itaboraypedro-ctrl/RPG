@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import type {
@@ -163,6 +163,16 @@ export function PlayerView({
       router.push(`/play/${session.id}/summary`);
     }
   }, [session.status, session.id, router]);
+
+  // Sacramento: o Juiz encerrou a sessão → jogador sai da mesa e vê o resumo.
+  const statusAnterior = useRef(session.status);
+  useEffect(() => {
+    const antes = statusAnterior.current;
+    statusAnterior.current = session.status;
+    if (session.ruleset === "sacramento" && session.status === "lobby" && (antes === "active" || antes === "paused")) {
+      router.push(`/play/${session.id}/summary`);
+    }
+  }, [session.status, session.ruleset, session.id, router]);
 
   // Realtime subscriptions
   useEffect(() => {

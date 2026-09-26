@@ -19,6 +19,8 @@ type Props = {
   onUpdate: (partial: Partial<SacramentoCreationData>) => void;
   /** Mobile: mostra só a seção da micro-etapa (undefined = tudo, desktop). */
   foco?: string;
+  /** Habilidades vetadas pelo Juiz da mesa — somem da lista. */
+  bloqueadas?: string[];
 };
 
 const LABEL = "font-cinzel text-[10px] uppercase tracking-[0.3em] text-arcana-text-dim";
@@ -48,7 +50,7 @@ function CornerCheck({ active }: { active: boolean }) {
   );
 }
 
-export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
+export default function Step5Habilidades({ data, onUpdate, foco, bloqueadas = [] }: Props) {
   const mostra = (secao: string) => !foco || foco === secao;
   const ficha = data.ficha ?? FICHA_INICIAL;
   const escolhidas = ficha.habilidades;
@@ -199,6 +201,7 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="font-crimson text-sm italic text-arcana-text-dim">
           Qualquer combinação vale — duas de combate, duas de profissão ou uma de cada.
+          {bloqueadas.length > 0 && ` O Juiz vetou ${bloqueadas.length} habilidade${bloqueadas.length > 1 ? "s" : ""} nesta mesa.`}
         </p>
         <span
           className={[
@@ -217,14 +220,14 @@ export default function Step5Habilidades({ data, onUpdate, foco }: Props) {
       <section className={mostra("combate") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Combate</span>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {HABILIDADES.filter((h) => h.categoria === "combate").map(renderCard)}
+          {HABILIDADES.filter((h) => h.categoria === "combate" && (!bloqueadas.includes(h.id) || escolhidas.includes(h.id))).map(renderCard)}
         </div>
       </section>
 
       <section className={mostra("profissao") ? "space-y-3" : "hidden"}>
         <span className={LABEL}>Profissão</span>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {HABILIDADES.filter((h) => h.categoria === "profissao").map(renderCard)}
+          {HABILIDADES.filter((h) => h.categoria === "profissao" && (!bloqueadas.includes(h.id) || escolhidas.includes(h.id))).map(renderCard)}
         </div>
       </section>
     </div>

@@ -7,6 +7,7 @@ import type {
   CampaignElement,
   CampaignElementKind,
   CampaignElementVisibility,
+  PartyMember,
   Session,
 } from "@/lib/types";
 import {
@@ -23,10 +24,12 @@ import { ScenesSection } from "./sections/ScenesSection";
 import { MissionsSection } from "./sections/MissionsSection";
 import { CalendarSection } from "./sections/CalendarSection";
 import { SecretsSection } from "./sections/SecretsSection";
-import { InviteChip } from "./InviteChip";
+import { PartySection } from "./sections/PartySection";
+import { limitesDaMesa } from "@/lib/character-creation/sacramento/rules";
 
 export type SectionId =
   | "overview"
+  | "party"
   | "places"
   | "factions"
   | "npcs"
@@ -37,6 +40,7 @@ export type SectionId =
 
 const SECTIONS: { id: SectionId; label: string; kind?: CampaignElementKind }[] = [
   { id: "overview", label: "Visão geral" },
+  { id: "party", label: "Jogadores" },
   { id: "places", label: "Lugares", kind: "place" },
   { id: "factions", label: "Facções", kind: "faction" },
   { id: "npcs", label: "NPCs", kind: "npc" },
@@ -62,16 +66,21 @@ export type StoryHubApi = {
     patch: { data?: Record<string, unknown>; visibility?: CampaignElementVisibility },
   ) => Promise<CampaignElement | null>;
   removeElement: (elementId: string) => Promise<boolean>;
+  /** Incorpora elementos/config gravados em lote (ex.: campanha tecida pela IA). */
+  ingest: (elements: CampaignElement[], config: CampaignConfig | null) => void;
 };
 
 type Props = {
   session: Session;
   initialElements: CampaignElement[];
   justCreated: boolean;
+  party: PartyMember[];
+  invitesReady: boolean;
 };
 
-export function StoryHub({ session, initialElements, justCreated }: Props) {
-  const [active, setActive] = useState<SectionId>("overview");
+export function StoryHub({ session, initialElements, justCreated, party, invitesReady }: Props) {
+  // Campanha recém-fundada abre no Bando: o próximo passo é convidar.
+  const [active, setActive] = useState<SectionId>(justCreated ? "party" : "overview");
   const [config, setConfig] = useState<CampaignConfig>(session.campaign ?? {});
   const [elements, setElements] = useState<CampaignElement[]>(initialElements);
   const [banner, setBanner] = useState(justCreated);
@@ -142,6 +151,11 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
     [session.id],
   );
 
+  const ingest = useCallback((novos: CampaignElement[], nextConfig: CampaignConfig | null) => {
+    setElements((prev) => [...prev, ...novos]);
+    if (nextConfig) setConfig(nextConfig);
+  }, []);
+
   const api: StoryHubApi = useMemo(
     () => ({
       sessionId: session.id,
@@ -152,6 +166,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
       addElement,
       patchElement,
       removeElement,
+      ingest,
     }),
     [
       session.id,
@@ -162,11 +177,17 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
       addElement,
       patchElement,
       removeElement,
+      ingest,
     ],
   );
 
-  const countOf = (kind?: CampaignElementKind) =>
-    kind ? elements.filter((el) => el.kind === kind).length : 0;
+  const prontos = party.filter((m) => m.status === "pronto").length;
+  const countOf = (section: (typeof SECTIONS)[number]) =>
+    section.id === "party"
+      ? party.length
+      : section.kind
+        ? elements.filter((el) => el.kind === section.kind).length
+        : 0;
 
   return (
     <div className="arcana-scene flex h-dvh flex-col text-arcana-text">
@@ -190,7 +211,13 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <InviteChip inviteCode={session.invite_code} />
+            <button
+              type="button"
+              onClick={() => setActive("party")}
+              className="rounded-xl border border-arcana-border bg-arcana-surface px-3 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-text transition-all hover:border-arcana-gold/50"
+            >
+              Jogadores {prontos}/{party.length} prontos
+            </button>
             <Link
               href={`/dashboard/sessions/${session.id}`}
               className="rounded-xl border border-arcana-gold/50 px-4 py-2 font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold transition-all hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]"
@@ -206,8 +233,8 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
         <div className="shrink-0 border-b border-arcana-gold/20 bg-arcana-gold/5 px-5 py-2.5 lg:px-8">
           <div className="flex items-center justify-between gap-4">
             <p className="font-crimson text-sm italic text-arcana-text-dim">
-              Campanha fundada. Convide o bando pelo link acima e configure a história
-              no seu ritmo — tudo aqui é opcional e pode ser editado a qualquer momento.
+              Campanha fundada. Convide os jogadores por e-mail na aba Jogadores; quando os
+              personagens ficarem prontos, a IA pode tecer a campanha a partir das histórias deles.
             </p>
             <button
               type="button"
@@ -235,7 +262,7 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
           </p>
           {SECTIONS.map((section) => {
             const isActive = active === section.id;
-            const count = countOf(section.kind);
+            const count = countOf(section);
             return (
               <button
                 key={section.id}
@@ -292,6 +319,14 @@ export function StoryHub({ session, initialElements, justCreated }: Props) {
           {/* Conteúdo scrollável */}
           <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 lg:px-10 lg:py-8">
             {active === "overview" && <OverviewSection api={api} />}
+            {active === "party" && (
+              <PartySection
+                api={api}
+                party={party}
+                invitesReady={invitesReady}
+                regras={limitesDaMesa((session.settings as { regrasCriacao?: unknown } | null)?.regrasCriacao)}
+              />
+            )}
             {active === "places" && <PlacesSection api={api} />}
             {active === "factions" && <FactionsSection api={api} />}
             {active === "npcs" && <NpcsSection api={api} />}

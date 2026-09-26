@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
+import { normalizeEmails } from "@/lib/campaign-invites";
 import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
 import type { CampaignConfig, SessionSettings } from "@/lib/types";
 
@@ -22,6 +23,8 @@ export type CreateCampaignPayload = {
     veils: string[];
     xCard: boolean;
   };
+  /** E-mails convidados (campaign_invites, migration 008). */
+  inviteEmails?: string[];
 };
 
 export async function createCampaign(
@@ -81,6 +84,19 @@ export async function createCampaign(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  const emails = normalizeEmails(payload.inviteEmails ?? []).filter(
+    (e) => e !== auth.user.email?.toLowerCase(),
+  );
+  if (emails.length > 0) {
+    const { error: inviteError } = await supabase
+      .from("campaign_invites")
+      .insert(emails.map((email) => ({ session_id: data.id, email })));
+    if (inviteError) {
+      // Campanha criada mesmo assim — o Juiz reconvida pela seção Bando.
+      console.error("[createCampaign] convites:", inviteError.message);
+    }
+  }
 
   revalidatePath("/hub");
   revalidatePath("/dashboard/sessions");

@@ -46,8 +46,23 @@ function promptPara(tipo: TipoImagem, nome: string): { prompt: string; size: str
         transparent: true,
       };
     case "estados":
+      // Prancha 3×2 que depois é recortada em 6 células iguais: enquadramento fixo.
+      // Ferimentos se ACUMULAM de uma célula para a outra; só tecido manchado,
+      // nunca ferida exposta (filtro do modelo). Estágios ≈ faixas de Vida da ficha.
       return {
-        prompt: `${IDENTIDADE} Entregue UMA prancha única em grade de 3 colunas por 2 linhas com 6 retratos de meio corpo desse MESMO personagem (com o rosto trocado), no MESMO estilo, roupa e acabamento da segunda imagem em todas as células. A única variação entre as células é a condição física, da esquerda para a direita, de cima para baixo: 1) saudável e confiante; 2) levemente cansado, suor e poeira; 3) machucado, curativo improvisado, sujeira discreta de sangue; 4) fraco, pálido, ombros caídos; 5) quase morto, gravemente ferido, olhar vidrado; 6) morto, olhos fechados, pele acinzentada. SEM textos, números ou molduras. Fundo escuro uniforme em todas as células.`,
+        prompt:
+          `${IDENTIDADE} Entregue UMA prancha única, grade exata de 3 colunas por 2 linhas, 6 células do MESMO tamanho, com 6 retratos de meio corpo desse MESMO personagem. ` +
+          `ROSTO É A PRIORIDADE ABSOLUTA: nas 6 células o rosto é o da pessoa da primeira imagem, com semelhança clara e reconhecível — mesmos traços, formato do rosto, nariz, olhos, sobrancelhas e boca. Cansaço, palidez e ferimentos mudam a expressão e a pele, nunca a identidade. ` +
+          `Estilo sério e realista, pintura dramática de época do velho oeste, luz lateral quente e sombria; mesma roupa, chapéu, acessórios e acabamento da segunda imagem em todas as células. ` +
+          `ENQUADRAMENTO IDÊNTICO nas 6 células: personagem centralizado, de frente, cabeça na mesma altura e mesma escala, do meio do tronco para cima, fundo escuro uniforme. ` +
+          `Os ferimentos se ACUMULAM — o que aparece numa célula continua nas seguintes, cada vez pior. Da esquerda para a direita, de cima para baixo: ` +
+          `1) INTEIRO: saudável, confiante, roupa limpa, olhar firme. ` +
+          `2) SURRADO: poeira no rosto e na roupa, suor, um arranhão na maçã do rosto, lábio levemente cortado, roupa amarrotada. ` +
+          `3) FERIDO: tudo do 2, mais uma faixa de pano enrolada na cabeça com uma pequena mancha vermelho-escura seca, olho roxo, manga rasgada. ` +
+          `4) MUITO FERIDO: tudo do 3, mais o braço enfaixado numa tipoia de pano com mancha avermelhada, olheiras fundas, rosto exausto. ` +
+          `5) À BEIRA DA MORTE: tudo do 4, faixas mais encharcadas de vermelho-escuro, pele pálida e suada, olhar vidrado e distante, ombros curvados. ` +
+          `6) MORTO: retrato fúnebre de época do velho oeste — o personagem dentro de um caixão simples de madeira rústica EM PÉ, encostado numa parede de tábuas, visto de frente, olhos fechados, pele acinzentada, braços cruzados sobre o peito segurando o chapéu, mantendo as faixas; mesmo enquadramento e escala das outras células. ` +
+          `Nada de feridas abertas, cortes expostos ou sangue escorrendo — só curativos, manchas no tecido, hematomas e cansaço. SEM textos, números, legendas ou molduras, sem linhas separando as células.`,
         size: "1536x1024",
         transparent: false,
       };

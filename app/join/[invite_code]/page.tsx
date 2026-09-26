@@ -2,9 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getProfile } from "@/lib/auth";
-import type { SessionSettings } from "@/lib/types";
+import { claimEmailInvites } from "@/lib/campaign-invites";
 
-type JoinError = "invalid" | "finished" | "full" | "error";
+type JoinError = "invalid" | "finished" | "not-invited" | "error";
 
 function ErrorCard({ kind }: { kind: JoinError }) {
   const message =
@@ -12,8 +12,8 @@ function ErrorCard({ kind }: { kind: JoinError }) {
       ? "Convite inválido ou expirado."
       : kind === "finished"
         ? "Esta partida já encerrou."
-        : kind === "full"
-          ? "A mesa está cheia — o limite de jogadores desta campanha foi atingido."
+        : kind === "not-invited"
+          ? "Seu e-mail não está na lista de convidados desta campanha. Peça ao Juiz para convidar o e-mail desta conta."
           : "Erro ao entrar na campanha. Tente novamente.";
 
   return (
@@ -31,9 +31,9 @@ function ErrorCard({ kind }: { kind: JoinError }) {
 }
 
 // Usa o admin client: sob RLS, quem ainda não é membro não consegue sequer ler a
-// session pelo invite_code (sessions_select_member exige status joined), e o
-// upsert antigo em session_players falhava em silêncio. O convite é validado
-// aqui no servidor: código válido + partida não encerrada + vaga na mesa.
+// session pelo invite_code. A entrada é só por convite: o e-mail da conta precisa
+// estar na lista do Juiz (campaign_invites → session_players 'invited', migration
+// 008) ou o jogador já precisa estar na mesa. O link sozinho não abre a porta.
 export default async function JoinPage({
   params,
 }: {
@@ -45,54 +45,54 @@ export default async function JoinPage({
   if (!profileResult) {
     redirect(`/login?redirect=/join/${invite_code}`);
   }
+  const userId = profileResult.user.id;
 
   const admin = createAdminClient();
 
   const { data: session } = await admin
     .from("sessions")
-    .select("id, status, gm_id, settings")
+    .select("id, status, gm_id, ruleset")
     .eq("invite_code", invite_code)
-    .maybeSingle<{ id: string; status: string; gm_id: string; settings: SessionSettings }>();
+    .maybeSingle<{ id: string; status: string; gm_id: string; ruleset: string }>();
 
   if (!session) return <ErrorCard kind="invalid" />;
   if (session.status === "finished") return <ErrorCard kind="finished" />;
 
-  // O Juiz da campanha não entra como jogador — vai direto para o lobby.
-  if (session.gm_id === profileResult.user.id) {
-    redirect(`/dashboard/sessions/${session.id}`);
+  // O Juiz da campanha não entra como jogador — vai direto para o hub da história.
+  if (session.gm_id === userId) {
+    redirect(`/campaigns/${session.id}/story`);
   }
+
+  await claimEmailInvites(userId, profileResult.user.email);
 
   const { data: existing } = await admin
     .from("session_players")
     .select("status")
     .eq("session_id", session.id)
-    .eq("player_id", profileResult.user.id)
+    .eq("player_id", userId)
     .maybeSingle<{ status: string }>();
 
   if (existing?.status === "kicked") return <ErrorCard kind="invalid" />;
+  if (!existing || existing.status === "left") return <ErrorCard kind="not-invited" />;
 
-  if (!existing || existing.status === "left") {
-    // Respeita o limite da mesa (invited + joined contam vaga).
-    const maxPlayers = session.settings?.max_players;
-    if (typeof maxPlayers === "number" && maxPlayers > 0) {
-      const { count } = await admin
-        .from("session_players")
-        .select("id", { count: "exact", head: true })
-        .eq("session_id", session.id)
-        .in("status", ["invited", "joined"]);
-      if ((count ?? 0) >= maxPlayers) return <ErrorCard kind="full" />;
-    }
-
-    const { error } = await admin.from("session_players").upsert(
-      {
-        session_id: session.id,
-        player_id: profileResult.user.id,
-        status: "joined",
-        joined_at: new Date().toISOString(),
-      },
-      { onConflict: "session_id,player_id" },
-    );
+  if (existing.status === "invited") {
+    const { error } = await admin
+      .from("session_players")
+      .update({ status: "joined", joined_at: new Date().toISOString() })
+      .eq("session_id", session.id)
+      .eq("player_id", userId);
     if (error) return <ErrorCard kind="error" />;
+  }
+
+  // Sem personagem nesta campanha → criador do modelo dela (hoje, Sacramento).
+  const { data: personagem } = await admin
+    .from("characters")
+    .select("id")
+    .eq("owner_id", userId)
+    .eq("session_id", session.id)
+    .limit(1);
+  if ((!personagem || personagem.length === 0) && session.ruleset === "sacramento") {
+    redirect(`/play/characters/new?mesa=${session.id}`);
   }
 
   redirect(`/play/${session.id}`);

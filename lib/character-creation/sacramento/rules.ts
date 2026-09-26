@@ -8,7 +8,8 @@ import type {
   FichaMecanica,
   Nivel,
 } from "./types";
-import { resumoCompras } from "./catalogo";
+import { LOJAS, itemById, resumoCompras } from "./catalogo";
+import { habilidadeById } from "./habilidades";
 
 export interface AtributoInfo {
   id: AtributoId;
@@ -82,6 +83,10 @@ export interface LimitesCriacao {
   itensBloqueados: string[];
   /** Equipamento que todo personagem da mesa recebe de graça. */
   itensIniciais: { id: string; quantidade: number }[];
+  /** Habilidades que o Juiz vetou nesta mesa (ids de HABILIDADES). */
+  habilidadesBloqueadas: string[];
+  /** Quantos personagens cada jogador pode ter nesta campanha. */
+  personagensPorJogador: number;
 }
 
 export const LIMITES_PADRAO: LimitesCriacao = {
@@ -92,6 +97,8 @@ export const LIMITES_PADRAO: LimitesCriacao = {
   lojasPermitidas: null,
   itensBloqueados: [],
   itensIniciais: [],
+  habilidadesBloqueadas: [],
+  personagensPorJogador: 1,
 };
 
 /** Sanitiza as regras salvas em sessions.settings.regrasCriacao sobre o padrão. */
@@ -123,6 +130,13 @@ export function limitesDaMesa(raw: unknown): LimitesCriacao {
           )
           .map((x) => ({ id: x.id, quantidade: Math.min(99, Math.round(x.quantidade)) }))
       : [],
+    habilidadesBloqueadas: Array.isArray(r.habilidadesBloqueadas)
+      ? r.habilidadesBloqueadas.filter((x): x is string => typeof x === "string")
+      : [],
+    personagensPorJogador:
+      typeof r.personagensPorJogador === "number" && r.personagensPorJogador >= 1
+        ? Math.min(5, Math.round(r.personagensPorJogador))
+        : LIMITES_PADRAO.personagensPorJogador,
   };
 }
 
@@ -193,8 +207,10 @@ export interface ValidacaoFicha {
 export function validarFicha(
   ficha: FichaMecanica,
   dinheiroInicial: number = LIMITES_PADRAO.dinheiroInicial,
+  /** Regras da mesa: quando presentes, também são validadas (nível, lojas, itens, habilidades). */
+  limites?: LimitesCriacao,
 ): ValidacaoFicha {
-  const erros: string[] = [];
+  const erros: string[] = limites ? errosDaMesa(ficha, limites) : [];
   const atributosGastos = Object.values(ficha.atributos).reduce((a, b) => a + b, 0);
   const atributosOrcamento = orcamentoAtributos(ficha.nivel);
   const antecedentesGastos = Object.values(ficha.antecedentes).reduce((a, b) => a + b, 0);
@@ -239,7 +255,7 @@ export function validarFicha(
 
   const compras = resumoCompras(ficha.compras ?? [], dinheiroInicial);
   if (compras.saldo < 0) {
-    erros.push(`Compras acima do orçamento: os $200 iniciais não cobrem $${compras.custoTotal}.`);
+    erros.push(`Compras acima do orçamento: os $${dinheiroInicial} iniciais não cobrem $${compras.custoTotal}.`);
   }
   if (compras.espacoUsado > compras.capacidade) {
     erros.push(
@@ -267,4 +283,32 @@ export function derivadosMontaria(potencia: number, resistencia: number) {
     deslocamentoPorMovimento: 10, // metros
     testeCorridaBonus: potencia, // 1d6 + Potência + Montaria do PJ, NA 6
   };
+}
+
+/** Regras que o Juiz impôs à mesa — o servidor revalida tudo isto ao salvar. */
+export function errosDaMesa(ficha: FichaMecanica, limites: LimitesCriacao): string[] {
+  const erros: string[] = [];
+  if (ficha.nivel > limites.nivelMaximo) {
+    erros.push(`O Juiz limitou esta mesa ao nível ${limites.nivelMaximo}.`);
+  }
+  if (limites.nivelTravado && ficha.nivel !== limites.nivelInicial) {
+    erros.push(`O Juiz fixou o nível inicial desta mesa em ${limites.nivelInicial}.`);
+  }
+  const vetadas = ficha.habilidades.filter((h) => limites.habilidadesBloqueadas.includes(h));
+  if (vetadas.length > 0) {
+    erros.push(`Habilidade vetada pelo Juiz: ${[...new Set(vetadas)].map((id) => habilidadeById(id)?.nome ?? id).join(", ")}.`);
+  }
+  const categoriasLiberadas = limites.lojasPermitidas
+    ? new Set(LOJAS.filter((l) => limites.lojasPermitidas!.includes(l.id)).flatMap((l) => l.categorias))
+    : null;
+  for (const c of ficha.compras ?? []) {
+    const item = itemById(c.id);
+    if (!item) continue;
+    if (limites.itensBloqueados.includes(item.id)) {
+      erros.push(`${item.nome} está bloqueado pelo Juiz nesta mesa.`);
+    } else if (categoriasLiberadas && !categoriasLiberadas.has(item.categoria)) {
+      erros.push(`${item.nome} vem de uma loja fechada nesta mesa.`);
+    }
+  }
+  return erros;
 }

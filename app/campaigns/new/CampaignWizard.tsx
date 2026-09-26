@@ -23,6 +23,8 @@ export type CampaignWizardData = {
   lines: string[];
   veils: string[];
   xCard: boolean;
+  /** E-mails do bando — só eles poderão criar personagem nesta campanha. */
+  inviteEmails: string[];
 };
 
 type WizardStep = 1 | 2 | 3;
@@ -42,6 +44,7 @@ const INITIAL_DATA: CampaignWizardData = {
   lines: [],
   veils: [],
   xCard: true,
+  inviteEmails: [],
 };
 
 export function CampaignWizard() {
@@ -78,6 +81,7 @@ export function CampaignWizard() {
         themes: data.themes,
         epoch: data.epoch,
         sessionZero: { lines: data.lines, veils: data.veils, xCard: data.xCard },
+        inviteEmails: data.inviteEmails,
       });
       if (result && result.ok === false) {
         setError(result.error);

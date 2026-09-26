@@ -28,6 +28,8 @@ type Props = {
   pendingInvitesCount: number;
   characters: CharacterWithSession[];
   gmSessions: GmSessionRow[];
+  /** Personagens prontos (vinculados) por campanha do Juiz. */
+  readyBySession: Record<string, number>;
   playerInvites: PlayerInviteRow[];
 };
 
@@ -50,7 +52,7 @@ function periodFromHour(h: number) {
 const ROLE_LABEL: Record<string, string> = { admin: "Admin", gm: "Mestre", player: "Jogador" };
 
 /* ─────────────────────────────────────────────────────── */
-export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, characters, gmSessions, playerInvites }: Props) {
+export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, characters, gmSessions, readyBySession, playerInvites }: Props) {
   const auth = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -385,7 +387,9 @@ export function HubScene({ profile, isGm, hasActiveGame, pendingInvitesCount, ch
                   ) : (
                     gmSessions.map(s => (
                       <div key={s.id} className="shrink-0 w-[220px]">
-                        <HubSessionCard variant="gm" session={s} playerCount={s.session_players?.filter(p => p.status === "joined").length ?? 0} compact />
+                        <HubSessionCard variant="gm" session={s}
+                          playerCount={s.session_players?.filter(p => p.status === "invited" || p.status === "joined").length ?? 0}
+                          readyCount={readyBySession[s.id] ?? 0} compact />
                       </div>
                     ))
                   )}

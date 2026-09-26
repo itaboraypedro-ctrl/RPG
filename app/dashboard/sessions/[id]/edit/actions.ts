@@ -33,5 +33,7 @@ export async function salvarRegrasCriacao(
   if (error) return { ok: false, error: error.message };
 
   revalidatePath(`/dashboard/sessions/${sessionId}/edit`);
+  revalidatePath(`/campaigns/${sessionId}/story`);
+  revalidatePath("/play/characters/new");
   return { ok: true };
 }

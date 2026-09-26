@@ -307,3 +307,22 @@ export type Notification = {
   read: boolean;
   created_at: string;
 };
+
+// Bando da campanha (Hub de História → seção Bando). Montado no servidor a partir de
+// campaign_invites (008) + session_players + characters vinculados à mesa.
+export type PartyCharacter = Character & {
+  visual?: { imagens?: { close?: string; estados?: string; banner?: string }; kitId?: string } | null;
+  story?: Record<string, unknown> | null;
+};
+
+export type PartyMemberStatus = "aguardando-conta" | "criando" | "pronto";
+
+export type PartyMember = {
+  key: string;
+  inviteId: string | null;
+  email: string | null;
+  playerId: string | null;
+  displayName: string | null;
+  status: PartyMemberStatus;
+  characters: PartyCharacter[];
+};

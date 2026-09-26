@@ -91,9 +91,11 @@ type WizardProps = {
   /** Regras da mesa (sessions.settings.regrasCriacao), já sanitizadas. */
   limites?: LimitesCriacao;
   mesaNome?: string;
+  /** Campanha onde o personagem nasce (session_id). */
+  mesaId: string;
 };
 
-export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome }: WizardProps) {
+export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome, mesaId }: WizardProps) {
   const router = useRouter();
   const isMobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -451,7 +453,7 @@ export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome }: WizardPr
   };
 
   // ---- Navegação/validação ----
-  const validacao = validarFicha(ficha, limites.dinheiroInicial);
+  const validacao = validarFicha(ficha, limites.dinheiroInicial, limites);
   const atributosOk =
     validacao.atributosGastos === validacao.atributosOrcamento &&
     validacao.antecedentesGastos === validacao.antecedentesOrcamento &&
@@ -735,7 +737,7 @@ export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome }: WizardPr
       {step === "atributos" && (
         <Step4Atributos data={data} onUpdate={updateData} foco={foco} limites={limites} />
       )}
-      {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} foco={foco} />}
+      {step === "habilidades" && <Step5Habilidades data={data} onUpdate={updateData} foco={foco} bloqueadas={limites.habilidadesBloqueadas} />}
       {step === "compras" && (
         <StepCompras data={data} onUpdate={updateData} onAmbient={setLojaAmbient} limites={limites} />
       )}
@@ -908,6 +910,7 @@ export function CharacterWizard({ limites = LIMITES_PADRAO, mesaNome }: WizardPr
         <ForjaPersonagem
           data={data}
           regras={{ dinheiroInicial: limites.dinheiroInicial, itensIniciais: limites.itensIniciais }}
+          mesaId={mesaId}
           status={forjaStatus}
           erros={forjaErros}
           imagens={forjaImagensRef.current}

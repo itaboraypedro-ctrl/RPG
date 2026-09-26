@@ -8,6 +8,7 @@ import { ThemeGrid } from "./ThemeGrid";
 import { EpochPanel } from "./EpochPanel";
 import { WIZARD_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import { HowItWorks } from "./Explainer";
+import { EmailListEditor } from "./EmailListEditor";
 
 type Props = {
   data: CampaignWizardData;
@@ -75,7 +76,7 @@ export function Step3Table({ data, onUpdate }: Props) {
       <HowItWorks guide={WIZARD_GUIDES.mesa} />
       {/* Jogadores */}
       <div className="space-y-3">
-        <SectionTitle hint="O link de convite é gerado junto com a campanha e aparece na próxima fase.">
+        <SectionTitle hint="Máximo de jogadores esperados na mesa.">
           Tamanho do bando
         </SectionTitle>
         <div className="flex items-center gap-3">
@@ -95,6 +96,17 @@ export function Step3Table({ data, onUpdate }: Props) {
           ))}
         </div>
         <p className={hintClass}>Máximo de jogadores na mesa (além do Juiz).</p>
+      </div>
+
+      {/* Convites */}
+      <div className="space-y-3">
+        <SectionTitle hint="Só quem criar conta (ou já tiver) com um destes e-mails recebe o convite e pode criar personagem nesta campanha. Dá para adicionar mais depois, na seção Bando.">
+          Convidar jogadores por e-mail
+        </SectionTitle>
+        <EmailListEditor
+          values={data.inviteEmails}
+          onChange={(inviteEmails) => onUpdate({ inviteEmails })}
+        />
       </div>
 
       {/* Tom */}

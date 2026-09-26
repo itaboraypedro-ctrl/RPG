@@ -1,9 +1,9 @@
 "use client";
 
 import type { CampaignWizardData } from "@/app/campaigns/new/CampaignWizard";
-import { SACRAMENTO_META } from "@/lib/rulesets/sacramento/meta";
 import { WIZARD_GUIDES } from "@/lib/rulesets/sacramento/guidance";
 import { HowItWorks } from "./Explainer";
+import { SacramentoPoster } from "./SacramentoPoster";
 
 type Props = {
   data: CampaignWizardData;
@@ -29,64 +29,15 @@ export function Step1Preset({ data, onUpdate }: Props) {
   const selected = data.ruleset === "sacramento";
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
       <HowItWorks guide={WIZARD_GUIDES.modelo} />
       <p className="font-crimson text-base italic text-arcana-text-dim">
         O modelo define as regras, o cenário e as ferramentas que a plataforma
         oferece ao Juiz e aos jogadores durante a campanha.
       </p>
 
-      {/* Sacramento — disponível */}
-      <button
-        type="button"
-        onClick={() => onUpdate({ ruleset: "sacramento" })}
-        aria-pressed={selected}
-        className={[
-          "w-full text-left rounded-xl border p-6 transition-all duration-200",
-          selected
-            ? "border-arcana-gold bg-arcana-surface-2 shadow-[0_0_28px_rgba(201,168,76,0.18)]"
-            : "border-arcana-border bg-arcana-surface hover:border-arcana-gold/50",
-        ].join(" ")}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="font-cinzel text-[10px] uppercase tracking-[0.4em] text-arcana-gold">
-              {SACRAMENTO_META.subtitulo}
-            </p>
-            <h3 className="mt-1 font-cinzel font-black text-2xl uppercase tracking-[0.15em] text-arcana-gold-bright">
-              {SACRAMENTO_META.nome}
-            </h3>
-          </div>
-          <span
-            className={[
-              "shrink-0 border px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.25em]",
-              selected
-                ? "border-arcana-gold text-arcana-gold"
-                : "border-arcana-border text-arcana-text-dim",
-            ].join(" ")}
-          >
-            {selected ? "Selecionado" : "Disponível"}
-          </span>
-        </div>
-        <p className="mt-3 font-crimson text-base text-arcana-text-dim leading-relaxed">
-          {SACRAMENTO_META.resumo}
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {["Época 1880", "Testes em 1d6", "Cartas e Sina", "Trilhas de redenção", "Duelos de pôquer", "Bando e Base"].map(
-            (tag) => (
-              <span
-                key={tag}
-                className="border border-arcana-border/60 px-2 py-0.5 font-cinzel text-[10px] uppercase tracking-[0.2em] text-arcana-text-dim"
-              >
-                {tag}
-              </span>
-            ),
-          )}
-        </div>
-        <p className="mt-3 font-crimson text-xs italic text-arcana-text-dim">
-          Fonte: {SACRAMENTO_META.fonte}
-        </p>
-      </button>
+      {/* Sacramento — disponível: capa oficial */}
+      <SacramentoPoster selected={selected} onSelect={() => onUpdate({ ruleset: "sacramento" })} />
 
       {/* Em breve */}
       <div className="grid gap-3 sm:grid-cols-2">

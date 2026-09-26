@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { acessoMesa } from "@/lib/campaign-invites";
 import type {
   BaseVisual,
   ElementosHistoria,
@@ -12,7 +14,7 @@ import type {
 } from "@/lib/character-creation/sacramento/types";
 import { baseId } from "@/lib/character-creation/sacramento/bases";
 import { characterImagePath } from "@/lib/character-creation/sacramento/kits";
-import { calcularDerivados, validarFicha, XP_POR_NIVEL } from "@/lib/character-creation/sacramento/rules";
+import { calcularDerivados, limitesDaMesa, validarFicha, XP_POR_NIVEL } from "@/lib/character-creation/sacramento/rules";
 import { contarParrudeza } from "@/lib/character-creation/sacramento/habilidades";
 import { itemById, resumoCompras } from "@/lib/character-creation/sacramento/catalogo";
 
@@ -26,8 +28,10 @@ export type CreateSacramentoPayload = {
   ficha: FichaMecanica;
   /** URLs públicas geradas na forja (close/estados/banner) — ausentes se a forja falhou. */
   imagens?: ImagensGeradas;
-  /** Regras da mesa aplicadas na criação (dinheiro e equipamento inicial). */
+  /** Ignorado pelo servidor — as regras valem as gravadas na campanha. */
   regras?: { dinheiroInicial: number; itensIniciais: { id: string; quantidade: number }[] };
+  /** Campanha onde o personagem nasce — o jogador precisa ter sido convidado. */
+  sessionId: string;
 };
 
 /** Compila a história estruturada num texto corrido para a coluna backstory. */
@@ -57,6 +61,18 @@ export async function createSacramentoCharacter(
     return { ok: false, error: "Não autenticado" };
   }
 
+  const acesso = await acessoMesa(auth.user.id, payload.sessionId);
+  if (!acesso.ok) {
+    return {
+      ok: false,
+      error:
+        acesso.motivo === "sem-convite"
+          ? "Você não foi convidado para esta campanha."
+          : "Campanha indisponível para criação de personagem.",
+    };
+  }
+  const isJuizDaMesa = acesso.session.gm_id === auth.user.id;
+
   const name = payload.name?.trim();
   if (!name || name.length < 2) {
     return { ok: false, error: "Nome do personagem é obrigatório" };
@@ -65,10 +81,13 @@ export async function createSacramentoCharacter(
     return { ok: false, error: "História incompleta — a trilha de redenção precisa de 6 passos" };
   }
 
+  // Regras da mesa lidas do banco — nunca do cliente.
+  const limites = limitesDaMesa(
+    (acesso.session.settings as { regrasCriacao?: unknown } | null)?.regrasCriacao,
+  );
   const ficha = payload.ficha;
-  const dinheiroInicial =
-    typeof payload.regras?.dinheiroInicial === "number" ? payload.regras.dinheiroInicial : 200;
-  const validacao = validarFicha(ficha, dinheiroInicial);
+  const dinheiroInicial = limites.dinheiroInicial;
+  const validacao = validarFicha(ficha, dinheiroInicial, limites);
   if (validacao.erros.length > 0) {
     return { ok: false, error: validacao.erros[0] };
   }
@@ -93,7 +112,7 @@ export async function createSacramentoCharacter(
     .filter(Boolean) as Record<string, unknown>[];
 
   // Equipamento da mesa: itens que todo personagem recebe de graça (não descontam).
-  for (const inicial of payload.regras?.itensIniciais ?? []) {
+  for (const inicial of limites.itensIniciais) {
     const item = itemById(inicial.id);
     if (!item || inicial.quantidade <= 0) continue;
     inventario.push({
@@ -122,8 +141,23 @@ export async function createSacramentoCharacter(
     return { ok: true };
   }
 
+  if (!isJuizDaMesa) {
+    const { count } = await supabase
+      .from("characters")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", auth.user.id)
+      .eq("session_id", payload.sessionId);
+    if ((count ?? 0) >= limites.personagensPorJogador) {
+      return {
+        ok: false,
+        error: `Esta mesa permite ${limites.personagensPorJogador} personagem${limites.personagensPorJogador > 1 ? "s" : ""} por jogador.`,
+      };
+    }
+  }
+
   const insertRow: Record<string, unknown> = {
     owner_id: auth.user.id,
+    session_id: payload.sessionId,
     name,
     class: "",
     race: "",
@@ -190,7 +224,18 @@ export async function createSacramentoCharacter(
     };
   }
 
+  // Personagem pronto = jogador entra de vez na mesa (o Juiz vê no Bando).
+  if (!isJuizDaMesa) {
+    await createAdminClient()
+      .from("session_players")
+      .update({ status: "joined", joined_at: new Date().toISOString() })
+      .eq("session_id", payload.sessionId)
+      .eq("player_id", auth.user.id)
+      .eq("status", "invited");
+  }
+
   revalidatePath("/hub");
+  revalidatePath(`/campaigns/${payload.sessionId}/story`);
   // Sem redirect: o cliente ainda revela o banner de Procurado antes de ir ao Hub.
   return { ok: true };
 }

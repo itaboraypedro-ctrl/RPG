@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { normalizeEmails } from "@/lib/campaign-invites";
+import { sanitizeWoven, wovenToElements } from "@/lib/rulesets/sacramento/weave";
 import type {
   CampaignConfig,
   CampaignElement,
@@ -178,4 +180,113 @@ export async function deleteElement(
 
   revalidatePath(`/campaigns/${sessionId}/story`);
   return { ok: true };
+}
+
+// ─── Convites por e-mail (campaign_invites, migration 008) ───
+
+export async function addInvites(sessionId: string, rawEmails: string[]): Promise<Ok<{ added: number }>> {
+  const ctx = await requireGmOfSession(sessionId);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  const emails = normalizeEmails(rawEmails);
+  if (emails.length === 0) return { ok: false, error: "Nenhum e-mail válido." };
+
+  const { data, error } = await ctx.supabase
+    .from("campaign_invites")
+    .upsert(
+      emails.map((email) => ({ session_id: sessionId, email })),
+      { onConflict: "session_id,email", ignoreDuplicates: true },
+    )
+    .select("id");
+  if (error) {
+    const missing = /campaign_invites/i.test(error.message);
+    return {
+      ok: false,
+      error: missing
+        ? "Banco desatualizado — rode a migration 008_campaign_invites.sql no SQL Editor."
+        : error.message,
+    };
+  }
+
+  revalidatePath(`/campaigns/${sessionId}/story`);
+  return { ok: true, added: data?.length ?? 0 };
+}
+
+/**
+ * Retira um convite. Se o jogador já tinha reivindicado mas ainda não criou
+ * personagem, sai da mesa também; quem já tem personagem continua (o Juiz
+ * remove pelo lobby, se quiser).
+ */
+export async function removeInvite(
+  sessionId: string,
+  target: { inviteId?: string | null; playerId?: string | null },
+): Promise<Ok> {
+  const ctx = await requireGmOfSession(sessionId);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  if (target.inviteId) {
+    const { error } = await ctx.supabase
+      .from("campaign_invites")
+      .delete()
+      .eq("id", target.inviteId)
+      .eq("session_id", sessionId);
+    if (error) return { ok: false, error: error.message };
+  }
+  if (target.playerId) {
+    await ctx.supabase
+      .from("session_players")
+      .delete()
+      .eq("session_id", sessionId)
+      .eq("player_id", target.playerId)
+      .eq("status", "invited");
+  }
+
+  revalidatePath(`/campaigns/${sessionId}/story`);
+  return { ok: true };
+}
+
+// ─── Campanha tecida pela IA (proposta → elementos) ───
+
+export async function applyWovenCampaign(
+  sessionId: string,
+  rawProposal: unknown,
+  opts: { replacePremise: boolean },
+): Promise<Ok<{ elements: CampaignElement[]; config: CampaignConfig | null }>> {
+  const ctx = await requireGmOfSession(sessionId);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  const proposal = sanitizeWoven(rawProposal);
+  const rows = wovenToElements(proposal).map((el, i) => ({
+    session_id: sessionId,
+    kind: el.kind,
+    visibility: "gm_only" as const,
+    position: i,
+    data: el.data,
+  }));
+
+  let elements: CampaignElement[] = [];
+  if (rows.length > 0) {
+    const { data, error } = await ctx.supabase.from("campaign_elements").insert(rows).select("*");
+    if (error) return { ok: false, error: error.message };
+    elements = (data ?? []) as CampaignElement[];
+  }
+
+  let config: CampaignConfig | null = null;
+  if (opts.replacePremise && (proposal.premissa || proposal.objetivoDoBando)) {
+    const { data: atual } = await ctx.supabase
+      .from("sessions")
+      .select("campaign")
+      .eq("id", sessionId)
+      .single<{ campaign: CampaignConfig }>();
+    config = {
+      ...(atual?.campaign ?? {}),
+      ...(proposal.premissa ? { premise: proposal.premissa } : {}),
+      ...(proposal.objetivoDoBando ? { band_goal: proposal.objetivoDoBando } : {}),
+    };
+    const { error } = await ctx.supabase.from("sessions").update({ campaign: config }).eq("id", sessionId);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath(`/campaigns/${sessionId}/story`);
+  return { ok: true, elements, config };
 }

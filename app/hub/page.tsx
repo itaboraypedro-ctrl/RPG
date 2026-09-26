@@ -1,6 +1,8 @@
 import { HubScene } from "@/components/hub/HubScene";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { claimEmailInvites } from "@/lib/campaign-invites";
 import type {
   Character,
   Session,
@@ -28,6 +30,9 @@ const ACTIVE_PLAYER_STATUSES: SessionPlayerStatus[] = ["invited", "joined"];
 export default async function HubPage() {
   const { user, profile } = await requireRole(["player", "gm", "admin"]);
   const supabase = await createClient();
+  // Convites por e-mail viram session_players 'invited' antes de montar o Hub.
+  await claimEmailInvites(user.id, user.email);
+  const admin = createAdminClient();
   const isGm = profile.role === "gm" || profile.role === "admin";
 
   const [charactersRes, gmSessionsRes, playerInvitesRes] = await Promise.all([
@@ -43,7 +48,8 @@ export default async function HubPage() {
           .eq("gm_id", user.id)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [] as GmSessionRow[], error: null }),
-    supabase
+    // Admin: sob RLS, quem está só 'invited' não lê a session nem o nome do Juiz.
+    admin
       .from("session_players")
       .select(
         "status, session:sessions(*, gm:profiles!sessions_gm_id_fkey(display_name))",
@@ -64,6 +70,23 @@ export default async function HubPage() {
     )
     .filter((row) => row.session.gm_id !== user.id);
 
+  // Bando pronto por campanha do Juiz: personagens já vinculados à mesa.
+  const readyBySession: Record<string, number> = {};
+  if (gmSessions.length > 0) {
+    const { data: prontos } = await supabase
+      .from("characters")
+      .select("session_id")
+      .in(
+        "session_id",
+        gmSessions.map((s) => s.id),
+      )
+      .neq("owner_id", user.id);
+    for (const row of prontos ?? []) {
+      const sid = row.session_id as string;
+      readyBySession[sid] = (readyBySession[sid] ?? 0) + 1;
+    }
+  }
+
   const hasActiveGame = characters.some(
     (c) =>
       c.session &&
@@ -81,6 +104,7 @@ export default async function HubPage() {
       pendingInvitesCount={pendingInvitesCount}
       characters={characters}
       gmSessions={gmSessions}
+      readyBySession={readyBySession}
       playerInvites={playerInvites}
     />
   );

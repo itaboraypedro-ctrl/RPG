@@ -5,6 +5,8 @@ type GmVariant = {
   variant: "gm";
   session: Session;
   playerCount: number;
+  /** Personagens prontos na mesa (história e ficha salvas). */
+  readyCount?: number;
   compact?: boolean;
 };
 
@@ -57,9 +59,12 @@ export function HubSessionCard(props: Props) {
   const isActive = status === "active";
   const isFinished = status === "finished";
 
+  // Sacramento: o Juiz cai no Hub de História (bando, dossiês e IA).
   const ctaHref =
     props.variant === "gm"
-      ? `/dashboard/sessions/${session.id}`
+      ? session.ruleset === "sacramento"
+        ? `/campaigns/${session.id}/story`
+        : `/dashboard/sessions/${session.id}`
       : `/join/${session.invite_code}`;
   const ctaLabel = props.variant === "gm" ? "Abrir" : "Entrar";
 
@@ -77,7 +82,9 @@ export function HubSessionCard(props: Props) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-cinzel text-[11px] tracking-[0.12em] text-arcana-text">{session.title}</p>
           <p className="font-crimson text-[10px] text-arcana-text-dim/60">
-            {props.variant === "player" ? `Mestre: ${props.gmName}` : `${props.playerCount} jogador${props.playerCount === 1 ? "" : "es"}`}
+            {props.variant === "player"
+              ? `Mestre: ${props.gmName}`
+              : `${props.readyCount ?? 0}/${props.playerCount} pronto${props.playerCount === 1 ? "" : "s"}`}
             {" · "}{formatDate(session.created_at)}
           </p>
         </div>

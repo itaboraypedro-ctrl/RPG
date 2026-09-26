@@ -1086,3 +1086,20 @@ body {
   60% { opacity: 1; transform: scale(1.08); }
   100% { opacity: 1; transform: scale(1); }
 }
+
+/* ── Popups da mesa (dinheiro, cura, dano) ── */
+@keyframes sacraEstouro {
+  0% { opacity: 0; transform: scale(0.3) rotate(-20deg); }
+  15% { opacity: 0.95; transform: scale(1.05) rotate(0deg); }
+  80% { opacity: 0.9; transform: scale(1.1) rotate(4deg); }
+  100% { opacity: 0; transform: scale(1.2) rotate(6deg); }
+}
+@keyframes sacraSalta {
+  0% { opacity: 0; transform: translateY(60%) scale(0.4) rotate(-12deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+@keyframes sacraSai {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  55% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-70%) scale(0.5) rotate(15deg); }
+}

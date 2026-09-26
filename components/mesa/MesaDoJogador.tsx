@@ -24,6 +24,7 @@ import type { Character, Notification, Session, SessionEvent, SessionMediaState 
 import { CartaMini, RetratoEstado, imagensDe, textoEvento } from "./pecas";
 import { NotasJogador } from "./NotasJogador";
 import { BarraItens } from "./itens/BarraItens";
+import { PopupsMesa } from "./PopupsMesa";
 
 type Aba = "ficha" | "historia" | "notas" | "rolar" | "alforje" | "armazem" | "mesa";
 
@@ -167,8 +168,16 @@ export function MesaDoJogador({
                 <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
                   Nível {f.nivel} · {f.xp} XP · {estado}
                 </p>
-                <h1 className="font-cinzel text-3xl font-bold uppercase leading-none tracking-[0.06em] text-white" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}>
-                  {character.name}
+                {/* Nome gravado na placa de ferro da criação */}
+                <h1 className="relative w-[88%] max-w-sm" style={{ aspectRatio: "4.104 / 1" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/story/escritorio/placa.webp" alt="" aria-hidden className="absolute inset-0 h-full w-full drop-shadow-[0_6px_14px_rgba(0,0,0,0.8)]" />
+                  <span
+                    className="absolute inset-x-[12%] inset-y-0 flex items-center justify-center text-center font-cinzel font-bold uppercase leading-none tracking-[0.08em] text-[#23140a]"
+                    style={{ fontSize: character.name.length > 18 ? "1.05rem" : "1.45rem", textShadow: "0 1px 0 rgba(255,228,170,0.55), 0 -1px 0 rgba(0,0,0,0.35)" }}
+                  >
+                    {character.name}
+                  </span>
                 </h1>
                 {conceito && <p className="font-crimson text-base italic text-arcana-text">{conceito}</p>}
               </div>
@@ -276,6 +285,7 @@ export function MesaDoJogador({
       </div>
 
       <BarraItens sessionId={session.id} character={character} onRefresh={onRefresh} />
+      <PopupsMesa events={publicEvents} characterId={character.id} />
 
       {ajuste && <SheetAjuste sessionId={session.id} character={character} modo={ajuste} onClose={() => setAjuste(null)} onRefresh={onRefresh} />}
     </div>
@@ -316,13 +326,16 @@ function PainelCorpo({ character, onAjuste }: { character: Character; onAjuste: 
         </div>
       </div>
 
-      {/* Vida em blocos, um por ponto */}
-      <div className="flex gap-1" aria-hidden>
+      {/* Vida: um ex-voto por ponto — aceso ou apagado e rachado */}
+      <div className="flex flex-wrap gap-1" aria-label={`Vida ${f.vida} de ${f.vidaMax}`}>
         {Array.from({ length: Math.max(1, f.vidaMax) }, (_, i) => (
-          <span
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             key={i}
-            className="h-3 flex-1 rounded-sm transition-colors duration-500"
-            style={{ background: i < f.vida ? cor : "rgba(255,255,255,0.08)", boxShadow: i < f.vida ? `0 0 8px ${cor}88` : undefined }}
+            src={`/story/uso/ficha/${i < f.vida ? "vida-cheia" : "vida-perdida"}.webp`}
+            alt=""
+            draggable={false}
+            className={`h-11 w-11 transition-all duration-500 ${i < f.vida ? "drop-shadow-[0_0_8px_rgba(200,60,50,0.55)]" : "opacity-80 grayscale-[35%]"}`}
           />
         ))}
       </div>
@@ -332,16 +345,17 @@ function PainelCorpo({ character, onAjuste }: { character: Character; onAjuste: 
           <p className={LABEL}>Dor</p>
           <p className="font-crimson text-xs text-arcana-text">no 6º círculo: −1 V e consequência</p>
         </div>
-        <div className="flex gap-2">
+        {/* Dor: seis círculos de nanquim; riscado é dano (livro) */}
+        <div className="flex gap-1.5" aria-label={`Dor ${f.dor} de 6`}>
           {Array.from({ length: 6 }, (_, i) => (
-            <span
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               key={i}
-              className={`flex h-9 flex-1 items-center justify-center rounded-full border-2 font-cinzel text-xs transition-colors ${
-                i < f.dor ? "border-red-400 bg-red-600/70 text-white shadow-[0_0_10px_rgba(220,50,50,0.5)]" : "border-white/25 text-arcana-text-dim"
-              }`}
-            >
-              {i + 1}
-            </span>
+              src={`/story/uso/ficha/${i < f.dor ? "dor-riscada" : "dor-vazia"}.webp`}
+              alt=""
+              draggable={false}
+              className={`aspect-square min-w-0 flex-1 transition-transform duration-300 ${i < f.dor ? "scale-105" : ""}`}
+            />
           ))}
         </div>
       </div>

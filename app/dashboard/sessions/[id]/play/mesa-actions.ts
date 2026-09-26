@@ -20,6 +20,7 @@ import {
 } from "@/lib/rulesets/sacramento/mesa";
 import type { Carta } from "@/lib/rulesets/sacramento/types";
 import { itemById } from "@/lib/character-creation/sacramento/catalogo";
+import { causaValida, type CausaDano, type Efeito } from "@/lib/rulesets/sacramento/efeitos";
 import { usoDoItem } from "@/lib/rulesets/sacramento/itens-uso";
 import { NOME_CALIBRE, ajustarCaixa, balasDaCaixa, lerInventario, type ItemInventario } from "@/lib/rulesets/sacramento/inventario";
 import type { SessionEventType } from "@/lib/types";
@@ -138,8 +139,8 @@ export async function darItem(
 /* ── Ficha: Vida, Dor, Sina, dinheiro, XP, condições ── */
 
 export type AjusteFicha =
-  | { vida: number }
-  | { dor: number }
+  | { vida: number; causa?: CausaDano }
+  | { dor: number; causa?: CausaDano }
   | { saldo: number; motivo?: string }
   | { xp: number }
   | { sina: "dar" }
@@ -185,6 +186,8 @@ export async function ajustarFicha(
   const publico = true;
   let tipo: SessionEventType = "gm_note";
   let avisoJogador: string | null = null;
+  // Popups na tela do jogador (dinheiro, cura, dano com causa, XP, morte).
+  const efeitos: Efeito[] = [];
 
   if ("vida" in ajuste || "dor" in ajuste) {
     const canal = "vida" in ajuste ? "vida" : "dor";
@@ -198,17 +201,23 @@ export async function ajustarFicha(
     condicoes = r.condicoes;
     tipo = delta < 0 && canal === "vida" ? "combat_damage" : delta > 0 && canal === "dor" ? "combat_damage" : "combat_heal";
     texto = r.texto;
+    const dano = (canal === "vida" && delta < 0) || (canal === "dor" && delta > 0);
+    if (dano) efeitos.push({ tipo: "dano", canal, valor: Math.abs(delta), causa: causaValida((ajuste as { causa?: unknown }).causa) });
+    else efeitos.push({ tipo: "cura", canal, valor: Math.abs(delta) });
+    if (dano && r.hp === 0 && hp !== c.hp) efeitos.push({ tipo: "morte" });
     avisoJogador = texto;
   } else if ("saldo" in ajuste) {
     const atual = typeof stats.saldo === "number" ? (stats.saldo as number) : c.gold;
     const novo = Math.round((atual + ajuste.saldo) * 100) / 100;
     if (novo < 0) return { ok: false, error: `${c.name} não tem esse dinheiro.` };
     stats.saldo = novo;
+    efeitos.push({ tipo: "dinheiro", valor: ajuste.saldo });
     tipo = "item_given";
     texto = `${c.name} ${ajuste.saldo >= 0 ? "recebeu" : "pagou"} $${Math.abs(ajuste.saldo).toLocaleString("pt-BR")}${ajuste.motivo ? ` (${ajuste.motivo})` : ""} — saldo $${novo.toLocaleString("pt-BR")}`;
     avisoJogador = texto;
   } else if ("xp" in ajuste) {
     xp = Math.max(0, xp + Math.round(ajuste.xp));
+    efeitos.push({ tipo: "xp", valor: Math.round(ajuste.xp) });
     tipo = "xp_gained";
     texto = `${c.name} ${ajuste.xp >= 0 ? "ganhou" : "perdeu"} ${Math.abs(ajuste.xp)} XP (total ${xp})`;
     avisoJogador = texto;
@@ -240,6 +249,7 @@ export async function ajustarFicha(
     hp = Math.min(c.max_hp, hp + cura);
     stats.dor = 0;
     condicoes = condicoes.filter((x) => !["Inconsciente", "Sangrando", "Atordoado", "Caído", "Distraído", "Intimidado", "Desorientado", "Livramento usado", "Teste de Morte usado"].includes(x));
+    efeitos.push({ tipo: "cura", canal: "vida", valor: hp - antes, descanso: true });
     texto = `${c.name} descansou${ajuste.descansar === "medico" ? " com cuidado médico" : ""}: Dor zerada, +${hp - antes} V (${hp}/${c.max_hp})`;
     avisoJogador = texto;
   }
@@ -256,7 +266,7 @@ export async function ajustarFicha(
     .eq("id", c.id);
   if (error) return { ok: false, error: error.message };
 
-  await evento(supabase, sessionId, userId, tipo, { texto, personagemId: c.id }, publico, ctx.sessao.current_round);
+  await evento(supabase, sessionId, userId, tipo, { texto, personagemId: c.id, ...(efeitos.length ? { efeitos } : {}) }, publico, ctx.sessao.current_round);
   if (avisoJogador) await avisar(supabase, sessionId, c.owner_id, c.name, avisoJogador, "vida" in ajuste && ajuste.vida < 0);
   return { ok: true, texto };
 }

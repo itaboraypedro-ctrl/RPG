@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { ajustarFicha, darItem, type AjusteFicha } from "@/app/dashboard/sessions/[id]/play/mesa-actions";
 import { CATALOGO } from "@/lib/character-creation/sacramento/catalogo";
+import { CAUSAS_DANO, type CausaDano } from "@/lib/rulesets/sacramento/efeitos";
 import { usoDoItem, type Calibre } from "@/lib/rulesets/sacramento/itens-uso";
 import { cargaDe, lerInventario, nomeDoItem, reservaDe } from "@/lib/rulesets/sacramento/inventario";
 import { CharacterDossier } from "@/components/campaign-story/CharacterDossier";
@@ -13,6 +14,14 @@ import type { Character, PartyCharacter } from "@/lib/types";
 import { BarraVida, CartaMini, CirculosDor, Chip, RetratoEstado } from "./pecas";
 
 const BTN = "rounded-lg border border-arcana-border px-2 py-1 font-cinzel text-[11px] text-arcana-text transition-colors hover:border-arcana-gold/60 disabled:opacity-40";
+
+/** Arte da causa; enquanto a imagem não existir, mostra o emoji. */
+function IconeCausa({ id, nome, emoji }: { id: string; nome: string; emoji: string }) {
+  const [falhou, setFalhou] = useState(false);
+  if (falhou) return <span aria-label={nome}>{emoji}</span>;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/story/uso/popups/dano-${id}.webp`} alt={nome} className="h-7 w-7 object-contain" onError={() => setFalhou(true)} />;
+}
 
 function CartaoPJ({
   sessionId,
@@ -32,6 +41,7 @@ function CartaoPJ({
   const [aberto, setAberto] = useState(false);
   const [dossie, setDossie] = useState(false);
   const [valor, setValor] = useState("");
+  const [causa, setCausa] = useState<CausaDano | undefined>(undefined);
   const [darId, setDarId] = useState("balas-revolver");
   const [darQtd, setDarQtd] = useState("6");
   const inv = lerInventario(character.inventory);
@@ -71,13 +81,32 @@ function CartaoPJ({
               })}
             </p>
           )}
+          {/* Causa do dano: vira o popup na tela do jogador */}
+          <div className="flex gap-1 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }} role="radiogroup" aria-label="Causa do dano">
+            {CAUSAS_DANO.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                role="radio"
+                aria-checked={causa === c.id}
+                title={c.nome}
+                onClick={() => setCausa(causa === c.id ? undefined : c.id)}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${causa === c.id ? "border-red-300 bg-red-900/60" : "border-arcana-border"}`}
+              >
+                <IconeCausa id={c.id} nome={c.nome} emoji={c.emoji} />
+              </button>
+            ))}
+          </div>
+          <p className="font-crimson text-xs text-arcana-text">
+            Causa: <strong className="text-white">{CAUSAS_DANO.find((c) => c.id === causa)?.nome ?? "nenhuma"}</strong>
+          </p>
           <div className="flex flex-wrap items-center gap-1">
-            <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -3 })}>−3 V</button>
-            <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -1 })}>−1 V</button>
+            <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -3, causa })}>−3 V</button>
+            <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -1, causa })}>−1 V</button>
             <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: 1 })}>+1 V</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <CirculosDor dor={f.dor} tamanho="sm" onClick={(n) => aplicar({ dor: n - f.dor })} />
+            <CirculosDor dor={f.dor} tamanho="sm" onClick={(n) => aplicar({ dor: n - f.dor, causa })} />
             <button className={BTN} disabled={pending || f.dor === 0} onClick={() => aplicar({ dor: -1 })}>−D</button>
           </div>
         </div>

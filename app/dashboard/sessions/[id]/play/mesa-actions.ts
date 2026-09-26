@@ -19,6 +19,9 @@ import {
   type TipoRolagem,
 } from "@/lib/rulesets/sacramento/mesa";
 import type { Carta } from "@/lib/rulesets/sacramento/types";
+import { itemById } from "@/lib/character-creation/sacramento/catalogo";
+import { usoDoItem } from "@/lib/rulesets/sacramento/itens-uso";
+import { NOME_CALIBRE, ajustarCaixa, balasDaCaixa, lerInventario, type ItemInventario } from "@/lib/rulesets/sacramento/inventario";
 import type { SessionEventType } from "@/lib/types";
 
 type R<T = unknown> = ({ ok: true } & T) | { ok: false; error: string };
@@ -71,6 +74,65 @@ async function avisar(
     message,
     vibrate,
   });
+}
+
+/* ── Dar item ou munição achada/saqueada ── */
+
+/**
+ * `quantidade` = unidades do catálogo; para munição, `balas` avulsas somam na
+ * pilha de caixas (achar 4 balas num corpo é diferente de achar uma caixa).
+ */
+export async function darItem(
+  sessionId: string,
+  characterId: string,
+  itemId: string,
+  quantidade: number,
+  balas?: number,
+): Promise<R<{ texto: string }>> {
+  const ctx = await juiz(sessionId);
+  if (!ctx.ok) return ctx;
+  const item = itemById(itemId);
+  if (!item) return { ok: false, error: "Item inexistente." };
+  const qtd = Math.round(quantidade);
+  if (!Number.isFinite(qtd) || qtd < 0 || qtd > 50) return { ok: false, error: "Quantidade inválida." };
+
+  const { data: c } = await ctx.supabase
+    .from("characters")
+    .select("id, name, owner_id, session_id, inventory")
+    .eq("id", characterId)
+    .maybeSingle<{ id: string; name: string; owner_id: string; session_id: string; inventory: unknown }>();
+  if (!c || c.session_id !== sessionId) return { ok: false, error: "Personagem fora desta mesa." };
+
+  const inv = structuredClone(lerInventario(c.inventory)) as ItemInventario[];
+  const uso = usoDoItem(item.id);
+  let texto: string;
+  if (uso?.tipo === "municao") {
+    const soma = balas != null ? Math.round(balas) : qtd * uso.balasPorCaixa;
+    if (!Number.isFinite(soma) || soma <= 0 || soma > 500) return { ok: false, error: "Número de balas inválido." };
+    let pilha = inv.find((i) => i.id === item.id);
+    if (!pilha) {
+      pilha = { id: item.id, nome: item.nome, categoria: item.categoria, espaco: item.espaco, daMesa: true };
+      inv.push(pilha);
+    }
+    ajustarCaixa(pilha, balasDaCaixa({ ...pilha, quantidade: pilha.quantidade ?? 0 }) + soma, uso.balasPorCaixa);
+    texto = `${c.name} recebeu ${soma} ${NOME_CALIBRE[uso.calibre]}`;
+  } else {
+    if (qtd < 1) return { ok: false, error: "Quantidade inválida." };
+    if (uso?.tipo === "arma-fogo") {
+      for (let u = 0; u < qtd; u++) inv.push({ id: item.id, nome: item.nome, categoria: item.categoria, quantidade: 1, espaco: item.espaco, daMesa: true, carga: 0 });
+    } else {
+      const pilha = inv.find((i) => i.id === item.id);
+      if (pilha) pilha.quantidade = (pilha.quantidade ?? 1) + qtd;
+      else inv.push({ id: item.id, nome: item.nome, categoria: item.categoria, quantidade: qtd, espaco: item.espaco, daMesa: true });
+    }
+    texto = `${c.name} recebeu ${qtd}× ${item.nome}`;
+  }
+
+  const { error } = await ctx.supabase.from("characters").update({ inventory: inv }).eq("id", c.id);
+  if (error) return { ok: false, error: error.message };
+  await evento(ctx.supabase, sessionId, ctx.userId, "item_given", { texto, personagemId: c.id, itemId: item.id }, true, ctx.sessao.current_round);
+  await avisar(ctx.supabase, sessionId, c.owner_id, c.name, texto);
+  return { ok: true, texto };
 }
 
 /* ── Ficha: Vida, Dor, Sina, dinheiro, XP, condições ── */

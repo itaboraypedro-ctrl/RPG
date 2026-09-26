@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ajustarFicha, type AjusteFicha } from "@/app/dashboard/sessions/[id]/play/mesa-actions";
+import { ajustarFicha, darItem, type AjusteFicha } from "@/app/dashboard/sessions/[id]/play/mesa-actions";
+import { CATALOGO } from "@/lib/character-creation/sacramento/catalogo";
+import { usoDoItem, type Calibre } from "@/lib/rulesets/sacramento/itens-uso";
+import { cargaDe, lerInventario, nomeDoItem, reservaDe } from "@/lib/rulesets/sacramento/inventario";
 import { CharacterDossier } from "@/components/campaign-story/CharacterDossier";
 import { ANTECEDENTES, ATRIBUTOS } from "@/lib/character-creation/sacramento/rules";
 import { CONDICOES, fichaMesa, nomeCarta } from "@/lib/rulesets/sacramento/mesa";
@@ -29,6 +32,12 @@ function CartaoPJ({
   const [aberto, setAberto] = useState(false);
   const [dossie, setDossie] = useState(false);
   const [valor, setValor] = useState("");
+  const [darId, setDarId] = useState("balas-revolver");
+  const [darQtd, setDarQtd] = useState("6");
+  const inv = lerInventario(character.inventory);
+  const armas = inv.filter((i) => usoDoItem(i.id)?.tipo === "arma-fogo");
+  const calibres = [...new Set(armas.map((i) => (usoDoItem(i.id) as { calibre: Calibre }).calibre))];
+  const darEhMunicao = usoDoItem(darId)?.tipo === "municao";
 
   const aplicar = (a: AjusteFicha) =>
     start(async () => {
@@ -53,6 +62,15 @@ function CartaoPJ({
             </div>
           </div>
           <BarraVida vida={f.vida} vidaMax={f.vidaMax} />
+          {armas.length > 0 && (
+            <p className="font-crimson text-sm text-arcana-text">
+              🔫 {armas.map((a) => `${nomeDoItem(a)} ${cargaDe(a)}/${(usoDoItem(a.id) as { carga: number }).carga}`).join(" · ")}
+              {calibres.map((c) => {
+                const r = reservaDe(inv, c);
+                return ` · reserva ${c === "revolver" ? "rev." : c} ${r.porte + r.caixa}`;
+              })}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-1">
             <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -3 })}>−3 V</button>
             <button className={BTN} disabled={pending} onClick={() => aplicar({ vida: -1 })}>−1 V</button>
@@ -95,7 +113,7 @@ function CartaoPJ({
       )}
 
       <button type="button" onClick={() => setAberto((v) => !v)} className="w-full text-left font-cinzel text-[10px] uppercase tracking-[0.25em] text-arcana-gold">
-        {aberto ? "− Menos" : "+ Dinheiro, XP, condições, ficha"}
+        {aberto ? "− Menos" : "+ Dinheiro, XP, itens, munição, condições"}
       </button>
 
       {aberto && (
@@ -132,6 +150,39 @@ function CartaoPJ({
             </select>
             <button className={BTN} disabled={pending} onClick={() => aplicar({ descansar: "comum" })} title="24 h: zera Dor e +2 V">Descanso</button>
             <button className={BTN} disabled={pending} onClick={() => aplicar({ descansar: "medico" })} title="24 h com médico: zera Dor e +3 V">Descanso médico</button>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <select value={darId} onChange={(e) => setDarId(e.target.value)} className="arcana-input max-w-[12rem] font-crimson text-sm" aria-label="Item para dar">
+              {CATALOGO.map((it) => (
+                <option key={it.id} value={it.id}>
+                  {it.nome}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={darQtd}
+              onChange={(e) => setDarQtd(e.target.value)}
+              className="arcana-input w-16 font-crimson text-sm"
+              aria-label={darEhMunicao ? "Balas" : "Quantidade"}
+            />
+            <span className="font-crimson text-sm text-arcana-text">{darEhMunicao ? "balas" : "un."}</span>
+            <button
+              className={BTN}
+              disabled={pending || !(Number(darQtd) > 0)}
+              onClick={() =>
+                start(async () => {
+                  const n = Number(darQtd);
+                  const r = await darItem(sessionId, character.id, darId, darEhMunicao ? 0 : n, darEhMunicao ? n : undefined);
+                  onMsg(r.ok ? { ok: true, texto: r.texto } : { ok: false, texto: r.error });
+                  onChange();
+                })
+              }
+            >
+              Dar item
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 font-crimson text-sm text-arcana-text sm:grid-cols-4">
             {ATRIBUTOS.map((a) => (

@@ -9,16 +9,10 @@ import { limitesComEconomia } from "@/lib/character-creation/sacramento/rules";
 import { economiaDaMesa, formatarReis } from "@/lib/rulesets/sacramento/economia";
 import { calcularAjusteCorpo, nomeCarta, rolar, sanearNotas, type AjusteCorpo, type Rolagem, type TipoRolagem } from "@/lib/rulesets/sacramento/mesa";
 import type { Carta } from "@/lib/rulesets/sacramento/types";
+import { usoDoItem } from "@/lib/rulesets/sacramento/itens-uso";
+import { ajustarCaixa, balasDaCaixa, type ItemInventario } from "@/lib/rulesets/sacramento/inventario";
 
-type InventarioItem = {
-  id?: string;
-  nome?: string;
-  categoria?: string;
-  quantidade?: number;
-  precoPago?: number;
-  espaco?: number | null;
-  daMesa?: boolean;
-};
+type InventarioItem = ItemInventario;
 
 /**
  * Compra no Armazém durante a partida. Preço, saldo, lojas e itens vetados são
@@ -83,8 +77,20 @@ export async function comprarNoArmazem(
   const saldo = Math.round((saldoAtual - total) * 100) / 100;
 
   const inventario = [...(personagem.inventory ?? [])];
-  const existente = inventario.findIndex((i) => i.id === item.id && !i.daMesa);
-  if (existente >= 0) {
+  const uso = usoDoItem(item.id);
+  const existente = uso?.tipo === "arma-fogo" ? -1 : inventario.findIndex((i) => i.id === item.id && !i.daMesa);
+  if (uso?.tipo === "arma-fogo") {
+    // Cada arma é uma peça com a própria carga; sai da loja vazia.
+    for (let u = 0; u < qtd; u++) {
+      inventario.push({ id: item.id, nome: item.nome, categoria: item.categoria, quantidade: 1, precoPago: unitario, espaco: item.espaco, carga: 0 });
+    }
+  } else if (uso?.tipo === "municao") {
+    // Munição conta bala a bala: cada caixa vendida soma 12 ou 6 balas.
+    const alvo = existente >= 0 ? { ...inventario[existente] } : { id: item.id, nome: item.nome, categoria: item.categoria, precoPago: unitario, espaco: item.espaco };
+    ajustarCaixa(alvo, balasDaCaixa(existente >= 0 ? inventario[existente] : { id: item.id, quantidade: 0 }) + qtd * uso.balasPorCaixa, uso.balasPorCaixa);
+    if (existente >= 0) inventario[existente] = alvo;
+    else inventario.push(alvo);
+  } else if (existente >= 0) {
     inventario[existente] = {
       ...inventario[existente],
       quantidade: (inventario[existente].quantidade ?? 0) + qtd,

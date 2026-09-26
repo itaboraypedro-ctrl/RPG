@@ -23,6 +23,7 @@ import {
 import type { Character, Notification, Session, SessionEvent, SessionMediaState } from "@/lib/types";
 import { CartaMini, RetratoEstado, imagensDe, textoEvento } from "./pecas";
 import { NotasJogador } from "./NotasJogador";
+import { BarraItens } from "./itens/BarraItens";
 
 type Aba = "ficha" | "historia" | "notas" | "rolar" | "alforje" | "armazem" | "mesa";
 
@@ -241,7 +242,7 @@ export function MesaDoJogador({
           </aside>
 
           {/* ═══ Abas ═══ */}
-          <section className="px-4 pb-24 pt-4 lg:px-0 lg:pb-8 lg:pt-0">
+          <section className="px-4 pb-32 pt-4 lg:px-0 lg:pb-28 lg:pt-0">
             <nav
               className="sticky top-0 z-10 -mx-4 flex gap-1 overflow-x-auto border-b border-arcana-gold/20 bg-[rgba(10,9,15,0.96)] px-4 py-2.5 backdrop-blur lg:mx-0 lg:rounded-2xl lg:border lg:px-2"
               style={{ scrollbarWidth: "none" }}
@@ -273,6 +274,8 @@ export function MesaDoJogador({
           </section>
         </div>
       </div>
+
+      <BarraItens sessionId={session.id} character={character} onRefresh={onRefresh} />
 
       {ajuste && <SheetAjuste sessionId={session.id} character={character} modo={ajuste} onClose={() => setAjuste(null)} onRefresh={onRefresh} />}
     </div>

@@ -16,7 +16,10 @@ import {
   balasDoPorte,
   calibreDoPorte,
   cargaDe,
+  gravarTambor,
   lerInventario,
+  modulo,
+  tamborDe,
   limparVazios,
   nomeDoItem,
   reservaDe,
@@ -62,23 +65,42 @@ const defesaValida = (d: number) => Math.max(2, Math.min(9, Math.round(Number(d)
 
 /* ── Atirar ── */
 
+type Tambor = { camaras: number[]; posicao: number };
+
 export async function atirar(
   sessionId: string,
   characterId: string,
   indice: number,
   defesa: number,
-): Promise<R<{ seco: true; carga: 0 } | { seco: false; carga: number; rolagem: Rolagem }>> {
+  /** Revólver: câmara que o jogador deixou no topo ao girar. */
+  posicao?: number,
+): Promise<R<{ seco: true; carga: number; tambor?: Tambor } | { seco: false; carga: number; rolagem: Rolagem; tambor?: Tambor }>> {
   const ctx = await contexto(sessionId, characterId, indice);
   if (!ctx.ok) return ctx;
   const { c, inv, item } = ctx;
   const u = usoDoItem(item!.id);
   if (u?.tipo !== "arma-fogo") return { ok: false, error: "Isso não atira." };
 
-  const carga = cargaDe(item!);
-  if (carga === 0) return { ok: true, seco: true, carga: 0 };
+  let tambor: Tambor | undefined;
+  if (u.mecanismo === "tambor") {
+    // Dispara a câmara do topo e o tambor avança uma. Vazia ou cápsula: clique em seco.
+    tambor = tamborDe(item!, u.carga);
+    if (posicao != null) tambor.posicao = modulo(posicao, u.carga);
+    const topo = tambor.camaras[tambor.posicao];
+    if (topo === 1) tambor.camaras[tambor.posicao] = 2;
+    tambor.posicao = modulo(tambor.posicao + 1, u.carga);
+    gravarTambor(item!, tambor);
+    if (topo !== 1) {
+      const { error } = await ctx.supabase.from("characters").update({ inventory: inv }).eq("id", c.id);
+      if (error) return { ok: false, error: error.message };
+      return { ok: true, seco: true, carga: cargaDe(item!), tambor };
+    }
+  } else {
+    const carga = cargaDe(item!);
+    if (carga === 0) return { ok: true, seco: true, carga: 0 };
+    item!.carga = carga - 1;
+  }
 
-  item!.carga = carga - 1;
-  if (u.mecanismo === "tambor") item!.vazias = (item!.vazias ?? 0) + 1;
   const nome = nomeDoItem(item!);
   const f = fichaMesa(c);
   const rolagem = rolar({
@@ -92,15 +114,52 @@ export async function atirar(
   const { error } = await ctx.supabase.from("characters").update({ inventory: inv }).eq("id", c.id);
   if (error) return { ok: false, error: error.message };
 
+  const carga = cargaDe(item!);
   const dano = itemById(item!.id!)?.nota?.split(" · ")[0];
   await evento(sessionId, ctx.auth.user.id, {
     kind: "tiro",
     personagemId: c.id,
     arma: item!.id,
     rolagem,
-    texto: `🔫 ${c.name} atirou com ${nome}: ${rolagem.texto}${rolagem.sucesso && dano ? ` · ${dano}` : ""} · ${item!.carga}/${u.carga} na arma`,
+    texto: `🔫 ${c.name} atirou com ${nome}: ${rolagem.texto}${rolagem.sucesso && dano ? ` · ${dano}` : ""} · ${carga}/${u.carga} na arma`,
   });
-  return { ok: true, seco: false, carga: item!.carga, rolagem };
+  return { ok: true, seco: false, carga, rolagem, tambor };
+}
+
+/** Revólver: guarda para onde o jogador girou o tambor. */
+export async function girarTambor(sessionId: string, characterId: string, indice: number, posicao: number): Promise<R> {
+  const ctx = await contexto(sessionId, characterId, indice);
+  if (!ctx.ok) return ctx;
+  const u = usoDoItem(ctx.item!.id);
+  if (u?.tipo !== "arma-fogo" || u.mecanismo !== "tambor") return { ok: false, error: "Isso não tem tambor." };
+  const t = tamborDe(ctx.item!, u.carga);
+  t.posicao = modulo(posicao, u.carga);
+  gravarTambor(ctx.item!, t);
+  const { error } = await ctx.supabase.from("characters").update({ inventory: ctx.inv }).eq("id", ctx.c.id);
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/** Revólver: tira uma cápsula disparada da câmara (ela cai no chão). */
+export async function tirarCapsula(
+  sessionId: string,
+  characterId: string,
+  indice: number,
+  camara: number,
+  posicao?: number,
+): Promise<R<{ tambor: Tambor }>> {
+  const ctx = await contexto(sessionId, characterId, indice);
+  if (!ctx.ok) return ctx;
+  const u = usoDoItem(ctx.item!.id);
+  if (u?.tipo !== "arma-fogo" || u.mecanismo !== "tambor") return { ok: false, error: "Isso não tem tambor." };
+  const t = tamborDe(ctx.item!, u.carga);
+  if (posicao != null) t.posicao = modulo(posicao, u.carga);
+  const k = modulo(camara, u.carga);
+  if (t.camaras[k] !== 2) return { ok: false, error: "Não há cápsula nessa câmara." };
+  t.camaras[k] = 0;
+  gravarTambor(ctx.item!, t);
+  const { error } = await ctx.supabase.from("characters").update({ inventory: ctx.inv }).eq("id", ctx.c.id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, tambor: t };
 }
 
 /* ── Recarregar ── */
@@ -109,7 +168,8 @@ export async function recarregar(
   sessionId: string,
   characterId: string,
   indice: number,
-): Promise<R<{ texto: string; carga: number }>> {
+  posicao?: number,
+): Promise<R<{ texto: string; carga: number; tambor?: Tambor }>> {
   const ctx = await contexto(sessionId, characterId, indice);
   if (!ctx.ok) return ctx;
   const { c, item } = ctx;
@@ -119,14 +179,30 @@ export async function recarregar(
 
   const carga = cargaDe(item!);
   const falta = u.carga - carga;
-  if (falta <= 0 && !item!.vazias) return { ok: false, error: "Já está carregada." };
+  const t = u.mecanismo === "tambor" ? tamborDe(item!, u.carga) : null;
+  if (t && posicao != null) t.posicao = modulo(posicao, u.carga);
+  if (falta <= 0 && !(t ? t.camaras.includes(2) : item!.vazias)) return { ok: false, error: "Já está carregada." };
 
   const tirado = retirarBalas(inv, u.calibre, falta);
   const total = tirado.porte + tirado.caixa;
   if (total === 0 && falta > 0) return { ok: false, error: `Sem ${NOME_CALIBRE[u.calibre]}.` };
 
-  item!.carga = carga + total;
-  item!.vazias = 0;
+  if (t) {
+    // Cápsulas saem; as balas entram a partir do topo, na ordem em que vão disparar.
+    t.camaras = t.camaras.map((c) => (c === 2 ? 0 : c));
+    let resta = total;
+    for (let i = 0; i < u.carga && resta > 0; i++) {
+      const k = modulo(t.posicao + i, u.carga);
+      if (t.camaras[k] === 0) {
+        t.camaras[k] = 1;
+        resta--;
+      }
+    }
+    gravarTambor(item!, t);
+  } else {
+    item!.carga = carga + total;
+    item!.vazias = 0;
+  }
   inv = limparVazios(inv);
   // Custo da arma é o mesmo para 1 bala ou a carga toda (p. 82); da mochila, +2 AC (p. 53).
   const custo = u.recargaAC + (tirado.caixa > 0 ? 2 : 0);
@@ -136,7 +212,7 @@ export async function recarregar(
   const { error } = await ctx.supabase.from("characters").update({ inventory: inv }).eq("id", c.id);
   if (error) return { ok: false, error: error.message };
   await evento(sessionId, ctx.auth.user.id, { kind: "recarga", personagemId: c.id, arma: item!.id, balas: total, texto });
-  return { ok: true, texto, carga: item!.carga };
+  return { ok: true, texto, carga: cargaDe(item!), tambor: t ?? undefined };
 }
 
 /* ── Encher cinturão / bandoleira a partir das caixas ── */

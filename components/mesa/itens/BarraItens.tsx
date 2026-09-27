@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { atirar, encherPorte, recarregar, usarItem } from "@/app/play/[session_id]/itens-actions";
+import { encherPorte, usarItem } from "@/app/play/[session_id]/itens-actions";
 import { itemById, itemImagem, resumoCompras } from "@/lib/character-creation/sacramento/catalogo";
 import { usoDoItem, type Calibre, type UsoItem } from "@/lib/rulesets/sacramento/itens-uso";
 import {
@@ -21,7 +21,8 @@ import type { Rolagem } from "@/lib/rulesets/sacramento/mesa";
 import type { Carta } from "@/lib/rulesets/sacramento/types";
 import type { Character } from "@/lib/types";
 import { CartaMini } from "../pecas";
-import { Alcas, Caixa, Canos, Pente, Tambor, Tubo, USO } from "./Mecanismos";
+import { Alcas, Caixa, USO } from "./Mecanismos";
+import { TelaArma } from "./TelaArma";
 import { somClique, somRiscar, somTiro, vibrar } from "./som";
 
 /* eslint-disable @next/next/no-img-element */
@@ -107,6 +108,9 @@ function PainelItem({
   const uso = usoDoItem(item.id);
   const cat = item.id ? itemById(item.id) : undefined;
   const [tremor, setTremor] = useState(0);
+  if (uso?.tipo === "arma-fogo") {
+    return <TelaArma sessionId={sessionId} character={character} indice={indice} item={item} inv={inv} uso={uso} onClose={onClose} onRefresh={onRefresh} />;
+  }
 
   return (
     <div className="fixed inset-0 z-[160] flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={nomeDoItem(item)}>
@@ -161,8 +165,6 @@ type CorpoProps = {
 
 function Corpo(p: CorpoProps) {
   switch (p.uso?.tipo) {
-    case "arma-fogo":
-      return <PainelArma {...p} uso={p.uso} />;
     case "municao":
       return <PainelMunicao {...p} uso={p.uso} />;
     case "porte":
@@ -255,122 +257,6 @@ function SeletorDefesa({ valor, onChange }: { valor: number; onChange: (v: numbe
   );
 }
 
-/* ── Arma de fogo ── */
-
-function PainelArma({ sessionId, character, indice, item, inv, uso, onRefresh, onTremor }: CorpoProps & { uso: Extract<UsoItem, { tipo: "arma-fogo" }> }) {
-  const { pending, erro, res, rodar } = useAcao(onRefresh);
-  // Estado otimista: a animação não espera o servidor.
-  const [carga, setCarga] = useState(cargaDe(item));
-  const [vazias, setVazias] = useState(item.vazias ?? 0);
-  const [girando, setGirando] = useState(false);
-  const [disparo, setDisparo] = useState(0);
-  const [defesa, setDefesa] = useState(5);
-  const reserva = reservaDe(inv, uso.calibre);
-  const lateral = uso.mecanismo === "tambor";
-
-  // Ficha nova do servidor (após refresh) substitui o estado otimista.
-  const [origem, setOrigem] = useState(item);
-  if (origem !== item) {
-    setOrigem(item);
-    setCarga(cargaDe(item));
-    setVazias(item.vazias ?? 0);
-  }
-
-  function gatilho() {
-    if (pending) return;
-    if (carga === 0) {
-      somClique(0.8);
-      vibrar(15);
-      if (lateral) {
-        setGirando(true);
-        setTimeout(() => setGirando(false), 190);
-      }
-      return;
-    }
-    somTiro();
-    vibrar([40, 30, 90]);
-    onTremor();
-    setDisparo(Date.now());
-    if (lateral) setGirando(true);
-    setTimeout(() => {
-      setCarga((c) => Math.max(0, c - 1));
-      if (lateral) setVazias((v) => v + 1);
-      setGirando(false);
-    }, 190);
-    rodar(() => atirar(sessionId, character.id, indice, defesa));
-  }
-
-  function recarga() {
-    rodar(
-      () => recarregar(sessionId, character.id, indice),
-      () => {
-        somClique(1.2);
-        setTimeout(() => somClique(1.4), 120);
-        vibrar(20);
-      },
-    );
-  }
-
-  const podeRecarregar = (carga < uso.carga || vazias > 0) && reserva.porte + reserva.caixa > 0;
-
-  return (
-    <div className="space-y-4">
-      {/* Cena da arma */}
-      <div className="relative mx-auto w-full max-w-sm">
-        {lateral && (
-          <div className="relative mx-auto mb-2 w-full" style={{ aspectRatio: "3 / 2" }}>
-            <img
-              key={`r-${disparo}`}
-              src={USO("armas/revolver-lateral")}
-              alt=""
-              draggable={false}
-              className={`absolute inset-0 h-full w-full origin-[30%_60%] ${disparo ? "animate-[sacraRecoil_0.35s_ease-out]" : ""}`}
-            />
-            {disparo > 0 && <Clarao key={disparo} x={98.6} y={28.1} />}
-          </div>
-        )}
-        <div className={`relative mx-auto ${uso.mecanismo === "pente" ? "h-64" : uso.mecanismo === "tubo" ? "h-32" : "w-3/4"}`}>
-          {uso.mecanismo === "tambor" && <Tambor carga={carga} vazias={vazias} girando={girando} />}
-          {uso.mecanismo === "canos" && <Canos carga={carga} total={uso.carga} />}
-          {uso.mecanismo === "pente" && <Pente carga={carga} total={uso.carga} />}
-          {uso.mecanismo === "tubo" && <Tubo carga={carga} total={uso.carga} calibre={uso.calibre} />}
-          {!lateral && disparo > 0 && <Clarao key={disparo} x={50} y={30} />}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 text-center">
-        <Contagem rotulo="Na arma" valor={`${carga}/${uso.carga}`} alerta={carga === 0} />
-        <Contagem rotulo={uso.calibre === "revolver" ? "Cinturão" : "Bandoleira"} valor={String(reserva.porte)} />
-        <Contagem rotulo="Caixas" valor={String(reserva.caixa)} />
-      </div>
-      <p className="font-crimson text-sm text-arcana-text">
-        Recarga {uso.recargaAC} AC (igual para 1 bala ou todas){reserva.porte === 0 && reserva.caixa > 0 ? " · +2 AC para tirar da mochila" : ""}
-        {uso.cadencia ? ` · ${uso.cadencia}` : ""}
-      </p>
-
-      <SeletorDefesa valor={defesa} onChange={setDefesa} />
-
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={gatilho}
-          disabled={pending && carga > 0}
-          className="flex h-20 flex-1 items-center justify-center rounded-2xl border-2 border-red-300/80 bg-[radial-gradient(circle_at_50%_35%,#8b2a1f,#3b0f0b)] font-cinzel text-xl font-bold uppercase tracking-[0.25em] text-white shadow-[0_0_24px_rgba(200,60,40,0.45)] active:scale-[0.97]"
-        >
-          {carga === 0 ? "Clique…" : "Atirar"}
-        </button>
-        <button type="button" onClick={recarga} disabled={pending || !podeRecarregar} className="arcana-btn-ghost h-20 px-4">
-          Recarregar
-        </button>
-      </div>
-      {!podeRecarregar && carga < uso.carga && (
-        <p className="font-crimson text-sm text-red-200">Sem {NOME_CALIBRE[uso.calibre]}. Compre no Armazém ou peça ao Juiz.</p>
-      )}
-      <Resultado erro={erro} res={res} />
-    </div>
-  );
-}
-
 function Clarao({ x, y }: { x: number; y: number }) {
   return (
     <>
@@ -389,15 +275,6 @@ function Clarao({ x, y }: { x: number; y: number }) {
         style={{ left: `${x - 20}%`, top: `${y - 30}%` }}
       />
     </>
-  );
-}
-
-function Contagem({ rotulo, valor, alerta }: { rotulo: string; valor: string; alerta?: boolean }) {
-  return (
-    <div className={`rounded-xl border p-2 ${alerta ? "border-red-400/70" : "border-arcana-border"}`}>
-      <p className="font-cinzel text-[10px] uppercase tracking-[0.18em] text-arcana-text">{rotulo}</p>
-      <p className={`font-cinzel text-xl tabular-nums ${alerta ? "text-red-200" : "text-white"}`}>{valor}</p>
-    </div>
   );
 }
 

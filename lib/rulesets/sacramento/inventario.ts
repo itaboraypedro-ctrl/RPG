@@ -17,6 +17,10 @@ export type ItemInventario = {
   carga?: number;
   /** Revólver: cápsulas disparadas que ficam no tambor até a recarga. */
   vazias?: number;
+  /** Revólver: estado de cada câmara (0 vazia, 1 bala, 2 cápsula disparada). */
+  camaras?: number[];
+  /** Revólver: câmara na posição de disparo (topo). */
+  posicao?: number;
   /** Caixa de munição: balas restantes na pilha. Cinturão/bandoleira: balas nas alças. */
   balas?: number;
   /** Bandoleira: calibre das balas nas alças (definido ao encher). */
@@ -35,7 +39,38 @@ export function lerInventario(raw: unknown): ItemInventario[] {
 export function cargaDe(item: ItemInventario): number {
   const u = usoDoItem(item.id);
   if (u?.tipo !== "arma-fogo") return 0;
+  if (u.mecanismo === "tambor" && Array.isArray(item.camaras)) return item.camaras.filter((c) => c === 1).length;
   return Math.max(0, Math.min(u.carga, item.carga ?? u.carga));
+}
+
+export const CAMARA = { vazia: 0, bala: 1, gasta: 2 } as const;
+
+/**
+ * Tambor câmara a câmara. Inventário antigo só tem contagem: as balas ficam a
+ * partir do topo em sentido horário e as cápsulas no fim.
+ */
+export function tamborDe(item: ItemInventario, total = 6): { camaras: number[]; posicao: number } {
+  if (Array.isArray(item.camaras) && item.camaras.length === total) {
+    return { camaras: item.camaras.map((c) => (c === 1 || c === 2 ? c : 0)), posicao: modulo(item.posicao ?? 0, total) };
+  }
+  const carga = Math.max(0, Math.min(total, item.carga ?? total));
+  const vazias = Math.max(0, Math.min(total - carga, item.vazias ?? 0));
+  return {
+    camaras: Array.from({ length: total }, (_, k) => (k < carga ? 1 : k >= total - vazias ? 2 : 0)),
+    posicao: 0,
+  };
+}
+
+/** Grava o tambor e mantém `carga`/`vazias` coerentes para quem só lê contagem. */
+export function gravarTambor(item: ItemInventario, t: { camaras: number[]; posicao: number }) {
+  item.camaras = t.camaras;
+  item.posicao = modulo(t.posicao, t.camaras.length);
+  item.carga = t.camaras.filter((c) => c === 1).length;
+  item.vazias = t.camaras.filter((c) => c === 2).length;
+}
+
+export function modulo(n: number, m: number): number {
+  return ((Math.round(n) % m) + m) % m;
 }
 
 /** Balas numa caixa de munição (pilha inteira). */

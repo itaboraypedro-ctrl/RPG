@@ -1103,3 +1103,8 @@ body {
   55% { opacity: 1; transform: translateY(0) scale(1); }
   100% { opacity: 0; transform: translateY(-70%) scale(0.5) rotate(15deg); }
 }
+@keyframes sacraCai {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); }
+  15% { transform: translate(-50%, -80%) rotate(40deg); }
+  100% { opacity: 0; transform: translate(-50%, 260%) rotate(320deg); }
+}

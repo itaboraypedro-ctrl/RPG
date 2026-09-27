@@ -25,6 +25,7 @@ import { CartaMini, RetratoEstado, imagensDe, textoEvento } from "./pecas";
 import { NotasJogador } from "./NotasJogador";
 import { BarraItens } from "./itens/BarraItens";
 import { PopupsMesa } from "./PopupsMesa";
+import { BarraDorFicha, BarraVidaFicha } from "./BarrasCorpo";
 
 type Aba = "ficha" | "historia" | "notas" | "rolar" | "alforje" | "armazem" | "mesa";
 
@@ -149,9 +150,12 @@ export function MesaDoJogador({
           {/* ═══ Coluna do personagem ═══ */}
           <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
             {/* Herói */}
-            <div className="relative mx-auto w-full max-w-md overflow-hidden lg:rounded-2xl lg:border lg:border-arcana-gold/40">
-              <RetratoEstado character={character} ficha={f} className="aspect-square w-full rounded-none" />
-              <div aria-hidden className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(7,7,13,0.55) 0%, transparent 22%, transparent 45%, rgba(7,7,13,0.97) 100%)" }} />
+            <div className="relative mx-auto w-full max-w-md lg:rounded-2xl lg:border lg:border-arcana-gold/40">
+              {/* Retrato limpo: o estado de ferimento precisa ficar visível. Só uma faixa leve no topo para os selos. */}
+              <div className="relative overflow-hidden lg:rounded-t-2xl">
+                <RetratoEstado character={character} ficha={f} className="aspect-square w-full rounded-none" />
+                <div aria-hidden className="absolute inset-x-0 top-0 h-16" style={{ background: "linear-gradient(180deg, rgba(7,7,13,0.6), transparent)" }} />
+              </div>
               <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 p-3">
                 <span
                   className={`rounded-full border px-2.5 py-1 font-cinzel text-[10px] uppercase tracking-[0.2em] backdrop-blur ${
@@ -164,21 +168,25 @@ export function MesaDoJogador({
                   {economia.emoji} ×{economia.multiplicador.toLocaleString("pt-BR")}
                 </span>
               </div>
-              <div className="absolute inset-x-0 bottom-0 space-y-1 p-4">
-                <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
-                  Nível {f.nivel} · {f.xp} XP · {estado}
-                </p>
-                {/* Nome gravado na placa de ferro da criação */}
-                <h1 className="relative w-[88%] max-w-sm" style={{ aspectRatio: "4.104 / 1" }}>
+              {/* Placa pendurada na borda de baixo do retrato, centralizada, nome em uma linha */}
+              <div className="relative z-10 -mt-8 flex flex-col items-center space-y-1 px-4 pb-3 text-center">
+                <h1 className="relative w-[82%] max-w-xs" style={{ aspectRatio: "4.104 / 1", containerType: "inline-size" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/story/escritorio/placa.webp" alt="" aria-hidden className="absolute inset-0 h-full w-full drop-shadow-[0_6px_14px_rgba(0,0,0,0.8)]" />
                   <span
-                    className="absolute inset-x-[12%] inset-y-0 flex items-center justify-center text-center font-cinzel font-bold uppercase leading-none tracking-[0.08em] text-[#23140a]"
-                    style={{ fontSize: character.name.length > 18 ? "1.05rem" : "1.45rem", textShadow: "0 1px 0 rgba(255,228,170,0.55), 0 -1px 0 rgba(0,0,0,0.35)" }}
+                    className="absolute inset-x-[11%] inset-y-0 flex items-center justify-center overflow-hidden whitespace-nowrap font-cinzel font-bold uppercase leading-none tracking-[0.06em] text-[#23140a]"
+                    style={{
+                      // Cabe em 1 linha: ~0,8 em por letra dentro de 76% da placa.
+                      fontSize: `min(1.15rem, ${(76 / Math.max(8, character.name.length * 0.8)).toFixed(2)}cqw)`,
+                      textShadow: "0 1px 0 rgba(255,228,170,0.55), 0 -1px 0 rgba(0,0,0,0.35)",
+                    }}
                   >
                     {character.name}
                   </span>
                 </h1>
+                <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-arcana-gold">
+                  Nível {f.nivel} · {f.xp} XP · {estado}
+                </p>
                 {conceito && <p className="font-crimson text-base italic text-arcana-text">{conceito}</p>}
               </div>
             </div>
@@ -326,38 +334,14 @@ function PainelCorpo({ character, onAjuste }: { character: Character; onAjuste: 
         </div>
       </div>
 
-      {/* Vida: um ex-voto por ponto — aceso ou apagado e rachado */}
-      <div className="flex flex-wrap gap-1" aria-label={`Vida ${f.vida} de ${f.vidaMax}`}>
-        {Array.from({ length: Math.max(1, f.vidaMax) }, (_, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            src={`/story/uso/ficha/${i < f.vida ? "vida-cheia" : "vida-perdida"}.webp`}
-            alt=""
-            draggable={false}
-            className={`h-11 w-11 transition-all duration-500 ${i < f.vida ? "drop-shadow-[0_0_8px_rgba(200,60,50,0.55)]" : "opacity-80 grayscale-[35%]"}`}
-          />
-        ))}
-      </div>
+      <BarraVidaFicha vida={f.vida} vidaMax={f.vidaMax} />
 
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <p className={LABEL}>Dor</p>
-          <p className="font-crimson text-xs text-arcana-text">no 6º círculo: −1 V e consequência</p>
+          <p className={LABEL}>Dor · {f.dor}/6</p>
+          <p className="font-crimson text-xs text-arcana-text">na 6ª casa: −1 V e consequência</p>
         </div>
-        {/* Dor: seis círculos de nanquim; riscado é dano (livro) */}
-        <div className="flex gap-1.5" aria-label={`Dor ${f.dor} de 6`}>
-          {Array.from({ length: 6 }, (_, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={i}
-              src={`/story/uso/ficha/${i < f.dor ? "dor-riscada" : "dor-vazia"}.webp`}
-              alt=""
-              draggable={false}
-              className={`aspect-square min-w-0 flex-1 transition-transform duration-300 ${i < f.dor ? "scale-105" : ""}`}
-            />
-          ))}
-        </div>
+        <BarraDorFicha dor={f.dor} />
       </div>
 
       {f.condicoes.length > 0 && (
